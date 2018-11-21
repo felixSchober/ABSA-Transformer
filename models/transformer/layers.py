@@ -162,7 +162,7 @@ class ScaledDotProductAttentionLayer(nn.Module):
         # Step 5:   multiply each score with their coresponding softmax score
         #           sum up all the scores -> output for one word      
         result = torch.bmm(attention, w_value)    # [d_v, num_words]      (64, n)
-        return result, attention
+        return result
         
 
     # def forward(self, x, q_matrix, k_matrix, v_matrix):
@@ -261,7 +261,7 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
             mask = mask.repeat(self.h, 1, 1)
 
         # perform forward pass of individual heads
-        result, attention = self.attention_layer.forward(Q, K, V, mask=mask)
+        result = self.attention_layer(Q, K, V, mask=mask)
 
         # prepare for merge by concatenating heads
         # TODO: check
@@ -275,7 +275,7 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         # add residual again
         result = self.layer_norm(result + residual)
 
-        return result, attention
+        return result
 
 
 class LayerNorm(nn.Module):
@@ -345,13 +345,17 @@ class PositionalEncoding(nn.Module):
 # testing
 if __name__ == '__main__':
     num_units = 512
-
+    torch.manual_seed(42)
     # 10 words with a 100-lenght embedding
     inputs = Variable(torch.randn((100, 10)))
 
-
+    # first 'layer'
     outputs = PositionalEncoding(num_units)(inputs)
-    outputs, attn = MultiHeadedSelfAttentionLayer()(outputs, outputs, outputs)
+    outputs = MultiHeadedSelfAttentionLayer()(outputs, outputs, outputs)
+    outputs = PointWiseFCLayer()(outputs)
+
+    # second 'layer'
+    outputs = MultiHeadedSelfAttentionLayer()(outputs, outputs, outputs)
     outputs = PointWiseFCLayer()(outputs)
 
     print(outputs)   
