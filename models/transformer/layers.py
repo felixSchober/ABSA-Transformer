@@ -2,6 +2,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import *
 import numpy as np
 import copy
 
@@ -30,6 +31,7 @@ class PointWiseFCLayer(nn.Module):
         result = self.w_2(F.relu(self.w_1(x)))
         result = self.dropout(x)
         return result
+
 
 class ScaledDotProductAttentionLayer(nn.Module):
 
@@ -139,7 +141,7 @@ class ScaledDotProductAttentionLayer(nn.Module):
 
         #           Divide by the square root of the query/key/value matrix sizes (default 8)
         # bmm = batch matrix multiplication
-        scores = torch.bmm(w_query * torch.t(w_key)) / self.gradientStabilizer   # [num_words, num_words, h]       
+        scores = torch.bmm(w_query * w_key.transpose(1, 2)) / self.gradientStabilizer   # [num_words, num_words, h]       
 
         # Step 3:   To prevent leftward information flow, we need to mask out words that the attention
         #           head is not 'allowed' to see
@@ -215,11 +217,11 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
 
     def _initialize_layers(self, normal: bool = True):
         if (normal):
-            nn.init.normal(self.query_projections, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_k)))
-            nn.init.normal(self.key_projections, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_k)))
-            nn.init.normal(self.value_projections, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_v)))
+            nn.init.normal(self.query_projections._modules['0'].weight, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_k)))
+            nn.init.normal(self.key_projections._modules['0'].weight, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_k)))
+            nn.init.normal(self.value_projections._modules['0'].weight, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_v)))
 
-        nn.init.xavier_normal_(self.w_0.weight)
+        nn.init.xavier_normal_(self.w_0._modules['0'].weight)
 
 
     def _create_projections(self):
@@ -230,33 +232,37 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         return scores.transpose(1, 2).contiguous().view(nbatches, -1, self.h * self.d_k)
 
     def forward(self, x_queries: torch.Tensor, x_keys: torch.Tensor, x_values: torch.Tensor, mask: torch.Tensor=None) -> torch.Tensor:
+        """
+        x_queries: [embedding_size, num_words, model_size] (100, 10, 512)
+        """
 
         # residual used as depicted in fig. 1
         residual = x_queries
 
         # project key, query, value for each head using the linear layers
-        Q = self.query_projections(x_queries)
-        K = self.key_projections(x_keys)
-        V = self.value_projections(x_values)
+        Q = self.query_projections(x_queries)       # [embedding_size, num_words, model_size]
+        K = self.key_projections(x_keys)            # [embedding_size, num_words, model_size]
+        V = self.value_projections(x_values)        # [embedding_size, num_words, model_size]
 
         # split to head input dimensions
         # TODO: check dimensions
-        sz_b, len_q, _ = x_queries.size()
-        sz_b, len_k, _ = x_keys.size()
-        sz_b, len_v, _ = x_values.size()
+        sz_b, len_q, _ = x_queries.size()           # (embedding_size, num_words)
+        _, len_k, _ = x_keys.size()                 
+        _, len_v, _ = x_values.size()
 
-        Q = Q.view(sz_b, len_q, self.h, self.d_k)
-        K = K.view(sz_b, len_k, self.h, self.d_k)
-        V = V.view(sz_b, len_v, self.h, self.d_v)
+        Q = Q.view(sz_b, len_q, self.h, self.d_k)   # [embedding_size, num_words, num_heads, d_k]
+        K = K.view(sz_b, len_k, self.h, self.d_k)   # [embedding_size, num_words, num_heads, d_k]
+        V = V.view(sz_b, len_v, self.h, self.d_v)   # [embedding_size, num_words, num_heads, d_v]
 
-        # padd
-        # TODO: check what this does
+        # Transform Q, K and V so that the head-dimension is merged with the embedding_size 
+        # [embedding_size, num_words, num_heads, d_k] -> [embedding_size * num_heads, num_words, d_k]
         Q = Q.permute(2, 0, 1, 3).contiguous().view(-1, len_q, self.d_k) # (n*b) x lq x dk
         K = K.permute(2, 0, 1, 3).contiguous().view(-1, len_k, self.d_k) # (n*b) x lk x dk
         V = V.permute(2, 0, 1, 3).contiguous().view(-1, len_v, self.d_v) # (n*b) x lv x dv
 
         # apply mask
-        mask = mask.repeat(self.h, 1, 1)
+        if mask is not None:
+            mask = mask.repeat(self.h, 1, 1)
 
         # perform forward pass of individual heads
         result, attention = self.attention_layer.forward(Q, K, V, mask=mask)
@@ -276,7 +282,6 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         return result, attention
 
 
-
 class LayerNorm(nn.Module):
 
     def __init__(self, features, eps=1e-6) -> None:
@@ -293,4 +298,65 @@ class LayerNorm(nn.Module):
         return self.gamma * (x - mean) / (std + self.eps) + self.beta
 
 
+class PositionalEncoding(nn.Module):
+    """From https://github.com/leviswind/pytorch-transformer/blob/master/modules.py"""
+
+    def __init__(self, num_units: int, zeros_pad: bool=True, scale: bool=True):
+        '''Sinusoidal Positional_Encoding.
+        Args:
+          num_units: Output dimensionality
+          zero_pad: Boolean. If True, all the values of the first row (id = 0) should be constant zero
+          scale: Boolean. If True, the output will be multiplied by sqrt num_units(check details from paper)
+        '''
+        super(PositionalEncoding, self).__init__()
+        self.num_units = num_units
+        self.zeros_pad = zeros_pad
+        self.scale = scale
+
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        # inputs: A 2d Tensor with shape of (N, T).
+        N, T = inputs.size()[0: 2]
+
+        # First part of the PE function: sin and cos argument
+        position_ind = Variable(torch.unsqueeze(torch.arange(0, T), 0).repeat(N, 1).long())
+        position_enc = torch.Tensor([
+            [pos / np.power(10000, 2. * i / self.num_units) for i in range(self.num_units)]
+            for pos in range(T)])
+
+        # Second part, apply the cosine to even columns and sin to odds.
+        position_enc[:, 0::2] = torch.sin(position_enc[:, 0::2])  # dim 2i
+        position_enc[:, 1::2] = torch.cos(position_enc[:, 1::2])  # dim 2i+1
+
+        # Convert to a Variable
+        lookup_table = Variable(position_enc) # [num_words, word_emedding_size]
+
+        if self.zeros_pad:
+            lookup_table = torch.cat((Variable(torch.zeros(1, self.num_units)),
+                                     lookup_table[1:, :]), 0)
+            padding_idx = 0
+        else:
+            padding_idx = -1
+
+        outputs = F.embedding(
+            position_ind, lookup_table, padding_idx, None, 2, False, False)   # copied from torch.nn.modules.sparse.py
+
+        if self.scale:
+            outputs = outputs * self.num_units ** 0.5
+
+        return outputs
+
+
+# testing
+if __name__ == '__main__':
+    num_units = 512
+
+    # 10 words with a 100-lenght embedding
+    inputs = Variable(torch.randn((100, 10)))
+
+
+    outputs = PositionalEncoding(num_units)(inputs)
+    outputs = MultiHeadedSelfAttentionLayer()(outputs, outputs, outputs)
+    outputs = PointWiseFCLayer()(outputs)
+
+    print(outputs)   
 
