@@ -16,15 +16,19 @@ def clone_layer(layer: nn.Module, N: int):
 
 class PointWiseFCLayer(nn.Module):
 
-    def __init__(self, d_input=constants.DEFAULT_DIMENSION_OF_MODEL, d_layer=constants.DEFAULT_DIMENSION_OF_PWFC_HIDDEN_LAYER, dropout=constants.DEFAULT_MODEL_DROPOUT) -> None:
+    def __init__(self, d_input=constants.DEFAULT_DIMENSION_OF_MODEL, d_layer=constants.DEFAULT_DIMENSION_OF_PWFC_HIDDEN_LAYER, dropout=constants.DEFAULT_MODEL_DROPOUT, use_conv = False) -> None:
         super(PointWiseFCLayer, self).__init__()
 
         self.d_input = d_input
         self.d_layer = d_layer
         self.p_dropout = dropout
 
-        self.w_1 = nn.Conv1d(d_input, d_layer, 1) 
-        self.w_2 = nn.Conv1d(d_layer, d_input, 1)      # output dimension = input dimension 
+        if use_conv:
+            self.w_1 = nn.Conv1d(d_input, d_layer, 1) 
+            self.w_2 = nn.Conv1d(d_layer, d_input, 1)      # output dimension = input dimension 
+        else:
+            self.w_1 = nn.Linear(self.d_input, self.d_layer)
+            self.w_2 = nn.Linear(self.d_layer, self.d_input)
         self.dropout = nn.Dropout(self.p_dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -141,7 +145,7 @@ class ScaledDotProductAttentionLayer(nn.Module):
 
         #           Divide by the square root of the query/key/value matrix sizes (default 8)
         # bmm = batch matrix multiplication
-        scores = torch.bmm(w_query * w_key.transpose(1, 2)) / self.gradientStabilizer   # [num_words, num_words, h]       
+        scores = torch.bmm(w_query, w_key.permute(0, 2, 1)) / self.gradientStabilizer   # [num_words, num_words, h]       
 
         # Step 3:   To prevent leftward information flow, we need to mask out words that the attention
         #           head is not 'allowed' to see
@@ -212,7 +216,7 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         # input_MultiHeadedSelfAttentionLayer = output_MultiHeadedSelfAttentionLayer
         self.w_0 = nn.Sequential(nn.Linear(self.h * self.d_v, self.d_model), nn.ReLU())
 
-        self._initialize_layers()
+        self._initialize_layers(False)
 
 
     def _initialize_layers(self, normal: bool = True):
@@ -222,14 +226,6 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
             nn.init.normal(self.value_projections._modules['0'].weight, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_v)))
 
         nn.init.xavier_normal_(self.w_0._modules['0'].weight)
-
-
-    def _create_projections(self):
-        None
-
-    def _concatenate_attentions(self, scores: torch.Tensor, nbatches: int) -> torch.Tensor:
-        # TODO: what is nbatches
-        return scores.transpose(1, 2).contiguous().view(nbatches, -1, self.h * self.d_k)
 
     def forward(self, x_queries: torch.Tensor, x_keys: torch.Tensor, x_values: torch.Tensor, mask: torch.Tensor=None) -> torch.Tensor:
         """
@@ -274,7 +270,7 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
 
         result = self.w_0(result)
 
-        result = self.dropout(result)
+        # result = self.dropout(result)
 
         # add residual again
         result = self.layer_norm(result + residual)
@@ -355,7 +351,7 @@ if __name__ == '__main__':
 
 
     outputs = PositionalEncoding(num_units)(inputs)
-    outputs = MultiHeadedSelfAttentionLayer()(outputs, outputs, outputs)
+    outputs, attn = MultiHeadedSelfAttentionLayer()(outputs, outputs, outputs)
     outputs = PointWiseFCLayer()(outputs)
 
     print(outputs)   
