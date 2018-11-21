@@ -342,7 +342,7 @@ class PositionalEncoding(nn.Module):
         return outputs
 
 
-# testing
+# testing layers individually
 if __name__ == '__main__':
     num_units = 512
     torch.manual_seed(42)
@@ -351,8 +351,8 @@ if __name__ == '__main__':
 
     # first 'layer'
     outputs = PositionalEncoding(num_units)(inputs)
-    outputs = MultiHeadedSelfAttentionLayer()(outputs, outputs, outputs)
-    outputs = PointWiseFCLayer()(outputs)
+    outputs = MultiHeadedSelfAttentionLayer().forward(outputs, outputs, outputs)
+    outputs = PointWiseFCLayer().forward(outputs)
 
     # second 'layer'
     outputs = MultiHeadedSelfAttentionLayer()(outputs, outputs, outputs)

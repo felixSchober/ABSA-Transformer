@@ -14,12 +14,14 @@ class Encoder(nn.Module):
         """
         super(Encoder, self).__init__()
 
-        self.layers = List[EncoderLayer]
+        self.positional_encoding = PositionalEncoding(layer_size)
+
+        self.layers = []
         self.num_layers = num_layers
         self.layer_size = layer_size
         self.dropout = dropout
         for _ in range(num_layers):
-            self.layers.append(EncoderLayer(layer_size))
+            self.layers.append(EncoderBlock(layer_size))
 
     def forward(self, x):
 
@@ -28,12 +30,7 @@ class Encoder(nn.Module):
         w_emb = x
 
         # create position embedding
-        # TODO:
-        p_emb = None
-
-        # add word embeddings and position embeddings
-        # encoder_output = w_emb + p_emb
-        encoder_output = w_emb
+        encoder_output = self.positional_encoding(x)
 
         # apply the forward pass for each encoding sub layer
         for enc_sub_layer in self.layers:
@@ -42,13 +39,15 @@ class Encoder(nn.Module):
         return encoder_output
 
         
-class EncoderLayer(nn.Module):
+class EncoderBlock(nn.Module):
 
     def __init__(self, layer_size, dropout=0.1):
         """
         """
+        super(EncoderBlock, self).__init__()
+
         self.dropout = dropout
-        self.self_attention_layer = SelfAttentionLayer()
+        self.self_attention_layer = MultiHeadedSelfAttentionLayer()
         self.feed_forward_layer = PointWiseFCLayer(layer_size, dropout=self.dropout)
         self.layer_norm = LayerNorm(layer_size)
 
@@ -61,10 +60,25 @@ class EncoderLayer(nn.Module):
 
         The output dimension is d_model = 512
         """
-        attentionResult = self.self_attention_layer(x)
-        attentionResult = self.layer_norm.forward(attentionResult + x)
+        residual = x
+        attentionResult = self.self_attention_layer(x, x, x)
+        attentionResult = self.layer_norm.forward(attentionResult + residual)
+
+        residual = attentionResult
 
         fcResult = self.feed_forward_layer.forward(attentionResult)
-        fcResult = self.layer_norm.forward(fcResult + attentionResult)
+        fcResult = self.layer_norm.forward(fcResult + residual)
 
         return fcResult
+
+if __name__ == '__main__':
+    num_units = 512
+    torch.manual_seed(42)
+    # 10 words with a 100-lenght embedding
+    inputs = Variable(torch.randn((100, 10)))
+
+    # first 'layer'
+    encoder = Encoder(2, num_units)
+    outputs = encoder(inputs)
+
+    print(outputs)   
