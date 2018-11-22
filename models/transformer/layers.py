@@ -36,6 +36,19 @@ class PointWiseFCLayer(nn.Module):
         result = self.dropout(x)
         return result
 
+    def __str__(self):
+        return self.__class__.__name__
+
+    def _get_parameters(self, indentation: str) -> str:
+        result = indentation + "\tLinear Input: {0}\n".format(self.d_input)
+        result += indentation + "\tLinear Size: {0}\n".format(self.d_layer)
+        result += indentation + "\tDropout Rate: {0}\n".format(self.p_dropout)
+        return result
+
+    def print_model_graph(self, indentation: str) -> str:
+        result = indentation + "- " + self.__str__() + ": - Parameters\n" + self._get_parameters(indentation + "\t")
+        return result
+
 
 class ScaledDotProductAttentionLayer(nn.Module):
 
@@ -164,12 +177,19 @@ class ScaledDotProductAttentionLayer(nn.Module):
         result = torch.bmm(attention, w_value)    # [d_v, num_words]      (64, n)
         return result
         
-
-    # def forward(self, x, q_matrix, k_matrix, v_matrix):
-    #     return self._self_attention(x, q_matrix, k_matrix, v_matrix, None, self.dropout)
-
     def forward(self, q_matrix, k_matrix, v_matrix, mask):
         return self._self_attention_multi_head(q_matrix, k_matrix, v_matrix, mask, self.dropout)
+
+    def __str__(self):
+        return self.__class__.__name__
+
+    def _get_parameters(self, indentation: str) -> str:
+        result = indentation + "\tKey - Query Size: {0}\n".format(self.d_k)
+        result += indentation + "\tValue Size: {0}\n".format(self.d_v)
+        return result
+
+    def print_model_graph(self, indentation: str) -> str:
+        return indentation + "- " + self.__str__() + ": - Parameters\n" + self._get_parameters(indentation + "\t")
 
 
 class MultiHeadedSelfAttentionLayer(nn.Module):
@@ -179,6 +199,7 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
                 d_v=constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS,
                 d_model=constants.DEFAULT_DIMENSION_OF_MODEL,
                 h=constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS,
+                dropout_rate=constants.DEFAULT_MODEL_DROPOUT,
                 use_linear=True) -> None:
         """
         d_k: dimensionality of the query and key vectors
@@ -215,8 +236,13 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         # The output should be the model dimension again, so that the input dimension of the layer 
         # input_MultiHeadedSelfAttentionLayer = output_MultiHeadedSelfAttentionLayer
         self.w_0 = nn.Sequential(nn.Linear(self.h * self.d_v, self.d_model), nn.ReLU())
+        
+        if dropout_rate is not None:
+            self.dropout = nn.Dropout(dropout_rate)
+        else:
+            self.dropout = None
 
-        self._initialize_layers(False)
+        self._initialize_layers(True)
 
 
     def _initialize_layers(self, normal: bool = True):
@@ -270,13 +296,30 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
 
         result = self.w_0(result)
 
-        # result = self.dropout(result)
+        if self.dropout is not None:
+            result = self.dropout(result)
 
         # add residual again
         result = self.layer_norm(result + residual)
 
         return result
+    
+    def __str__(self):
+        return self.__class__.__name__
 
+    def _get_parameters(self, indentation: str) -> str:
+        result = indentation + "\tModel Size: {0}\n".format(self.d_model)
+        result += indentation + "\t# Heads: {0}\n".format(self.h)
+        result += indentation + "\tValue Size: {0}\n".format(self.d_v)
+        return result
+
+    def print_model_graph(self, indentation: str) -> str:
+        result = indentation + "[\n"
+        result += indentation + "- " + self.__str__() + ": - Parameters\n" + self._get_parameters(indentation + "\t") + "\n"
+        result += self.attention_layer.print_model_graph(indentation + "\t")
+        result += indentation + "\t- " + self.layer_norm.__str__() + "\n"
+        result += indentation + "]\n"
+        return result
 
 class LayerNorm(nn.Module):
 
@@ -292,6 +335,9 @@ class LayerNorm(nn.Module):
         mean = x.mean(-1, keepdim=True)
         std = x.std(-1, keepdim=True)
         return self.gamma * (x - mean) / (std + self.eps) + self.beta
+
+    def __str__(self):
+        return self.__class__.__name__
 
 
 class PositionalEncoding(nn.Module):
@@ -340,6 +386,9 @@ class PositionalEncoding(nn.Module):
             outputs = outputs * self.num_units ** 0.5
 
         return outputs
+
+    def __str__(self):
+        return self.__class__.__name__
 
 
 # testing layers individually
