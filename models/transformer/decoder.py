@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import numpy as np
 from layers import *
 import constants
 
@@ -77,3 +77,9 @@ class DecoderBlock(nn.Module):
         x = self.source_attention_layer.forward(x, encodings, encodings, source_mask)
         x = self.feed_forward_layer(x)
         return x
+
+def create_subsequent_mask(size: int) -> torch.Tensor:
+    attention_shape = (1, size, size)
+    mask = np.ones(attention_shape)
+    mask = np.triu(mask, k=1).astype('uint8')
+    return torch.from_numpy(mask) == 0

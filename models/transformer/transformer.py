@@ -1,3 +1,4 @@
+import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -22,8 +23,8 @@ class GoogleTransformer(nn.Module):
         self.encoder = Encoder()
         self.decoder = Decoder()
 
-        self.source_embeddings = None
-        self.target_embeddings = None
+        self.source_embeddings = Embeddings(model_size, vocabulary_size)
+        self.target_embeddings = Embeddings(model_size, vocabulary_size)
         self.generator = TransformerTargetGenerator(model_size, vocabulary_size)
 
     def forward(self, source: torch.Tensor, targets: torch.Tensor, source_mask: torch.Tensor, target_mask: torch.Tensor) -> torch.Tensor:
@@ -62,3 +63,15 @@ class TransformerTargetGenerator(nn.Module):
 
     def __str__(self) -> str:
         return self.__class__.__name__
+
+class Embeddings(nn.Module):
+    """Some Information about Embeddings"""
+    def __init__(self, model_size: int, vocabulary_size: int):
+        super(Embeddings, self).__init__()
+        self.model_size = model_size
+        self.vocabulary_size = vocabulary_size
+
+        self.embedding_projection = nn.Embedding(vocabulary_size, model_size)
+
+    def forward(self, x):
+        return self.embedding_projection(x) * math.sqrt(self.model_size)
