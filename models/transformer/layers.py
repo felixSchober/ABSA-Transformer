@@ -16,12 +16,17 @@ def clone_layer(layer: nn.Module, N: int):
 
 class PointWiseFCLayer(nn.Module):
 
-    def __init__(self, d_input=constants.DEFAULT_DIMENSION_OF_MODEL, d_layer=constants.DEFAULT_DIMENSION_OF_PWFC_HIDDEN_LAYER, dropout=constants.DEFAULT_MODEL_DROPOUT, use_conv = False) -> None:
+    def __init__(self,
+                d_input=constants.DEFAULT_DIMENSION_OF_MODEL,
+                d_layer=constants.DEFAULT_DIMENSION_OF_PWFC_HIDDEN_LAYER,
+                dropout=constants.DEFAULT_MODEL_DROPOUT,
+                use_conv = False) -> None:
         super(PointWiseFCLayer, self).__init__()
 
         self.d_input = d_input
         self.d_layer = d_layer
         self.p_dropout = dropout
+        self.layer_norm = LayerNorm(d_input)
 
         if use_conv:
             self.w_1 = nn.Conv1d(d_input, d_layer, 1) 
@@ -32,8 +37,10 @@ class PointWiseFCLayer(nn.Module):
         self.dropout = nn.Dropout(self.p_dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        residual = x
         result = self.w_2(F.relu(self.w_1(x)))
-        result = self.dropout(x)
+        result = self.dropout(result)
+        result = self.layer_norm(result + residual)
         return result
 
     def __str__(self):

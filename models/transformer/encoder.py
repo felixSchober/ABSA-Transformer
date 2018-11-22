@@ -32,24 +32,21 @@ class Encoder(nn.Module):
         self.value_dimension = value_dimension
 
         self._initialize_encoder_blocks()
+        self.layer_norm = LayerNorm(model_size)
         
 
     def _initialize_encoder_blocks(self):
         for _ in range(self.num_encoder_blocks):
             self.encoder_blocks.append(EncoderBlock(self.dropout_rate, self.pointwise_layer_size, self.model_size, self.key_query_dimension, self.value_dimension, self.num_attention_heads))
 
-    def forward(self, x):
-
-        # create word embedding
-        # TODO:
-        w_emb = x
+    def forward(self, x, mask=None):
 
         # create position embedding
         encoder_output = self.positional_encoding(x)
 
         # apply the forward pass for each encoding sub layer
         for enc_sub_layer in self.encoder_blocks:
-            encoder_output = enc_sub_layer(encoder_output)
+            encoder_output = enc_sub_layer(encoder_output, mask)
 
         return encoder_output
 
@@ -70,7 +67,13 @@ class Encoder(nn.Module):
         
 class EncoderBlock(nn.Module):
 
-    def __init__(self, dropout_rate, pointwise_layer_size, model_size, key_query_dimension, value_dimension, num_heads):
+    def __init__(self,
+                dropout_rate,
+                pointwise_layer_size,
+                model_size,
+                key_query_dimension,
+                value_dimension,
+                num_heads):
         """
         """
         super(EncoderBlock, self).__init__()
@@ -85,7 +88,7 @@ class EncoderBlock(nn.Module):
         self.feed_forward_layer = PointWiseFCLayer(model_size, pointwise_layer_size, dropout=self.dropout_rate)
         self.layer_norm = LayerNorm(model_size)
 
-    def forward(self, x):
+    def forward(self, x, mask=None):
         """Applies the forward pass on a transformer encoder layer.
         First, the input is put through the multi head attention.
         The result and the input are than added and normalized.
@@ -94,14 +97,14 @@ class EncoderBlock(nn.Module):
 
         The output dimension is d_model = 512
         """
-        residual = x
-        attentionResult = self.self_attention_layer(x, x, x)
-        attentionResult = self.layer_norm.forward(attentionResult + residual)
+        # residual = x
+        attentionResult = self.self_attention_layer(x, x, x, mask)
+        # attentionResult = self.layer_norm.forward(attentionResult + residual)
 
-        residual = attentionResult
+        # residual = attentionResult
 
         fcResult = self.feed_forward_layer.forward(attentionResult)
-        fcResult = self.layer_norm.forward(fcResult + residual)
+        # fcResult = self.layer_norm.forward(fcResult + residual)
 
         return fcResult
         
