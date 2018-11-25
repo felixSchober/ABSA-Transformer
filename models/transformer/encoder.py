@@ -10,34 +10,34 @@ from layers import *
 class Encoder(nn.Module):
 
     def __init__(self,
-                num_encoder_blocks=constants.DEFAULT_ENCODER_BLOCKS,
-                num_attention_heads=constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS,
-                model_size=constants.DEFAULT_LAYER_SIZE,
+                n_enc_blocks=constants.DEFAULT_ENCODER_BLOCKS,
+                n_head=constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS,
+                d_model=constants.DEFAULT_LAYER_SIZE,
                 dropout_rate=constants.DEFAULT_MODEL_DROPOUT,
                 pointwise_layer_size=constants.DEFAULT_DIMENSION_OF_PWFC_HIDDEN_LAYER,
-                key_query_dimension=constants.DEFAULT_DIMENSION_OF_KEYQUERY_WEIGHTS,
-                value_dimension=constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS):
+                d_k=constants.DEFAULT_DIMENSION_OF_KEYQUERY_WEIGHTS,
+                d_v=constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS):
         """
         """
         super(Encoder, self).__init__()
 
-        self.positional_encoding = PositionalEncoding(model_size)
-        self.num_attention_heads = num_attention_heads
+        self.positional_encoding = PositionalEncoding(d_model)
+        self.n_head = n_head
         self.encoder_blocks = []
-        self.num_encoder_blocks = num_encoder_blocks
-        self.model_size = model_size
+        self.n_enc_blocks = n_enc_blocks
+        self.d_model = d_model
         self.dropout_rate = dropout_rate
         self.pointwise_layer_size = pointwise_layer_size
-        self.key_query_dimension = key_query_dimension
-        self.value_dimension = value_dimension
+        self.d_k = d_k
+        self.d_v = d_v
 
         self._initialize_encoder_blocks()
-        self.layer_norm = LayerNorm(model_size)
+        self.layer_norm = LayerNorm(d_model)
         
 
     def _initialize_encoder_blocks(self):
-        for _ in range(self.num_encoder_blocks):
-            self.encoder_blocks.append(EncoderBlock(self.dropout_rate, self.pointwise_layer_size, self.model_size, self.key_query_dimension, self.value_dimension, self.num_attention_heads))
+        for _ in range(self.n_enc_blocks):
+            self.encoder_blocks.append(EncoderBlock(self.dropout_rate, self.pointwise_layer_size, self.d_model, self.d_k, self.d_v, self.n_head))
 
     def forward(self, x, mask=None):
 
@@ -61,7 +61,7 @@ class Encoder(nn.Module):
         return self.__class__.__name__ + "\Parameters\n" + self._get_parameters("")
 
     def _get_parameters(self, indentation: str) -> str:
-        result = indentation + "\t# Blocks: {0}".format(self.num_encoder_blocks)
+        result = indentation + "\t# Blocks: {0}".format(self.n_enc_blocks)
         return result
 
         
@@ -70,9 +70,9 @@ class EncoderBlock(nn.Module):
     def __init__(self,
                 dropout_rate,
                 pointwise_layer_size,
-                model_size,
-                key_query_dimension,
-                value_dimension,
+                d_model,
+                d_k,
+                d_v,
                 num_heads):
         """
         """
@@ -80,13 +80,13 @@ class EncoderBlock(nn.Module):
 
         self.dropout_rate = dropout_rate
         self.pointwise_layer_size = pointwise_layer_size
-        self.model_size = model_size
-        self.key_query_dimension = key_query_dimension
-        self.value_dimension = value_dimension
+        self.d_model = d_model
+        self.d_k = d_k
+        self.d_v = d_v
         self.num_heads = num_heads
-        self.self_attention_layer = MultiHeadedSelfAttentionLayer(key_query_dimension, value_dimension, model_size, num_heads, dropout_rate)
-        self.feed_forward_layer = PointWiseFCLayer(model_size, pointwise_layer_size, dropout=self.dropout_rate)
-        self.layer_norm = LayerNorm(model_size)
+        self.self_attention_layer = MultiHeadedSelfAttentionLayer(d_k, d_v, d_model, num_heads, dropout_rate)
+        self.feed_forward_layer = PointWiseFCLayer(d_model, pointwise_layer_size, dropout=self.dropout_rate)
+        self.layer_norm = LayerNorm(d_model)
 
     def forward(self, x, mask=None):
         """Applies the forward pass on a transformer encoder layer.
@@ -112,7 +112,7 @@ class EncoderBlock(nn.Module):
         return self.__class__.__name__
 
     def _get_parameters(self, indentation: str) -> str:
-        result = indentation + "\tModel Size: {0}".format(self.model_size)
+        result = indentation + "\tModel Size: {0}".format(self.d_model)
         return result
 
     def print_model_graph(self, indentation: str) -> str:

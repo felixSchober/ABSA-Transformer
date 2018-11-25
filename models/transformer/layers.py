@@ -146,9 +146,9 @@ class ScaledDotProductAttentionLayer(nn.Module):
         """Calculates attention for multiple heads.
         This method is the 'Scaled Dot-Product Attention mechanism from the paper.
         Corresponds to Figure 2 left
-        w_query: query matrix                                       [d_k, embedding_size, h]       (64, 512, 8)
-        w_key: key matrix                                           [d_k, embedding_size, h]       (64, 512, 8)
-        w_value: value matrix                                       [d_v, embedding_size, h]       (64, 512, 8)
+        w_query: query matrix                                       [d_k, embedding_size, n_head]       (64, 512, 8)
+        w_key: key matrix                                           [d_k, embedding_size, n_head]       (64, 512, 8)
+        w_value: value matrix                                       [d_v, embedding_size, n_head]       (64, 512, 8)
         mask: mask to prevent leftward information flow             [num_words, num_words]         (n, n)
         dropout: dropout layer
         eps: epsilon value
@@ -165,7 +165,7 @@ class ScaledDotProductAttentionLayer(nn.Module):
 
         #           Divide by the square root of the query/key/value matrix sizes (default 8)
         # bmm = batch matrix multiplication
-        scores = torch.bmm(w_query, w_key.permute(0, 2, 1)) / self.gradientStabilizer   # [num_words, num_words, h]       
+        scores = torch.bmm(w_query, w_key.permute(0, 2, 1)) / self.gradientStabilizer   # [num_words, num_words, n_head]       
 
         # Step 3:   To prevent leftward information flow, we need to mask out words that the attention
         #           head is not 'allowed' to see
@@ -174,7 +174,7 @@ class ScaledDotProductAttentionLayer(nn.Module):
 
         # Step 4:   Create softmax of scores
         # TODO: check dimension
-        attention = F.softmax(scores, dim=-1)  # [num_words, num_words, h]     
+        attention = F.softmax(scores, dim=-1)  # [num_words, num_words, n_head]     
         
         if dropout is not None:
             attention = dropout(attention)
@@ -205,31 +205,31 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
                 d_k=constants.DEFAULT_DIMENSION_OF_KEYQUERY_WEIGHTS,
                 d_v=constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS,
                 d_model=constants.DEFAULT_DIMENSION_OF_MODEL,
-                h=constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS,
+                n_head=constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS,
                 dropout_rate=constants.DEFAULT_MODEL_DROPOUT,
                 use_linear=True) -> None:
         """
         d_k: dimensionality of the query and key vectors
         d_v: dimensionality of the value vector
-        h: number of attention heads
+        n_head: number of attention heads
         """
         super(MultiHeadedSelfAttentionLayer, self).__init__()
 
-        assert d_model % h == 0
-        assert d_k * h == d_model
+        assert d_model % n_head == 0
+        assert d_k * n_head == d_model
 
         self.d_model = d_model
         self.d_k = d_k
         self.d_v = d_v
-        self.h = h
+        self.n_head = n_head
 
         # query, key, value projections
         # those matrices are used to transform the query, key and value matrix for each attention head
         # During forward pass these projection matrices are split so that they can be applied for each head
         # in the paper they are called W^Q, W^k and W^V
-        self.query_projections = nn.Sequential(nn.Linear(self.d_model, self.d_k * self.h), nn.ReLU())
-        self.key_projections = nn.Sequential(nn.Linear(self.d_model, self.d_k * self.h), nn.ReLU())
-        self.value_projections = nn.Sequential(nn.Linear(self.d_model, self.d_v * self.h), nn.ReLU())
+        self.query_projections = nn.Sequential(nn.Linear(self.d_model, self.d_k * self.n_head), nn.ReLU())
+        self.key_projections = nn.Sequential(nn.Linear(self.d_model, self.d_k * self.n_head), nn.ReLU())
+        self.value_projections = nn.Sequential(nn.Linear(self.d_model, self.d_v * self.n_head), nn.ReLU())
 
         # one 'attention_layer' is sufficient even if the model uses multiple heads since the layer
         # only performs a forward pass without any learned parameters
@@ -242,7 +242,7 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         # The input of this layer is the output of the forward pass of head attention head, multiplied by the number of heads
         # The output should be the model dimension again, so that the input dimension of the layer 
         # input_MultiHeadedSelfAttentionLayer = output_MultiHeadedSelfAttentionLayer
-        self.w_0 = nn.Sequential(nn.Linear(self.h * self.d_v, self.d_model), nn.ReLU())
+        self.w_0 = nn.Sequential(nn.Linear(self.n_head * self.d_v, self.d_model), nn.ReLU())
         
         if dropout_rate is not None:
             self.dropout = nn.Dropout(dropout_rate)
@@ -262,16 +262,16 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
 
     def forward(self, x_queries: torch.Tensor, x_keys: torch.Tensor, x_values: torch.Tensor, mask: torch.Tensor=None) -> torch.Tensor:
         """
-        x_queries: [embedding_size, num_words, model_size] (100, 10, 512)
+        x_queries: [embedding_size, num_words, d_model] (100, 10, 512)
         """
 
         # residual used as depicted in fig. 1
         residual = x_queries
 
         # project key, query, value for each head using the linear layers
-        Q = self.query_projections(x_queries)       # [embedding_size, num_words, model_size]
-        K = self.key_projections(x_keys)            # [embedding_size, num_words, model_size]
-        V = self.value_projections(x_values)        # [embedding_size, num_words, model_size]
+        Q = self.query_projections(x_queries)       # [embedding_size, num_words, d_model]
+        K = self.key_projections(x_keys)            # [embedding_size, num_words, d_model]
+        V = self.value_projections(x_values)        # [embedding_size, num_words, d_model]
 
         # split to head input dimensions
         # TODO: check dimensions
@@ -279,9 +279,9 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         _, len_k, _ = x_keys.size()                 
         _, len_v, _ = x_values.size()
 
-        Q = Q.view(sz_b, len_q, self.h, self.d_k)   # [embedding_size, num_words, num_heads, d_k]
-        K = K.view(sz_b, len_k, self.h, self.d_k)   # [embedding_size, num_words, num_heads, d_k]
-        V = V.view(sz_b, len_v, self.h, self.d_v)   # [embedding_size, num_words, num_heads, d_v]
+        Q = Q.view(sz_b, len_q, self.n_head, self.d_k)   # [embedding_size, num_words, num_heads, d_k]
+        K = K.view(sz_b, len_k, self.n_head, self.d_k)   # [embedding_size, num_words, num_heads, d_k]
+        V = V.view(sz_b, len_v, self.n_head, self.d_v)   # [embedding_size, num_words, num_heads, d_v]
 
         # Transform Q, K and V so that the head-dimension is merged with the embedding_size 
         # [embedding_size, num_words, num_heads, d_k] -> [embedding_size * num_heads, num_words, d_k]
@@ -291,14 +291,14 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
 
         # apply mask
         if mask is not None:
-            mask = mask.repeat(self.h, 1, 1)
+            mask = mask.repeat(self.n_head, 1, 1)
 
         # perform forward pass of individual heads
         result = self.attention_layer(Q, K, V, mask=mask)
 
         # prepare for merge by concatenating heads
         # TODO: check
-        result = result.view(self.h, sz_b, len_q, self.d_v)
+        result = result.view(self.n_head, sz_b, len_q, self.d_v)
         result = result.permute(1, 2, 0, 3).contiguous().view(sz_b, len_q, -1) # b x lq x (n*dv)
 
         result = self.w_0(result)
@@ -316,7 +316,7 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
 
     def _get_parameters(self, indentation: str) -> str:
         result = indentation + "\tModel Size: {0}\n".format(self.d_model)
-        result += indentation + "\t# Heads: {0}\n".format(self.h)
+        result += indentation + "\t# Heads: {0}\n".format(self.n_head)
         result += indentation + "\tValue Size: {0}\n".format(self.d_v)
         return result
 
