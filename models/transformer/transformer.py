@@ -78,7 +78,7 @@ class GoogleTransformer(nn.Module):
         decodingResult = self.decode(encodingResult, source_mask, target_mask, targets)
 
         # project to final vocabulary size
-        result = self.decoder_to_tgt_vocabulary(decodingResult)
+        result = self.decoder_to_tgt_vocabulary(decodingResult) # result now has size [batch_size, longest_sequence_lenght, vocabulary_size]
 
         # TODO: what does this do
         return result.view(-1, result.size(2))
@@ -132,9 +132,9 @@ if __name__ == '__main__':
     num_units = 512
     torch.manual_seed(42)
     # 10 words with a 100-lenght embedding
-    transformer = GoogleTransformer(True, 2, 2, 512, 2, 2, 512, 0.1)
+    transformer = GoogleTransformer(True, 3, 3, 512, 2, 2, 512, 0.1)
 
-    input_idices = [[0, 1], [1, 0]]
+    input_idices = [[0, 1, 0, 0], [1, 0, 1, 1]]
     inputs = Variable(torch.tensor(input_idices, dtype=torch.long))
     targets = inputs.clone()
     result = transformer.forward(inputs, targets, None, None)

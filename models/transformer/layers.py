@@ -97,10 +97,10 @@ class ScaledDotProductAttentionLayer(nn.Module):
         """Calculates attention for one head.
         This method is the 'Scaled Dot-Product Attention mechanism from the paper.
         Corresponds to Figure 2 left
-        x: input sentence (list of word embeddings of sentence)     [embedding_size, num_words] (512, n)
-        w_query: query matrix                                       [d_k, embedding_size]       (64, 512)
-        w_key: key matrix                                           [d_k, embedding_size]       (64, 512)
-        w_value: value matrix                                       [d_v, embedding_size]       (64, 512)
+        x: input sentence (list of word embeddings of sentence)     [batch_size, num_words] (512, n)
+        w_query: query matrix                                       [d_k, batch_size]       (64, 512)
+        w_key: key matrix                                           [d_k, batch_size]       (64, 512)
+        w_value: value matrix                                       [d_v, batch_size]       (64, 512)
         mask: mask to prevent leftward information flow             [num_words, num_words]      (n, n)
         dropout: dropout layer
         eps: epsilon value
@@ -146,9 +146,9 @@ class ScaledDotProductAttentionLayer(nn.Module):
         """Calculates attention for multiple heads.
         This method is the 'Scaled Dot-Product Attention mechanism from the paper.
         Corresponds to Figure 2 left
-        w_query: query matrix                                       [d_k, embedding_size, n_head]       (64, 512, 8)
-        w_key: key matrix                                           [d_k, embedding_size, n_head]       (64, 512, 8)
-        w_value: value matrix                                       [d_v, embedding_size, n_head]       (64, 512, 8)
+        w_query: query matrix                                       [d_k, batch_size, n_head]       (64, 512, 8)
+        w_key: key matrix                                           [d_k, batch_size, n_head]       (64, 512, 8)
+        w_value: value matrix                                       [d_v, batch_size, n_head]       (64, 512, 8)
         mask: mask to prevent leftward information flow             [num_words, num_words]         (n, n)
         dropout: dropout layer
         eps: epsilon value
@@ -227,9 +227,11 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         # those matrices are used to transform the query, key and value matrix for each attention head
         # During forward pass these projection matrices are split so that they can be applied for each head
         # in the paper they are called W^Q, W^k and W^V
-        self.query_projections = nn.Sequential(nn.Linear(self.d_model, self.d_k * self.n_head), nn.ReLU())
-        self.key_projections = nn.Sequential(nn.Linear(self.d_model, self.d_k * self.n_head), nn.ReLU())
-        self.value_projections = nn.Sequential(nn.Linear(self.d_model, self.d_v * self.n_head), nn.ReLU())
+        # the projections do not use a non-linearity or bias
+        # TODO: Check against other implementations
+        self.query_projections = nn.Sequential(nn.Linear(self.d_model, self.d_k * self.n_head, bias=False))
+        self.key_projections = nn.Sequential(nn.Linear(self.d_model, self.d_k * self.n_head, bias=False))
+        self.value_projections = nn.Sequential(nn.Linear(self.d_model, self.d_v * self.n_head, bias=False))
 
         # one 'attention_layer' is sufficient even if the model uses multiple heads since the layer
         # only performs a forward pass without any learned parameters
@@ -242,7 +244,7 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         # The input of this layer is the output of the forward pass of head attention head, multiplied by the number of heads
         # The output should be the model dimension again, so that the input dimension of the layer 
         # input_MultiHeadedSelfAttentionLayer = output_MultiHeadedSelfAttentionLayer
-        self.w_0 = nn.Sequential(nn.Linear(self.n_head * self.d_v, self.d_model), nn.ReLU())
+        self.w_0 = nn.Sequential(nn.Linear(self.n_head * self.d_v, self.d_model, bias=False))
         
         if dropout_rate is not None:
             self.dropout = nn.Dropout(dropout_rate)
@@ -260,31 +262,34 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
 
         nn.init.xavier_normal_(self.w_0._modules['0'].weight)
 
+    def _split_heads(self, s):
+        None
+
     def forward(self, x_queries: torch.Tensor, x_keys: torch.Tensor, x_values: torch.Tensor, mask: torch.Tensor=None) -> torch.Tensor:
         """
-        x_queries: [embedding_size, num_words, d_model] (100, 10, 512)
+        x_queries: [batch_size, num_words, d_model] (100, 10, 512)
         """
 
         # residual used as depicted in fig. 1
         residual = x_queries
 
         # project key, query, value for each head using the linear layers
-        Q = self.query_projections(x_queries)       # [embedding_size, num_words, d_model]
-        K = self.key_projections(x_keys)            # [embedding_size, num_words, d_model]
-        V = self.value_projections(x_values)        # [embedding_size, num_words, d_model]
+        Q = self.query_projections(x_queries)       # [batch_size, num_words, d_model]
+        K = self.key_projections(x_keys)            # [batch_size, num_words, d_model]
+        V = self.value_projections(x_values)        # [batch_size, num_words, d_model]
 
         # split to head input dimensions
         # TODO: check dimensions
-        sz_b, len_q, _ = x_queries.size()           # (embedding_size, num_words)
+        batch_size, len_q, _ = x_queries.size()           # (batch_size, num_words)
         _, len_k, _ = x_keys.size()                 
         _, len_v, _ = x_values.size()
 
-        Q = Q.view(sz_b, len_q, self.n_head, self.d_k)   # [embedding_size, num_words, num_heads, d_k]
-        K = K.view(sz_b, len_k, self.n_head, self.d_k)   # [embedding_size, num_words, num_heads, d_k]
-        V = V.view(sz_b, len_v, self.n_head, self.d_v)   # [embedding_size, num_words, num_heads, d_v]
+        Q = Q.view(batch_size, len_q, self.n_head, self.d_k)   # [batch_size, num_words, num_heads, d_k]
+        K = K.view(batch_size, len_k, self.n_head, self.d_k)   # [batch_size, num_words, num_heads, d_k]
+        V = V.view(batch_size, len_v, self.n_head, self.d_v)   # [batch_size, num_words, num_heads, d_v]
 
-        # Transform Q, K and V so that the head-dimension is merged with the embedding_size 
-        # [embedding_size, num_words, num_heads, d_k] -> [embedding_size * num_heads, num_words, d_k]
+        # Transform Q, K and V so that the head-dimension is merged with the batch_size 
+        # [batch_size, num_words, num_heads, d_k] -> [batch_size * num_heads, num_words, d_k]
         Q = Q.permute(2, 0, 1, 3).contiguous().view(-1, len_q, self.d_k) # (n*b) x lq x dk
         K = K.permute(2, 0, 1, 3).contiguous().view(-1, len_k, self.d_k) # (n*b) x lk x dk
         V = V.permute(2, 0, 1, 3).contiguous().view(-1, len_v, self.d_v) # (n*b) x lv x dv
@@ -298,8 +303,8 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
 
         # prepare for merge by concatenating heads
         # TODO: check
-        result = result.view(self.n_head, sz_b, len_q, self.d_v)
-        result = result.permute(1, 2, 0, 3).contiguous().view(sz_b, len_q, -1) # b x lq x (n*dv)
+        result = result.view(self.n_head, batch_size, len_q, self.d_v)
+        result = result.permute(1, 2, 0, 3).contiguous().view(batch_size, len_q, -1) # b x lq x (n*dv)
 
         result = self.w_0(result)
 
