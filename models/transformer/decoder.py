@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from layers import *
-import constants
+from models.transformer.layers import *
+import models.transformer.constants as constants
 
 class Decoder(nn.Module):
     """Some Information about Decoder"""

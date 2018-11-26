@@ -4,8 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-import constants
-from layers import *
+import models.transformer.constants as constants
+from models.transformer.layers import *
 
 class Encoder(nn.Module):
 

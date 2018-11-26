@@ -6,7 +6,7 @@ from torch.autograd import *
 import numpy as np
 import copy
 
-import constants
+import models.transformer.constants as constants
 
 def clone_layer(layer: nn.Module, N: int):
     """Produces N identitcal layers
