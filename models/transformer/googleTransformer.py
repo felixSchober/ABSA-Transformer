@@ -1,4 +1,3 @@
-import math
 import logging
 import torch
 import torch.nn as nn
@@ -6,8 +5,8 @@ import torch.nn.functional as F
 from torch.autograd import *
 
 import models.transformer.constants as constants
-from models.transformer.encoder import Encoder
-from models.transformer.decoder import Decoder
+from models.transformer.encoder import TransformerEncoder
+from models.transformer.decoder import TransformerDecoder
 
 class GoogleTransformer(nn.Module):
 
@@ -19,7 +18,7 @@ class GoogleTransformer(nn.Module):
         self.logger_prediction = logging.getLogger('prediction')
 
     def __init__(self,
-                initialize_xavier,
+                initialize_xavier: bool,
                 src_vocab_size: int,
                 tgt_vocab_size: int,
                 src_embedding: nn.Embedding,
@@ -58,45 +57,29 @@ class GoogleTransformer(nn.Module):
 
         self._init_loggers()
 
-        self.encoder = Encoder()
-        self.decoder = Decoder()
+        self.encoder = TransformerEncoder(src_embedding)
+        self.decoder = TransformerDecoder(tgt_embedding)
 
         # generate a last layer that projects from the last output of the decoder layer
         # with size d_model to the size of the target vocabulary
         self.decoder_to_tgt_vocabulary = nn.Linear(d_model, tgt_vocab_size, bias=False)
 
-        # initialize embeddings if necessary
-        if src_embedding is None or tgt_embedding is None:
-            self.source_embeddings = Embeddings(d_model, src_vocab_size)
-            self.target_embeddings = Embeddings(d_model, tgt_vocab_size)
-            self.generator = TransformerTargetGenerator(d_model, src_vocab_size)
-        else:
-            self.source_embeddings = src_embedding
-            self.target_embeddings = tgt_embedding
+        self.generator = TransformerTargetGenerator(d_model, src_vocab_size)
 
-        if (initialize_xavier):
+        if initialize_xavier:
             for p in self.parameters():
                 if p.dim() > 1:
                     nn.init.xavier_uniform_(p)
 
     def forward(self, source: torch.Tensor, targets: torch.Tensor, source_mask: torch.Tensor, target_mask: torch.Tensor) -> torch.Tensor:
-        encodingResult = self.encode(source, source_mask)
-        decodingResult = self.decode(encodingResult, source_mask, target_mask, targets)
+        encoding_result = self.encoder(source, source_mask)
+        decoding_result = self.decoder(targets, encoding_result, source_mask, target_mask)
 
         # project to final vocabulary size
-        result = self.decoder_to_tgt_vocabulary(decodingResult) # result now has size [batch_size, longest_sequence_lenght, vocabulary_size]
+        result = self.decoder_to_tgt_vocabulary(decoding_result) # result now has size [batch_size, longest_sequence_lenght, vocabulary_size]
 
         # TODO: what does this do
         return result.view(-1, result.size(2))
-
-    def encode(self, x: torch.Tensor, source_mask: torch.Tensor) -> torch.Tensor:
-        input_embeddings = self.source_embeddings(x)
-        return self.encoder.forward(input_embeddings, source_mask)
-
-    def decode(self, encodings: torch.Tensor, source_mask: torch.Tensor, target_mask, targets: torch.Tensor) -> torch.Tensor:
-        target_embeddings = self.target_embeddings(targets)
-        results = self.decoder(target_embeddings, encodings, source_mask, target_mask)
-        return results
 
 
 class TransformerTargetGenerator(nn.Module):
@@ -120,18 +103,6 @@ class TransformerTargetGenerator(nn.Module):
     def __str__(self) -> str:
         return self.__class__.__name__
 
-class Embeddings(nn.Module):
-    """Some Information about Embeddings"""
-    def __init__(self, d_model: int, vocabulary_size: int):
-        super(Embeddings, self).__init__()
-        self.d_model = d_model
-        self.vocabulary_size = vocabulary_size
-
-        self.embedding_projection = nn.Embedding(vocabulary_size, d_model)
-
-    def forward(self, x):
-        return self.embedding_projection(x) * math.sqrt(self.d_model)
-
 
 # testing transformer model forward pass
 if __name__ == '__main__':
@@ -141,7 +112,7 @@ if __name__ == '__main__':
     transformer = GoogleTransformer(True, 3, 3, 512, 2, 2, 512, 0.1)
 
     input_idices = [[0, 1, 0, 0], [1, 0, 1, 1]]
-    inputs = Variable(torch.tensor(input_idices, dtype=torch.long))
+    inputs = Variable(torch.Tensor(input_idices, dtype=torch.long))
     targets = inputs.clone()
     result = transformer.forward(inputs, targets, None, None)
     print(result)

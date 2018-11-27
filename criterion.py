@@ -25,9 +25,13 @@ class NllLoss(nn.Module):
         super().__init__()
         self.output_size = output_size
 
+    def _transform_logits(self, logits: torch.Tensor) -> torch.Tensor:
+        return logits.view(-1, self.output_size)
+
     def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-        log_probs = F.log_softmax(logits, -1)
-        return F.nll_loss(log_probs.view(-1, self.output_size), targets.view(-1))
+        logits = self._transform_logits(logits)
+        targets = targets.view(-1)
+        return F.nll_loss(logits, targets)
     
 
 

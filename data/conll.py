@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import *
+
 import torchtext
 from torchtext import data
 from torchtext.datasets import SequenceTaggingDataset, CoNLL2000Chunking
@@ -8,6 +10,8 @@ from torchtext.vocab import Vectors, GloVe, CharNGram
 import numpy as np
 import random
 import logging
+
+from data.data_loader import get_embedding
 
 logger = logging.getLogger(__name__)
 
@@ -84,9 +88,15 @@ def conll2003_dataset(tag_type, batch_size, root='./conll2003',
                             (train, val, test), batch_size=batch_size, 
                             device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
     train_iter.repeat = False
+
+    # add embeddings
+    embedding_size = inputs_word.vocab.vectors.shape[1]
+    source_embedding = get_embedding(inputs_word.vocab, embedding_size)
     
     return {
         'task': 'conll2003.%s'%tag_type,
         'iters': (train_iter, val_iter, test_iter), 
-        'vocabs': (inputs_word.vocab, inputs_char.vocab, labels.vocab) 
+        'vocabs': (inputs_word.vocab, inputs_char.vocab, labels.vocab) ,
+        'embeddings': (source_embedding, None),
+        'dummy_input': Variable(torch.zeros((batch_size, embedding_size), dtype=torch.long))
         }

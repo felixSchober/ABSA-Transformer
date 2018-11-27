@@ -373,9 +373,10 @@ class PositionalEncoding(nn.Module):
 
         # First part of the PE function: sin and cos argument
         position_ind = Variable(torch.unsqueeze(torch.arange(0, T), 0).repeat(N, 1).long())
-        position_enc = torch.Tensor([
+        encoding = [
             [pos / np.power(10000, 2. * i / self.num_units) for i in range(self.num_units)]
-            for pos in range(T)])
+            for pos in range(T)]
+        position_enc = torch.Tensor(encoding)
 
         # Second part, apply the cosine to even columns and sin to odds.
         position_enc[:, 0::2] = torch.sin(position_enc[:, 0::2])  # dim 2i

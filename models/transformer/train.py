@@ -2,11 +2,11 @@ import os
 import logging
 from tensorboardX import SummaryWriter
 import time
-from misc import utils
 import os
 import shutil
+from typing import Tuple
 
-from misc.utils import set_seeds
+from misc.utils import set_seeds, torch_summarize
 from misc.hyperparameters import HyperParameters
 
 import torch
@@ -26,17 +26,20 @@ class Trainer(object):
                 loss: nn.Module,
                 optimizer: torch.optim.Optimizer,
                 parameters: HyperParameters,
-                data_iterator: torchtext.data.Iterator,
+                data_iterators: Tuple[torchtext.data.Iterator, torchtext.data.Iterator, torchtext.data.Iterator],
                 early_stopping: int,
                 experiment_name: str,
                 seed: int = 42,
-                enable_tensorboard: bool=True):
+                enable_tensorboard: bool=True,
+                dummy_input: torch.Tensor=None):
 
         self.model = model
         self.loss = loss
         self.optimizer = optimizer
         self.parameters = parameters
-        self.data_iterator = data_iterator
+
+        assert len(data_iterators) == 3
+        self.train_iterator, self.valid_iterator, self.test_iterator = data_iterators
         self.experiment_name = experiment_name
         self.early_stopping = early_stopping
 
@@ -56,11 +59,12 @@ class Trainer(object):
         model_summary = torch_summarize(self.model)
 
         if enable_tensorboard:
+            assert dummy_input is not None
             self.tb_writer = SummaryWriter(comment=self.experiment_name)
 
             # for now until add graph works (needs pytorch version >= 0.4) add the model description as text
             self.tb_writer.add_text('model', model_summary, 0)
-            self.tb_writer.add_graph(self.model, verbose=True)
+            self.tb_writer.add_graph(self.model, dummy_input, verbose=True)
 
         # TODO: initialize the rest of the trainings parameters
         # https://github.com/kolloldas/torchnlp/blob/master/torchnlp/common/train.py
@@ -86,7 +90,6 @@ class Trainer(object):
 
         self._reset_histories()
 
-
     def _step(self, input: torch.Tensor, target: torch.Tensor):
         """
         Make a single gradient update. This is called by train() and should not
@@ -98,7 +101,7 @@ class Trainer(object):
 
         # Compute loss and gradient
         # TODO: Provide masks
-        output = self.model(input, target, None, None)
+        output = self.model(input, None)
 
         loss = self.loss(output, target)
 
@@ -113,7 +116,6 @@ class Trainer(object):
         #TODO: 
         return 0
 
-
     def train(self, num_epochs: int, should_use_cuda: bool=False):
         # TODO: Support for early stopping
         set_seeds(self.seed)
@@ -125,12 +127,12 @@ class Trainer(object):
         for epoch in range(num_epochs):
 
             # Set up the batch generator for a new epoch
-            self.data_iterator.init_epoch()
+            self.train_iterator.init_epoch()
             self.epoch = epoch
 
             interation = 0
             # loop iterations
-            for batch in tqdm(self.data_iterator, leave=False):
+            for batch in tqdm(self.train_iterator, leave=False): # batch is torchtext.data.batch.Batch
 
                 if not continue_training:
                     break
@@ -140,7 +142,9 @@ class Trainer(object):
                 # Sets the module in training mode
                 self.model.train()
 
-                self._step(batch, batch)
+                x, y = batch.inputs_word, batch.labels
+
+                self._step(x, y)
 
             # at the end of each epoch, check the accuracies
             val_acc = self._check_accuracies()

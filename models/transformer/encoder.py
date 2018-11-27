@@ -6,10 +6,13 @@ import torch.nn.functional as F
 import numpy as np
 import models.transformer.constants as constants
 from models.transformer.layers import *
+from models.transformer.embeddings import Embeddings
 
-class Encoder(nn.Module):
+class TransformerEncoder(nn.Module):
 
     def __init__(self,
+                src_embeddings: nn.Embedding,
+                d_vocab: int = None,
                 n_enc_blocks=constants.DEFAULT_ENCODER_BLOCKS,
                 n_head=constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS,
                 d_model=constants.DEFAULT_LAYER_SIZE,
@@ -17,9 +20,29 @@ class Encoder(nn.Module):
                 pointwise_layer_size=constants.DEFAULT_DIMENSION_OF_PWFC_HIDDEN_LAYER,
                 d_k=constants.DEFAULT_DIMENSION_OF_KEYQUERY_WEIGHTS,
                 d_v=constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS):
+        """Constructor for the tranformer encoder
+        
+        Arguments:
+            src_embeddings {nn.Embedding} -- Embedding for the input. If None an untrained embedding will be generated
+        
+        Keyword Arguments:
+            d_vocab {int} -- Size of source vocabulary. Not neeeded if src_embeddings is set. (default: {None})
+            n_enc_blocks {int} -- number of encoder blocks (default: {constants.DEFAULT_ENCODER_BLOCKS})
+            n_head {int} -- number of heads (default: {constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS})
+            d_model {int} -- size of model (default: {constants.DEFAULT_LAYER_SIZE})
+            dropout_rate {float} -- dropout rate (default: {constants.DEFAULT_MODEL_DROPOUT})
+            pointwise_layer_size {int} -- size of pointwise layer (default: {constants.DEFAULT_DIMENSION_OF_PWFC_HIDDEN_LAYER})
+            d_k {int} -- size of key / query vector needed for attention (default: {constants.DEFAULT_DIMENSION_OF_KEYQUERY_WEIGHTS})
+            d_v {int} -- size of value vector needeed for attention (default: {constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS})
         """
-        """
-        super(Encoder, self).__init__()
+
+        super(TransformerEncoder, self).__init__()
+
+        if src_embeddings is None:
+            assert d_vocab is not None
+            self.src_embeddings = Embeddings(d_model, d_vocab)
+        else:
+            self.src_embeddings = src_embeddings
 
         self.positional_encoding = PositionalEncoding(d_model)
         self.n_head = n_head
@@ -39,7 +62,9 @@ class Encoder(nn.Module):
         for _ in range(self.n_enc_blocks):
             self.encoder_blocks.append(EncoderBlock(self.dropout_rate, self.pointwise_layer_size, self.d_model, self.d_k, self.d_v, self.n_head))
 
-    def forward(self, x, mask=None):
+    def forward(self, x: torch.Tensor, mask: torch.Tensor=None) -> torch.Tensor:
+
+        x = self.src_embeddings(x)
 
         # create position embedding
         encoder_output = self.positional_encoding(x)
@@ -133,7 +158,7 @@ if __name__ == '__main__':
     inputs = Variable(torch.randn((100, 10)))
 
     # first 'layer'
-    encoder = Encoder(2, 8, num_units, 0.1, 1024, 64, 64)
+    encoder = TransformerEncoder(2, 8, num_units, 0.1, 1024, 64, 64)
     print(encoder.print_model_graph())
     outputs = encoder(inputs)
 
