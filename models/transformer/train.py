@@ -4,11 +4,12 @@ from tensorboardX import SummaryWriter
 import time
 import os
 import shutil
-from typing import Tuple
+from typing import Tuple, List
 
 from misc.utils import set_seeds, torch_summarize
 from misc.hyperparameters import HyperParameters
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -31,7 +32,8 @@ class Trainer(object):
                 experiment_name: str,
                 seed: int = 42,
                 enable_tensorboard: bool=True,
-                dummy_input: torch.Tensor=None):
+                dummy_input: torch.Tensor=None,
+                log_every_xth_iteration=200):
 
         self.model = model
         self.loss = loss
@@ -49,6 +51,7 @@ class Trainer(object):
         self._reset()
         self.seed = seed
         self.enable_tensorboard = enable_tensorboard
+        self.log_every_xth_iteration = log_every_xth_iteration
 
         # this logger will not print to the console. Only to the file.
         self.logger = logging.getLogger(__name__)
@@ -64,7 +67,11 @@ class Trainer(object):
 
             # for now until add graph works (needs pytorch version >= 0.4) add the model description as text
             self.tb_writer.add_text('model', model_summary, 0)
-            self.tb_writer.add_graph(self.model, dummy_input, verbose=True)
+            try:
+                self.tb_writer.add_graph(self.model, dummy_input, verbose=True)
+            except:
+                self.logger.exception('Could not generate graph')
+            self.logger.debug('Graph Saved')
 
         # TODO: initialize the rest of the trainings parameters
         # https://github.com/kolloldas/torchnlp/blob/master/torchnlp/common/train.py
@@ -101,28 +108,81 @@ class Trainer(object):
 
         # Compute loss and gradient
         # TODO: Provide masks
-        output = self.model(input, None)
-
-        loss = self.loss(output, target)
+        loss = self._get_loss(input, None, target)
 
         # preform training step
         loss.backward()
         self.optimizer.step()
 
-        self.train_loss_history.append(loss.data[0])
         return loss
 
-    def _check_accuracies(self) -> int:
-        #TODO: 
-        return 0
+    def _get_loss(self, input: torch.Tensor, source_mask: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        output = self.model(input, source_mask)
+        return self.loss(output, target)
+
+    def _get_mean_loss(self, history: List[float], iteration: int) -> float:
+        losses = np.array(history[iteration - self.log_every_xth_iteration:iteration])
+        return losses.mean()
+
+    def _log_scalar(self, history: List[float], scalar_value:float, scalar_type:str, scalar_name:str, iteration:int) -> None:
+        if history is not None:
+            history.append(scalar_value)
+
+        if self.enable_tensorboard:
+            self.tb_writer.add_scalar('data/{}/{}'.format(scalar_type, scalar_name), scalar_value, iteration)
+
+    def _compute_validation_losses(self) -> float:
+        self.valid_iterator.init_epoch()
+        losses = []
+        for valid_batch in self.valid_iterator:
+            x, y = valid_batch.inputs_word, valid_batch.labels
+            loss = self._get_loss(x, None, y)
+            losses.append(loss.item())
+        return np.array(losses).mean()
+        
+    
+    def evaluate(self, iterator: torchtext.data.Iterator) -> Tuple[float, float]:
+        iterator.init_epoch()
+
+        losses = []
+        accuracies = []
+
+        for batch in iterator:
+            x, y = batch.inputs_word, batch.labels
+            loss = self._get_loss(x, None, y)
+            losses.append(loss.item())
+
+            prediction = self.model.predict(x)
+            accuracies.append(prediction)
+             #TODO: accuracies
+
+        avg_loss = np.array(losses).mean()
+        return (avg_loss, 0.0)
+
+    def _evaluate_and_log_train(self, iteration: int) -> Tuple[float, float, float]:
+        mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
+        self._log_scalar(None, mean_train_loss, 'loss', 'train/mean', iteration)
+
+        # perform validation loss
+        mean_valid_loss, mean_valid_accuracies = self.evaluate(self.valid_iterator)
+        self._log_scalar(self.val_loss_history, mean_valid_loss, 'loss', 'valid/mean', iteration)
+        self._log_scalar(self.val_acc_history, mean_valid_accuracies, 'accuracy', 'valid/mean', iteration)
+        return (mean_train_loss, mean_valid_loss, mean_valid_accuracies)
+
 
     def train(self, num_epochs: int, should_use_cuda: bool=False):
+
+        if should_use_cuda and torch.cuda.is_available():
+            self.model.cuda()
+            self.logger.debug('train with cuda support')
+
         # TODO: Support for early stopping
         set_seeds(self.seed)
         continue_training = True
         start_time = time.time()
         
         self.logger.info('START training.')
+        interation = 0
 
         for epoch in range(num_epochs):
 
@@ -130,7 +190,6 @@ class Trainer(object):
             self.train_iterator.init_epoch()
             self.epoch = epoch
 
-            interation = 0
             # loop iterations
             for batch in tqdm(self.train_iterator, leave=False): # batch is torchtext.data.batch.Batch
 
@@ -144,21 +203,25 @@ class Trainer(object):
 
                 x, y = batch.inputs_word, batch.labels
 
-                self._step(x, y)
+                train_loss = self._step(x, y)
+                self._log_scalar(self.train_loss_history, train_loss.item(), 'loss', 'train', interation)
+
+                if interation % self.log_every_xth_iteration == 0 and interation > 1:
+                    self._evaluate_and_log_train(interation)
 
             # at the end of each epoch, check the accuracies
-            val_acc = self._check_accuracies()
+            _, _, mean_valid_accuracies = self._evaluate_and_log_train(interation)
 
             # early stopping if no improvement of val_acc during the last self.early_stopping epochs
             # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
-            if val_acc > self.best_val_acc:
-                self.best_val_acc = val_acc
+            if mean_valid_accuracies > self.best_val_acc:
+                self.best_val_acc = mean_valid_accuracies
 
                 # Save best model
                 self.best_model_checkpoint = {
                     'epoch': self.epoch,
                     'state_dict': self.model.state_dict(),
-                    'val_acc': val_acc,
+                    'val_acc': mean_valid_accuracies,
                     'optimizer': self.optimizer.state_dict(),
                 }
                 self._save_checkpoint(interation)
