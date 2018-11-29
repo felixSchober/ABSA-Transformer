@@ -20,7 +20,8 @@ def conll2003_dataset(tag_type, batch_size, root='./conll2003',
                           train_file='eng.train.txt', 
                           validation_file='eng.testa.txt',
                           test_file='eng.testb.txt',
-                          convert_digits=True):
+                          convert_digits=True,
+                          use_cuda=False):
     """
     https://github.com/kolloldas/torchnlp/blob/master/torchnlp/data/conll.py
     conll2003: Conll 2003 (Parser only. You must place the files)
@@ -86,7 +87,7 @@ def conll2003_dataset(tag_type, batch_size, root='./conll2003',
     # Get iterators
     train_iter, val_iter, test_iter = data.BucketIterator.splits(
                             (train, val, test), batch_size=batch_size, 
-                            device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
+                            device=torch.device("cuda:0" if torch.cuda.is_available() and use_cuda else "cpu"))
     train_iter.repeat = False
 
     # add embeddings
