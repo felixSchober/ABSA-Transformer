@@ -2,7 +2,7 @@ from data.conll import conll2003_dataset
 from misc.preferences import PREFERENCES
 from misc import utils
 from models.transformer.encoder import TransformerEncoder
-from models.softmax_output import SoftmaxOutputLayer
+from models.softmax_output import SoftmaxOutputLayer, OutputLayer
 from models.transformer_tagger import TransformerTagger
 from models.transformer.train import Trainer
 from criterion import NllLoss
@@ -39,7 +39,7 @@ transformer = TransformerEncoder(conll2003['embeddings'][0],
                                  d_model=num_units,
                                  d_k=num_units,
                                  d_v=num_units)
-tagging_softmax = SoftmaxOutputLayer(num_units, target_size)
+tagging_softmax = OutputLayer(num_units, target_size)
 model = TransformerTagger(transformer, tagging_softmax)
 adam = torch.optim.Adam(model.parameters())
 trainer = Trainer(model, loss, adam, None, conll2003['iters'], -1, 'test', enable_tensorboard=False, dummy_input=conll2003['dummy_input'])
