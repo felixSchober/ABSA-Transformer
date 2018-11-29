@@ -19,3 +19,7 @@ class TransformerTagger(nn.Module):
     def forward(self, x: torch.Tensor, *args) -> torch.Tensor:
         result = self.encoder(x, *args)
         return self.taggingLayer(result)
+
+    def predict(self, x: torch.Tensor, *args):
+        result = self.encoder(x, *args)
+        return self.taggingLayer.predict(x)

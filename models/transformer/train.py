@@ -33,7 +33,7 @@ class Trainer(object):
                 seed: int = 42,
                 enable_tensorboard: bool=True,
                 dummy_input: torch.Tensor=None,
-                log_every_xth_iteration=200):
+                log_every_xth_iteration=50):
 
         self.model = model
         self.loss = loss
@@ -152,7 +152,9 @@ class Trainer(object):
             loss = self._get_loss(x, None, y)
             losses.append(loss.item())
 
-            prediction = self.model.predict(x)
+            # TODO
+            source_mask = None
+            prediction = self.model.predict(x, source_mask)
             accuracies.append(prediction)
              #TODO: accuracies
 
