@@ -17,7 +17,7 @@ class SoftmaxOutputLayer(nn.Module):
 
     def forward(self, x):
         logits = self.output_projection(x)
-        probs = F.softmax(logits, -1)
+        probs = F.log_softmax(logits, -1)
 
         return probs
 
