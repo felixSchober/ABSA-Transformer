@@ -103,11 +103,18 @@ class Trainer(object):
             self.logger_prediction.info('# EP\t# IT\t\ttr loss\tval loss\tf1\n')
         self.logger_prediction.info('{}\t{}\t{}\t{}\t{}'.format(epoch, iteration, train_loss, valid_loss, f1_score))
 
-    def _step(self, input: torch.Tensor, target: torch.Tensor):
-        """
-        Make a single gradient update. This is called by train() and should not
+    def _step(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        """Make a single gradient update. This is called by train() and should not
         be called manually.
+        
+        Arguments:
+            input {torch.Tensor} -- input batch
+            target {torch.Tensor} -- targets
+        
+        Returns:
+            torch.Tensor -- loss tensor
         """
+
 
         # Clears the gradients of all optimized :class:`torch.Tensor` s
         self.optimizer.zero_grad()
@@ -123,6 +130,17 @@ class Trainer(object):
         return loss
 
     def _get_loss(self, input: torch.Tensor, source_mask: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        """Calculates loss but does not perform gradient updates
+        
+        Arguments:
+            input {torch.Tensor} -- Input sample
+            source_mask {torch.Tensor} -- source mask
+            target {torch.Tensor} -- target tensor
+        
+        Returns:
+            torch.Tensor -- loss tensor
+        """
+
         output = self.model(input, source_mask)
         return self.loss(output, target)
 
@@ -192,7 +210,12 @@ class Trainer(object):
         labelPredictions = prediction.view(p_size[1], p_size[0]) # transform prediction so that [num_labels, batch_size]
         result = []
         for y_pred, y_true in zip (labelPredictions, targets):
-            f1 = f1_score(y_true, y_pred, average='macro')
+            try:
+                assert y_pred.size() == y_true.size()
+                assert y_true.size()[0] > 0
+                f1 = f1_score(y_true, y_pred, average='macro')
+            except Exception as err:
+                self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(), targets.size()))
             result.append(f1)
 
         return result
@@ -239,7 +262,7 @@ class Trainer(object):
                 self._log_scalar(self.train_loss_history, train_loss.item(), 'loss', 'train', iteration)
 
                 if iteration % self.log_every_xth_iteration == 0 and iteration > 1:
-                    self._perform_iteration_evaluation()
+                    self._perform_iteration_evaluation(iteration)
 
             self.logger.info('End of Epoch {}'.format(self.epoch))
             # at the end of each epoch, check the accuracies
@@ -265,8 +288,8 @@ class Trainer(object):
         self.logger.debug('Exit training')
         return self.model
 
-    def _perform_iteration_evaluation(self) -> None:
-        self.logger.debug('Starting evaluation in epoch {}. Current Iteration {}'.format(epoch, iteration))
+    def _perform_iteration_evaluation(self, iteration: int) -> None:
+        self.logger.debug('Starting evaluation in epoch {}. Current Iteration {}'.format(self.epoch, iteration))
         mean_train_loss, mean_valid_loss, mean_valid_f1 = self._evaluate_and_log_train(iteration)
         self.logger.debug('Evaluation completed')
         self.logger.info('Iteration {}'.format(iteration))
