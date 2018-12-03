@@ -57,7 +57,7 @@ def create_loggers(log_path=None, experiment_name=None, log_file_name='run.log')
 
     if log_path is None:
         log_path = os.path.join(os.getcwd(), 'logs')
-
+    
     create_dir_if_necessary(log_path)
 
     # if no experiment name specified - create unique name
@@ -68,11 +68,13 @@ def create_loggers(log_path=None, experiment_name=None, log_file_name='run.log')
 
     log_path = os.path.join(log_path, experiment_name)
     create_dir_if_necessary(log_path)
+    print('Log path is ', log_path)
+
     create_dir_if_necessary(os.path.join(log_path, 'images'))
     create_dir_if_necessary(os.path.join(log_path, 'checkpoints'))
 
 
-# TODO: replace with logging config. See https://fangpenlin.com/posts/2012/08/26/good-logging-practice-in-python/
+    # TODO: replace with logging config. See https://fangpenlin.com/posts/2012/08/26/good-logging-practice-in-python/
     # setup logging
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         filename=os.path.join(log_path, log_file_name),
