@@ -9,7 +9,7 @@ import copy
 import models.transformer.constants as constants
 
 def clone_layer(layer: nn.Module, N: int):
-    """Produces N identitcal layers
+    """Produces N identical layers
     """
     return nn.ModuleList([copy.deepcopy(layer) for _ in range(N)])
 
@@ -408,7 +408,7 @@ class PositionalEncoding(nn.Module):
 if __name__ == '__main__':
     num_units = 512
     torch.manual_seed(42)
-    # 10 words with a 100-lenght embedding
+    # 10 words with a 100-length embedding
     inputs = Variable(torch.randn((100, 10)))
 
     # first 'layer'

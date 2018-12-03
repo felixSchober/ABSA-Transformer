@@ -26,7 +26,7 @@ class TransformerEncoder(nn.Module):
             src_embeddings {nn.Embedding} -- Embedding for the input. If None an untrained embedding will be generated
         
         Keyword Arguments:
-            d_vocab {int} -- Size of source vocabulary. Not neeeded if src_embeddings is set. (default: {None})
+            d_vocab {int} -- Size of source vocabulary. Not needed if src_embeddings is set. (default: {None})
             n_enc_blocks {int} -- number of encoder blocks (default: {constants.DEFAULT_ENCODER_BLOCKS})
             n_head {int} -- number of heads (default: {constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS})
             d_model {int} -- size of model (default: {constants.DEFAULT_LAYER_SIZE})
@@ -154,7 +154,7 @@ class EncoderBlock(nn.Module):
 if __name__ == '__main__':
     num_units = 512
     torch.manual_seed(42)
-    # 10 words with a 100-lenght embedding
+    # 10 words with a 100-length embedding
     inputs = Variable(torch.randn((100, 10)))
 
     # first 'layer'
