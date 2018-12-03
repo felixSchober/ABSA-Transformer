@@ -17,14 +17,9 @@ class SoftmaxOutputLayer(nn.Module):
 
     def forward(self, x):
         logits = self.output_projection(x)
-        probs = F.log_softmax(logits, -1)
+        probs = F.log_softmax(logits, dim=-1)
 
         return probs
-
-    def predict(self, x):
-        probs = self.forward(x)
-        _, predictions = torch.max(probs, dim=-1)
-        return predictions
 
 class OutputLayer(nn.Module):
 

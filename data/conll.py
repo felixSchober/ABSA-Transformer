@@ -48,18 +48,23 @@ def conll2003_dataset(tag_type, batch_size, root='./conll2003',
                                 preprocessing=data.Pipeline(
                                     lambda w: '0' if convert_digits and w.isdigit() else w ))
 
-    inputs_char_nesting = data.Field(tokenize=list, init_token="<bos>", eos_token="<eos>", 
-                                    batch_first=True)
+    #inputs_char_nesting = data.Field(tokenize=list, init_token="<bos>", eos_token="<eos>", 
+                                    #batch_first=True)
 
-    inputs_char = data.NestedField(inputs_char_nesting, 
-                                    init_token="<bos>", eos_token="<eos>")
+    # inputs_char = data.NestedField(inputs_char_nesting, 
+    #                                 init_token="<bos>", eos_token="<eos>")
                         
 
+    # the label constits of three parts:
+    #   - Part of speech tag
+    #   - syntactic chunk tag   (I-TYPE)
+    #   - named entity tag      (I-TYPE)
     labels = data.Field(init_token="<bos>", eos_token="<eos>", batch_first=True)
 
-    fields = ([(('inputs_word', 'inputs_char'), (inputs_word, inputs_char))] + 
-                [('labels', labels) if label == tag_type else (None, None) 
-                for label in ['pos', 'chunk', 'ner']])
+    words_field = [('inputs_word', inputs_word)]
+    labels_field = [('labels', labels) if label == tag_type else (None, None) 
+                for label in ['pos', 'chunk', 'ner']]
+    fields = ( words_field + labels_field )
 
     # Load the data
     train, val, test = SequenceTaggingDataset.splits(
@@ -76,7 +81,7 @@ def conll2003_dataset(tag_type, batch_size, root='./conll2003',
     logger.info('Test size: %d'%(len(test)))
     
     # Build vocab
-    inputs_char.build_vocab(train.inputs_char, val.inputs_char, test.inputs_char)
+    # inputs_char.build_vocab(train.inputs_char, val.inputs_char, test.inputs_char)
     inputs_word.build_vocab(train.inputs_word, val.inputs_word, test.inputs_word, max_size=50000,
                         vectors=[GloVe(name='6B', dim='200'), CharNGram()])
     
@@ -97,7 +102,7 @@ def conll2003_dataset(tag_type, batch_size, root='./conll2003',
     return {
         'task': 'conll2003.%s'%tag_type,
         'iters': (train_iter, val_iter, test_iter), 
-        'vocabs': (inputs_word.vocab, inputs_char.vocab, labels.vocab) ,
+        'vocabs': (inputs_word.vocab, labels.vocab) ,
         'embeddings': (source_embedding, None),
         'dummy_input': Variable(torch.zeros((batch_size, embedding_size), dtype=torch.long))
         }

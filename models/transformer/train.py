@@ -9,6 +9,7 @@ from typing import Tuple, List
 from misc.utils import set_seeds, torch_summarize
 from misc.hyperparameters import HyperParameters
 
+from sklearn.metrics import f1_score
 import numpy as np
 import torch
 import torch.nn as nn
@@ -87,7 +88,7 @@ class Trainer(object):
 
     def _reset(self):
         self.epoch = 0
-        self.best_val_acc = 0
+        self.best_f1 = 0
         self.best_model_checkpoint = None
         self.early_stopping_counter = self.early_stopping
         self.loss_history = []
@@ -141,11 +142,11 @@ class Trainer(object):
         return np.array(losses).mean()
         
     
-    def evaluate(self, iterator: torchtext.data.Iterator) -> Tuple[float, float]:
+    def evaluate(self, iterator: torchtext.data.Iterator) -> Tuple[float, List[float]]:
         iterator.init_epoch()
 
         losses = []
-        accuracies = []
+        f1_scores = []
 
         for batch in iterator:
             x, y = batch.inputs_word, batch.labels
@@ -154,22 +155,42 @@ class Trainer(object):
 
             # TODO
             source_mask = None
-            prediction = self.model.predict(x, source_mask)
-            accuracies.append(prediction)
-             #TODO: accuracies
+            prediction = self.model.predict(x, source_mask) # [batch_size, num_words] in the collnl2003 task num labels will contain the predicted class for the label
+            f1Socres = self.calculate_scores(prediction, y)
+
+            # average accuracy for batch
+            batch_f1 = np.array(f1Socres).mean()
+            f1_scores.append(batch_f1)
 
         avg_loss = np.array(losses).mean()
-        return (avg_loss, 0.0)
+
+        f1_scores = np.array(f1_scores)
+        avg_f1 = f1_scores.mean()
+        return (avg_loss, avg_f1)
 
     def _evaluate_and_log_train(self, iteration: int) -> Tuple[float, float, float]:
         mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
         self._log_scalar(None, mean_train_loss, 'loss', 'train/mean', iteration)
 
         # perform validation loss
-        mean_valid_loss, mean_valid_accuracies = self.evaluate(self.valid_iterator)
+        mean_valid_loss, mean_valid_f1 = self.evaluate(self.valid_iterator)
+
+        # log results
         self._log_scalar(self.val_loss_history, mean_valid_loss, 'loss', 'valid/mean', iteration)
-        self._log_scalar(self.val_acc_history, mean_valid_accuracies, 'accuracy', 'valid/mean', iteration)
-        return (mean_train_loss, mean_valid_loss, mean_valid_accuracies)
+        self._log_scalar(self.val_acc_history, mean_valid_f1, 'f1', 'valid/mean', iteration)
+
+        return (mean_train_loss, mean_valid_loss, mean_valid_f1)
+
+    def calculate_scores(self, prediction: torch.Tensor, targets: torch.Tensor) -> List[float]:
+        p_size = prediction.size()
+        targets = targets.view(p_size[1], p_size[0])
+        labelPredictions = prediction.view(p_size[1], p_size[0]) # transform prediction so that [num_labels, batch_size]
+        result = []
+        for y_pred, y_true in zip (labelPredictions, targets):
+            f1 = f1_score(y_true, y_pred, average='macro')
+            result.append(f1)
+
+        return result
 
 
     def train(self, num_epochs: int, should_use_cuda: bool=False):
@@ -212,18 +233,18 @@ class Trainer(object):
                     self._evaluate_and_log_train(interation)
 
             # at the end of each epoch, check the accuracies
-            _, _, mean_valid_accuracies = self._evaluate_and_log_train(interation)
+            _, _, mean_valid_f1 = self._evaluate_and_log_train(interation)
 
             # early stopping if no improvement of val_acc during the last self.early_stopping epochs
             # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
-            if mean_valid_accuracies > self.best_val_acc:
-                self.best_val_acc = mean_valid_accuracies
+            if mean_valid_f1 > self.best_f1:
+                self.best_f1 = mean_valid_f1
 
                 # Save best model
                 self.best_model_checkpoint = {
                     'epoch': self.epoch,
                     'state_dict': self.model.state_dict(),
-                    'val_acc': mean_valid_accuracies,
+                    'val_acc': mean_valid_f1,
                     'optimizer': self.optimizer.state_dict(),
                 }
                 self._save_checkpoint(interation)
@@ -238,7 +259,7 @@ class Trainer(object):
                 if self.early_stopping > -1 and self.early_stopping_counter <= 0:
                     print('> Early Stopping after {0} epochs of no improvements.'.format(self.early_stopping))
                     print('> Restoring params of best model with validation accuracy of: '
-                            , self.best_val_acc)
+                            , self.best_f1)
 
                     # Restore best model
                     self.model.load_state_dict(self.best_model_checkpoint['state_dict'])
@@ -251,8 +272,8 @@ class Trainer(object):
 
         # At the end of training swap the best params into the model
         # Restore best model
-        self.model.load_state_dict(self.best_model_checkpoint['state_dict'])
-        self.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
+        # self.model.load_state_dict(self.best_model_checkpoint['state_dict'])
+        # self.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
 
         if self.tb_writer is not None:
             self.tb_writer.export_scalars_to_json(os.path.join(os.getcwd(), 'logs', self.experiment_name, "model_all_scalars.json"))

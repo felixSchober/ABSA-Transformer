@@ -28,7 +28,7 @@ num_units = 200
 utils.create_loggers()
 
 # 10 words with a 100-lenght embedding
-target_vocab = conll2003['vocabs'][2]
+target_vocab = conll2003['vocabs'][0]
 target_size = len(target_vocab)
 
 loss = NllLoss(target_size)
@@ -43,4 +43,4 @@ tagging_softmax = SoftmaxOutputLayer(num_units, target_size)
 model = TransformerTagger(transformer, tagging_softmax)
 adam = torch.optim.Adam(model.parameters())
 trainer = Trainer(model, loss, adam, None, conll2003['iters'], -1, 'test', enable_tensorboard=True, dummy_input=conll2003['dummy_input'])
-trainer.train(1)
+trainer.train(2)

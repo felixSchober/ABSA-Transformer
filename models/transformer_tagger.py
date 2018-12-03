@@ -18,8 +18,10 @@ class TransformerTagger(nn.Module):
 
     def forward(self, x: torch.Tensor, *args) -> torch.Tensor:
         result = self.encoder(x, *args)
-        return self.taggingLayer(result)
+        return self.taggingLayer(result) # Example CollNl2003: The output will be of size [batch_size, number_of_labels, prob_of_each_class_for_the_label]
 
-    def predict(self, x: torch.Tensor, *args):
-        result = self.encoder(x, *args)
-        return self.taggingLayer.predict(x)
+    def predict(self, x: torch.Tensor, *args) -> torch.Tensor:
+        result = self.forward(x, *args)
+        _, predictions = torch.max(result, dim=-1) 
+        return predictions # [batch_size, ]
+
