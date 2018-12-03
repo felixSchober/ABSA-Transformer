@@ -16,6 +16,7 @@ PREFERENCES.defaults(
     data_test='eng.testb.txt',
     early_stopping='highest_5_F1'
 )
+experiment_name = utils.create_loggers(experiment_name=experiment_name)
 
 conll2003 = conll2003_dataset('ner', 100,
                               root=PREFERENCES.data_root,
@@ -25,7 +26,6 @@ conll2003 = conll2003_dataset('ner', 100,
 
 num_units = 200
 
-experiment_name = utils.create_loggers(experiment_name=experiment_name)
 
 # 10 words with a 100-length embedding
 target_vocab = conll2003['vocabs'][0]

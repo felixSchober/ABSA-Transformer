@@ -32,7 +32,7 @@ class Trainer(object):
                 seed: int = 42,
                 enable_tensorboard: bool=True,
                 dummy_input: torch.Tensor=None,
-                log_every_xth_iteration=50):
+                log_every_xth_iteration=-1):
 
         self.model = model
         self.loss = loss
@@ -158,7 +158,7 @@ class Trainer(object):
             loss = self._get_loss(x, None, y)
             losses.append(loss.item())
 
-            # TODO
+            # TODO: Source mask
             source_mask = None
             prediction = self.model.predict(x, source_mask) # [batch_size, num_words] in the collnl2003 task num labels will contain the predicted class for the label
             f1Socres = self.calculate_scores(prediction, y)
@@ -203,6 +203,8 @@ class Trainer(object):
         if should_use_cuda and torch.cuda.is_available():
             self.model.cuda()
             self.logger.debug('train with cuda support')
+        else:
+            self.logger.debug('train without cuda support')
 
         # TODO: Support for early stopping
         set_seeds(self.seed)
@@ -220,7 +222,7 @@ class Trainer(object):
             self.epoch = epoch
 
             # loop iterations
-            for batch in tqdm(self.train_iterator, leave=False, desc='Epoch {}'.format(epoch)): # batch is torchtext.data.batch.Batch
+            for batch in tqdm(self.train_iterator, leave=True, desc='Epoch {}'.format(epoch)): # batch is torchtext.data.batch.Batch
 
                 if not continue_training:
                     self.logger.info('continue_training is false -> Stop training')
@@ -237,14 +239,9 @@ class Trainer(object):
                 self._log_scalar(self.train_loss_history, train_loss.item(), 'loss', 'train', iteration)
 
                 if iteration % self.log_every_xth_iteration == 0 and iteration > 1:
-                    self.logger.debug('Starting evaluation in epoch {}. Current Iteration {}'.format(epoch, iteration))
-                    mean_train_loss, mean_valid_loss, mean_valid_f1 = self._evaluate_and_log_train(iteration)
-                    self.logger.debug('Evaluation completed')
-                    self.logger.info('Iteration {}'.format(iteration))
-                    self.logger.info('Mean train loss: {}'.format(mean_train_loss))
-                    self.logger.info('Mean validation loss {}'.format(mean_valid_loss))
-                    self.logger.info('Mean validation f1 score {}'.format(mean_valid_f1))
+                    self._perform_iteration_evaluation()
 
+            self.logger.info('End of Epoch {}'.format(self.epoch))
             # at the end of each epoch, check the accuracies
             mean_train_loss, mean_valid_loss, mean_valid_f1 = self._evaluate_and_log_train(iteration)
             self.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1)
@@ -252,55 +249,81 @@ class Trainer(object):
             # early stopping if no improvement of val_acc during the last self.early_stopping epochs
             # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
             if mean_valid_f1 > self.best_f1:
-                self.logger.debug('Epoch f1 score ({}) better than last f1 score ({}). Save checkpoint'.format(mean_valid_f1, self.best_f1))
-                self.best_f1 = mean_valid_f1
-
-                # Save best model
-                self.best_model_checkpoint = {
-                    'epoch': self.epoch,
-                    'state_dict': self.model.state_dict(),
-                    'val_acc': mean_valid_f1,
-                    'optimizer': self.optimizer.state_dict(),
-                }
-                self._save_checkpoint(iteration)
-
-                # restore early stopping counter
-                self.early_stopping_counter = self.early_stopping
-
-            else:
-                self.early_stopping_counter -= 1
-
-                # if early_stopping_counter is 0 restore best weights and stop training
-                if self.early_stopping > -1 and self.early_stopping_counter <= 0:
-                    self.logger.info('> Early Stopping after {0} epochs of no improvements.'.format(self.early_stopping))
-                    self.logger.info('> Restoring params of best model with validation accuracy of: '
-                            , self.best_f1)
-
-                    # Restore best model
-                    try:
-                        self.model.load_state_dict(self.best_model_checkpoint['state_dict'])
-                        self.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
-                    except expression as identifier:
-                        self.logger.exception('Could not restore best model from checkpoint', err)
-                        self.logger.info('Best model parameters were at \nIteration {}\nValidation f1 score {}'
-                            .format(self.best_model_checkpoint['epoch'], self.best_model_checkpoint['val_acc']))
-                    
-                    continue_training = False
-                    break
+                self._reset_early_stopping()
+            else:    
+                self._perform_early_stopping()
+                continue_training = False
+                break
 
 
         self.logger.info('STOP training.')
 
         # At the end of training swap the best params into the model
         # Restore best model
-        # self.model.load_state_dict(self.best_model_checkpoint['state_dict'])
-        # self.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
+        self._restore_best_model()
+        self._close_tb_writer()
+        self.logger.debug('Exit training')
+        return self.model
 
+    def _perform_iteration_evaluation(self) -> None:
+        self.logger.debug('Starting evaluation in epoch {}. Current Iteration {}'.format(epoch, iteration))
+        mean_train_loss, mean_valid_loss, mean_valid_f1 = self._evaluate_and_log_train(iteration)
+        self.logger.debug('Evaluation completed')
+        self.logger.info('Iteration {}'.format(iteration))
+        self.logger.info('Mean train loss: {}'.format(mean_train_loss))
+        self.logger.info('Mean validation loss {}'.format(mean_valid_loss))
+        self.logger.info('Mean validation f1 score {}'.format(mean_valid_f1))
+
+    def _reset_early_stopping(self, mean_valid_f1: float) -> None:
+        self.logger.debug('Epoch f1 score ({}) better than last f1 score ({}). Save checkpoint'.format(mean_valid_f1, self.best_f1))
+        self.best_f1 = mean_valid_f1
+
+        # Save best model
+        self.best_model_checkpoint = {
+            'epoch': self.epoch,
+            'state_dict': self.model.state_dict(),
+            'val_acc': mean_valid_f1,
+            'optimizer': self.optimizer.state_dict(),
+        }
+        self._save_checkpoint(iteration)
+
+        # restore early stopping counter
+        self.early_stopping_counter = self.early_stopping
+
+    def _perform_early_stopping(self) -> None:
+        self.early_stopping_counter -= 1
+
+        # if early_stopping_counter is 0 restore best weights and stop training
+        if self.early_stopping > -1 and self.early_stopping_counter <= 0:
+            self.logger.info('> Early Stopping after {} epochs of no improvements.'.format(self.early_stopping))
+            self.logger.info('> Restoring params of best model with validation accuracy of: {}'.format(self.best_f1))
+
+            # Restore best model
+            self._restore_best_model()
+
+    def _close_tb_writer(self) -> None:
         if self.tb_writer is not None:
             self.logger.debug('Try to write scalars file and close tensorboard writer')
-            self.tb_writer.export_scalars_to_json(os.path.join(os.getcwd(), 'logs', self.experiment_name, "model_all_scalars.json"))
-            self.tb_writer.close()
-        self.logger.debug('Exit training')
+            try:
+                self.tb_writer.export_scalars_to_json(os.path.join(os.getcwd(), 'logs', self.experiment_name, "model_all_scalars.json"))
+            except Exception as err:
+                self.logger.exception('TensorboardX could not save scalar json values', err)
+            finally:
+                self.tb_writer.close()
+
+    def _restore_best_model(self) -> None:
+        try:
+            self.model.load_state_dict(self.best_model_checkpoint['state_dict'])
+        except Exception as err:
+            self.logger.exception('Could not restore best model ', err)
+
+        try:
+            self.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
+        except Exception as err:
+            self.logger.exception('Could not restore best model ', err)
+
+        self.logger.info('Best model parameters were at \nIteration {}\nValidation f1 score {}'
+                            .format(self.best_model_checkpoint['epoch'], self.best_model_checkpoint['val_acc']))
 
     def _save_checkpoint(self, iteration: int) -> None:
         self.logger.debug('Saving model... ' + self.checkpoint_dir)
