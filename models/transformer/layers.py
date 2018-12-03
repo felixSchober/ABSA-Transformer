@@ -383,7 +383,7 @@ class PositionalEncoding(nn.Module):
         position_enc[:, 1::2] = torch.cos(position_enc[:, 1::2])  # dim 2i+1
 
         # Convert to a Variable
-        lookup_table = Variable(position_enc) # [num_words, word_emedding_size]
+        lookup_table = Variable(position_enc) # [num_words, word_embedding_size]
 
         if self.zeros_pad:
             lookup_table = torch.cat((Variable(torch.zeros(1, self.num_units)),

@@ -8,7 +8,7 @@ from models.transformer.train import Trainer
 from criterion import NllLoss
 
 import torch
-
+experiment_name = None
 PREFERENCES.defaults(
     data_root='./data/conll2003',
     data_train='eng.train.txt',
@@ -25,9 +25,9 @@ conll2003 = conll2003_dataset('ner', 100,
 
 num_units = 200
 
-utils.create_loggers()
+experiment_name = utils.create_loggers(experiment_name=experiment_name)
 
-# 10 words with a 100-lenght embedding
+# 10 words with a 100-length embedding
 target_vocab = conll2003['vocabs'][0]
 target_size = len(target_vocab)
 
@@ -42,5 +42,5 @@ transformer = TransformerEncoder(conll2003['embeddings'][0],
 tagging_softmax = SoftmaxOutputLayer(num_units, target_size)
 model = TransformerTagger(transformer, tagging_softmax)
 adam = torch.optim.Adam(model.parameters())
-trainer = Trainer(model, loss, adam, None, conll2003['iters'], -1, 'test', enable_tensorboard=True, dummy_input=conll2003['dummy_input'])
-trainer.train(2)
+trainer = Trainer(model, loss, adam, None, conll2003['iters'], -1, experiment_name, enable_tensorboard=True, dummy_input=conll2003['dummy_input'])
+trainer.train(1)

@@ -5,5 +5,31 @@
     "python.linting.pylintArgs": [
         "--errors-only",
         "--generated-members=numpy.* ,torch.* ,cv2.* , cv.*"
+        ],
+        "cSpell.words": [
+            "conll",
+            "isdigit",
+            "matmul",
+            "probs",
+            "vocabs",
+            "testa",
+            "testb",
+            "optim",
+            "errno",
+            "getcwd",
+            "strftime",
+            "randn",
+            "Conv",
+            "relu",
+            "unsqueeze",
+            "arange",
+            "embedding",
+            "shutil",
+            "sklearn",
+            "tqdm",
+            "collnl",
+            "pred",
+            "EEXIST",
+            "PWFC"
         ]
 }

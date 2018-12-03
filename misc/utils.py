@@ -173,7 +173,7 @@ def crop_to_square(image):
     x = (b - a) / 2.0
 
     # depending which side is longer we have to adjust the points
-    # Heigth is longer
+    # Height is longer
     if h > w:
         upperLeft = (0, x)
     else:
