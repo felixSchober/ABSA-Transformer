@@ -16,11 +16,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchtext
 from torch.autograd import *
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 DEFAULT_CHECKPOINT_PATH = ''
-
-
 class Trainer(object):
 
     def __init__(self,
@@ -64,14 +62,16 @@ class Trainer(object):
 
         if enable_tensorboard:
             assert dummy_input is not None
+
+            #logdir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
             self.tb_writer = SummaryWriter(comment=self.experiment_name)
 
             # for now until add graph works (needs pytorch version >= 0.4) add the model description as text
             self.tb_writer.add_text('model', model_summary, 0)
             try:
                 self.tb_writer.add_graph(self.model, dummy_input, verbose=True)
-            except:
-                self.logger.exception('Could not generate graph')
+            except Exception as err:
+                self.logger.exception('Could not generate graph', err)
             self.logger.debug('Graph Saved')
 
         # TODO: initialize the rest of the trainings parameters
@@ -97,6 +97,11 @@ class Trainer(object):
         self.val_acc_history = []
 
         self._reset_histories()
+
+    def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float):
+        if epoch == 0:
+            self.logger_prediction.info('# EP\t# IT\t\ttr loss\tval loss\tf1\n')
+        self.logger_prediction.info('{}\t{}\t{}\t{}\t{}'.format(epoch, iteration, train_loss, valid_loss, f1_score))
 
     def _step(self, input: torch.Tensor, target: torch.Tensor):
         """
@@ -205,21 +210,23 @@ class Trainer(object):
         start_time = time.time()
         
         self.logger.info('START training.')
-        interation = 0
+        iteration = 0
 
         for epoch in range(num_epochs):
+            self.logger.debug('START Epoch {}. Current Iteration {}'.format(epoch, iteration))
 
             # Set up the batch generator for a new epoch
             self.train_iterator.init_epoch()
             self.epoch = epoch
 
             # loop iterations
-            for batch in tqdm(self.train_iterator, leave=False): # batch is torchtext.data.batch.Batch
+            for batch in tqdm(self.train_iterator, leave=False, desc='Epoch {}'.format(epoch)): # batch is torchtext.data.batch.Batch
 
                 if not continue_training:
+                    self.logger.info('continue_training is false -> Stop training')
                     break
 
-                interation += 1
+                iteration += 1
 
                 # Sets the module in training mode
                 self.model.train()
@@ -227,17 +234,25 @@ class Trainer(object):
                 x, y = batch.inputs_word, batch.labels
 
                 train_loss = self._step(x, y)
-                self._log_scalar(self.train_loss_history, train_loss.item(), 'loss', 'train', interation)
+                self._log_scalar(self.train_loss_history, train_loss.item(), 'loss', 'train', iteration)
 
-                if interation % self.log_every_xth_iteration == 0 and interation > 1:
-                    self._evaluate_and_log_train(interation)
+                if iteration % self.log_every_xth_iteration == 0 and iteration > 1:
+                    self.logger.debug('Starting evaluation in epoch {}. Current Iteration {}'.format(epoch, iteration))
+                    mean_train_loss, mean_valid_loss, mean_valid_f1 = self._evaluate_and_log_train(iteration)
+                    self.logger.debug('Evaluation completed')
+                    self.logger.info('Iteration {}'.format(iteration))
+                    self.logger.info('Mean train loss: {}'.format(mean_train_loss))
+                    self.logger.info('Mean validation loss {}'.format(mean_valid_loss))
+                    self.logger.info('Mean validation f1 score {}'.format(mean_valid_f1))
 
             # at the end of each epoch, check the accuracies
-            _, _, mean_valid_f1 = self._evaluate_and_log_train(interation)
+            mean_train_loss, mean_valid_loss, mean_valid_f1 = self._evaluate_and_log_train(iteration)
+            self.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1)
 
             # early stopping if no improvement of val_acc during the last self.early_stopping epochs
             # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
             if mean_valid_f1 > self.best_f1:
+                self.logger.debug('Epoch f1 score ({}) better than last f1 score ({}). Save checkpoint'.format(mean_valid_f1, self.best_f1))
                 self.best_f1 = mean_valid_f1
 
                 # Save best model
@@ -247,7 +262,7 @@ class Trainer(object):
                     'val_acc': mean_valid_f1,
                     'optimizer': self.optimizer.state_dict(),
                 }
-                self._save_checkpoint(interation)
+                self._save_checkpoint(iteration)
 
                 # restore early stopping counter
                 self.early_stopping_counter = self.early_stopping
@@ -257,13 +272,19 @@ class Trainer(object):
 
                 # if early_stopping_counter is 0 restore best weights and stop training
                 if self.early_stopping > -1 and self.early_stopping_counter <= 0:
-                    print('> Early Stopping after {0} epochs of no improvements.'.format(self.early_stopping))
-                    print('> Restoring params of best model with validation accuracy of: '
+                    self.logger.info('> Early Stopping after {0} epochs of no improvements.'.format(self.early_stopping))
+                    self.logger.info('> Restoring params of best model with validation accuracy of: '
                             , self.best_f1)
 
                     # Restore best model
-                    self.model.load_state_dict(self.best_model_checkpoint['state_dict'])
-                    self.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
+                    try:
+                        self.model.load_state_dict(self.best_model_checkpoint['state_dict'])
+                        self.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
+                    except expression as identifier:
+                        self.logger.exception('Could not restore best model from checkpoint', err)
+                        self.logger.info('Best model parameters were at \nIteration {}\nValidation f1 score {}'
+                            .format(self.best_model_checkpoint['epoch'], self.best_model_checkpoint['val_acc']))
+                    
                     continue_training = False
                     break
 
@@ -276,8 +297,10 @@ class Trainer(object):
         # self.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
 
         if self.tb_writer is not None:
+            self.logger.debug('Try to write scalars file and close tensorboard writer')
             self.tb_writer.export_scalars_to_json(os.path.join(os.getcwd(), 'logs', self.experiment_name, "model_all_scalars.json"))
             self.tb_writer.close()
+        self.logger.debug('Exit training')
 
     def _save_checkpoint(self, iteration: int) -> None:
         self.logger.debug('Saving model... ' + self.checkpoint_dir)
@@ -292,5 +315,5 @@ class Trainer(object):
         try:
             torch.save(checkpoint, os.path.join(self.checkpoint_dir, filename))
             #shutil.copyfile(filename, os.path.join(self.checkpoint_dir, filename))
-        except:
-            self.logger.exception('Could not save model.')
+        except Exception as err:
+            self.logger.exception('Could not save model.', err)
