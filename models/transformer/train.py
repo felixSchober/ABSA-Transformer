@@ -67,7 +67,6 @@ class Trainer(object):
                 optimizer: torch.optim.Optimizer,
                 parameters: HyperParameters,
                 data_iterators: Tuple[torchtext.data.Iterator, torchtext.data.Iterator, torchtext.data.Iterator],
-                early_stopping: int,
                 experiment_name: str,
                 seed: int = 42,
                 enable_tensorboard: bool=True,
@@ -75,7 +74,6 @@ class Trainer(object):
                 log_every_xth_iteration=-1):
 
         assert len(data_iterators) == 3
-        assert early_stopping == -1 or early_stopping > 0
         assert log_every_xth_iteration >= -1
         assert model is not None
         assert loss is not None
@@ -90,7 +88,7 @@ class Trainer(object):
         self.iterations_per_epoch_train = len(self.train_iterator)
         self.batch_size = self.train_iterator.batch_size
         self.experiment_name = experiment_name
-        self.early_stopping = early_stopping
+        self.early_stopping = parameters.early_stopping
 
         self.checkpoint_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
 
@@ -147,7 +145,7 @@ class Trainer(object):
     def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float):
         if epoch == 0:
             self.logger_prediction.info('# EP\t# IT\t\ttr loss\tval loss\tf1')
-        self.logger_prediction.info('{}\t{}\t{}\t{}\t{}'.format(epoch, iteration, train_loss, valid_loss, valid_f1))
+        self.logger_prediction.info('{}\t{}\t{2:.3f}\t{3:.3f}\t{4:.3f}'.format(epoch, iteration, train_loss, valid_loss, valid_f1))
 
     def _step(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """Make a single gradient update. This is called by train() and should not
@@ -163,7 +161,7 @@ class Trainer(object):
 
 
         # Clears the gradients of all optimized :class:`torch.Tensor` s
-        self.optimizer.zero_grad()
+        self.optimizer.optimizer.zero_grad()
 
         # Compute loss and gradient
         # TODO: Provide masks
@@ -281,7 +279,6 @@ class Trainer(object):
         else:
             self.logger.debug('train without cuda support')
 
-        # TODO: Support for early stopping
         set_seeds(self.seed)
         continue_training = True
         start_time = time.time()
@@ -316,6 +313,7 @@ class Trainer(object):
 
                 train_loss = self._step(x, y)
                 self._log_scalar(self.train_loss_history, train_loss.item(), 'loss', 'train', iteration)
+                self._log_scalar(None, self.optimizer.rate(), 'lr', '', iteration)
 
                 if self.log_every_xth_iteration > 0 and iteration % self.log_every_xth_iteration == 0 and iteration > 1:
                     self._perform_iteration_evaluation(iteration)

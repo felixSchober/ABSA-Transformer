@@ -16,7 +16,8 @@ from data.data_loader import get_embedding
 logger = logging.getLogger(__name__)
 
 
-def conll2003_dataset(tag_type, batch_size, root='./conll2003', 
+def conll2003_dataset(tag_type, batch_size,
+                          root='./conll2003', 
                           train_file='eng.train.txt', 
                           validation_file='eng.testa.txt',
                           test_file='eng.testb.txt',
