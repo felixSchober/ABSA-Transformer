@@ -16,6 +16,10 @@ class TransformerTagger(nn.Module):
         self.encoder = transformerEncoder
         self.taggingLayer = taggingLayer
 
+        for p in self.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
+
     def forward(self, x: torch.Tensor, *args) -> torch.Tensor:
         result = self.encoder(x, *args)
         return self.taggingLayer(result) # Example CollNl2003: The output will be of size [batch_size, number_of_labels, prob_of_each_class_for_the_label]
