@@ -61,7 +61,6 @@ class Trainer(object):
     val_loss_history: List[float]
 
 
-
     def __init__(self,
                 model: nn.Module, 
                 loss: nn.Module,
@@ -87,7 +86,6 @@ class Trainer(object):
         self.optimizer = optimizer
         self.parameters = parameters
 
-        
         self.train_iterator, self.valid_iterator, self.test_iterator = data_iterators
         self.iterations_per_epoch_train = len(self.train_iterator)
         self.batch_size = self.train_iterator.batch_size
@@ -108,23 +106,27 @@ class Trainer(object):
         self.logger_prediction = logging.getLogger('prediction')
 
         model_summary = torch_summarize(self.model)
+        self.logger.info(model_summary)
 
         if enable_tensorboard:
-            assert dummy_input is not None
-
-            #logdir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
-            self.tb_writer = SummaryWriter(comment=self.experiment_name)
-
-            # for now until add graph works (needs pytorch version >= 0.4) add the model description as text
-            self.tb_writer.add_text('model', model_summary, 0)
-            try:
-                self.tb_writer.add_graph(self.model, dummy_input, verbose=True)
-            except Exception as err:
-                self.logger.exception('Could not generate graph', err)
-            self.logger.debug('Graph Saved')
+            self._setup_tensorboard(dummy_input, model_summary)
 
         # TODO: initialize the rest of the trainings parameters
         # https://github.com/kolloldas/torchnlp/blob/master/torchnlp/common/train.py
+
+    def _setup_tensorboard(self, dummy_input: torch.Tensor, model_summary: str) -> None:
+        assert dummy_input is not None
+
+        #logdir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
+        self.tb_writer = SummaryWriter(comment=self.experiment_name)
+
+        # for now until add graph works (needs pytorch version >= 0.4) add the model description as text
+        self.tb_writer.add_text('model', model_summary, 0)
+        try:
+            self.tb_writer.add_graph(self.model, dummy_input, verbose=True)
+        except Exception as err:
+            self.logger.exception('Could not generate graph', err)
+        self.logger.debug('Graph Saved')
 
     def _reset_histories(self) -> None:
         """
@@ -144,8 +146,8 @@ class Trainer(object):
 
     def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float):
         if epoch == 0:
-            self.logger_prediction.info('# EP\t# IT\t\ttr loss\tval loss\tf1\n')
-        self.logger_prediction.info('{}\t{}\t{}\t{}\t{}'.format(epoch, iteration, train_loss, valid_loss, f1_score))
+            self.logger_prediction.info('# EP\t# IT\t\ttr loss\tval loss\tf1')
+        self.logger_prediction.info('{}\t{}\t{}\t{}\t{}'.format(epoch, iteration, train_loss, valid_loss, valid_f1))
 
     def _step(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """Make a single gradient update. This is called by train() and should not
@@ -245,8 +247,9 @@ class Trainer(object):
         self._log_scalar(None, mean_train_loss, 'loss', 'train/mean', iteration)
 
         # perform validation loss
+        self.logger.debug('Start Evaluation')
         mean_valid_loss, mean_valid_f1 = self.evaluate(self.valid_iterator)
-
+        self.logger.debug('Evaluation Complete')
         # log results
         self._log_scalar(self.val_loss_history, mean_valid_loss, 'loss', 'valid/mean', iteration)
         self._log_scalar(self.val_acc_history, mean_valid_f1, 'f1', 'valid/mean', iteration)
@@ -286,6 +289,8 @@ class Trainer(object):
         self.logger.info('{} Iterations per epoch with batch size of {}'.format(self.iterations_per_epoch_train, self.batch_size))
 
         self.logger.info('START training.')
+        print('\n')
+
         iteration = 0
 
         for epoch in range(num_epochs):
@@ -296,7 +301,7 @@ class Trainer(object):
             self.epoch = epoch
 
             # loop iterations
-            for batch in tqdm(self.train_iterator, leave=True, desc='Epoch {}'.format(epoch)): # batch is torchtext.data.batch.Batch
+            for batch in tqdm(self.train_iterator, leave=False, desc='Epoch {}'.format(epoch)): # batch is torchtext.data.batch.Batch
 
                 if not continue_training:
                     self.logger.info('continue_training is false -> Stop training')
@@ -324,7 +329,7 @@ class Trainer(object):
             # early stopping if no improvement of val_acc during the last self.early_stopping epochs
             # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
             if mean_valid_f1 > self.best_f1:
-                self._reset_early_stopping(mean_valid_f1)
+                self._reset_early_stopping(iteration, mean_valid_f1)
             else:    
                 self._perform_early_stopping()
                 continue_training = False
@@ -348,7 +353,7 @@ class Trainer(object):
         self.logger.info('Mean validation loss {}'.format(mean_valid_loss))
         self.logger.info('Mean validation f1 score {}'.format(mean_valid_f1))
 
-    def _reset_early_stopping(self, mean_valid_f1: float) -> None:
+    def _reset_early_stopping(self, iteration: int, mean_valid_f1: float) -> None:
         self.logger.debug('Epoch f1 score ({}) better than last f1 score ({}). Save checkpoint'.format(mean_valid_f1, self.best_f1))
         self.best_f1 = mean_valid_f1
 

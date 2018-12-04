@@ -1,5 +1,6 @@
 from data.conll import conll2003_dataset
 from misc.preferences import PREFERENCES
+from misc.hyperparameters import HyperParameters
 from misc import utils
 from models.transformer.encoder import TransformerEncoder
 from models.softmax_output import SoftmaxOutputLayer, OutputLayer
@@ -16,6 +17,12 @@ PREFERENCES.defaults(
     data_test='eng.testb.txt',
     early_stopping='highest_5_F1'
 )
+
+hyper_parameters = HyperParameters(
+    learning_rate_type='noam',
+    learning_rate = 0.02,
+    optim_adam_beta1=0.01,
+    optim_adam_beta2=0.01)
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
 
 conll2003 = conll2003_dataset('ner', 100,
@@ -42,5 +49,13 @@ transformer = TransformerEncoder(conll2003['embeddings'][0],
 tagging_softmax = SoftmaxOutputLayer(num_units, target_size)
 model = TransformerTagger(transformer, tagging_softmax)
 adam = torch.optim.Adam(model.parameters())
-trainer = Trainer(model, loss, adam, None, conll2003['iters'], -1, experiment_name, enable_tensorboard=True, dummy_input=conll2003['dummy_input'])
-trainer.train(1)
+trainer = Trainer(model,
+                    loss,
+                    adam,
+                    hyper_parameters,
+                    conll2003['iters'],
+                    -1,
+                    experiment_name,
+                    enable_tensorboard=True,
+                    dummy_input=conll2003['dummy_input'])
+trainer.train(4)
