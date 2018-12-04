@@ -1,10 +1,13 @@
+import warnings
+warnings.filterwarnings('ignore') # see https://stackoverflow.com/questions/43162506/undefinedmetricwarning-f-score-is-ill-defined-and-being-set-to-0-0-in-labels-wi
+
 import os
 import logging
 from tensorboardX import SummaryWriter
 import time
 import os
 import shutil
-from typing import Tuple, List
+from typing import Tuple, List, Dict, Optional, Union
 
 from misc.utils import set_seeds, torch_summarize
 from misc.hyperparameters import HyperParameters
@@ -19,7 +22,45 @@ from torch.autograd import *
 from tqdm.autonotebook import tqdm
 
 DEFAULT_CHECKPOINT_PATH = ''
+
+ModelCheckpoint = Optional[
+    Dict[str, Union[
+        int,
+        float,
+        any
+    ]]
+]
 class Trainer(object):
+
+    model: nn.Module
+    loss: nn.Module
+    optimizer: torch.optim.Optimizer
+    parameters: HyperParameters
+    trainIterator: torchtext.data.Iterator
+    valid_iterator: torchtext.data.Iterator
+    test_iterator: torchtext.data.Iterator
+    experiment_name: str
+    early_stopping: int
+    checkpoint_dir: str
+    seed: int
+    enable_tensorboard: bool
+    log_every_xth_iteration: int
+    logger: logging.Logger
+    logger_prediction: logging.Logger
+    tb_writer: SummaryWriter
+
+    epoch: int
+    iterations_per_epoch_train: int
+    batch_size: int
+    best_f1: int
+    best_model_checkpoint: ModelCheckpoint
+    early_stopping_counter: int
+    train_loss_history: List[float]
+    train_acc_history: List[float]
+    val_acc_history: List[float]
+    val_loss_history: List[float]
+
+
 
     def __init__(self,
                 model: nn.Module, 
@@ -34,18 +75,26 @@ class Trainer(object):
                 dummy_input: torch.Tensor=None,
                 log_every_xth_iteration=-1):
 
+        assert len(data_iterators) == 3
+        assert early_stopping == -1 or early_stopping > 0
+        assert log_every_xth_iteration >= -1
+        assert model is not None
+        assert loss is not None
+        assert optimizer is not None
+
         self.model = model
         self.loss = loss
         self.optimizer = optimizer
         self.parameters = parameters
 
-        assert len(data_iterators) == 3
+        
         self.train_iterator, self.valid_iterator, self.test_iterator = data_iterators
+        self.iterations_per_epoch_train = len(self.train_iterator)
+        self.batch_size = self.train_iterator.batch_size
         self.experiment_name = experiment_name
         self.early_stopping = early_stopping
 
         self.checkpoint_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
-
 
         self._reset()
         self.seed = seed
@@ -77,7 +126,7 @@ class Trainer(object):
         # TODO: initialize the rest of the trainings parameters
         # https://github.com/kolloldas/torchnlp/blob/master/torchnlp/common/train.py
 
-    def _reset_histories(self):
+    def _reset_histories(self) -> None:
         """
         Resets train and val histories for the accuracy and the loss.
         """
@@ -86,16 +135,11 @@ class Trainer(object):
         self.val_acc_history = []
         self.val_loss_history = []
 
-    def _reset(self):
+    def _reset(self) -> None:
         self.epoch = 0
         self.best_f1 = 0
         self.best_model_checkpoint = None
         self.early_stopping_counter = self.early_stopping
-        self.loss_history = []
-        self.val_loss_history = []
-        self.train_acc_history = []
-        self.val_acc_history = []
-
         self._reset_histories()
 
     def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float):
@@ -145,7 +189,12 @@ class Trainer(object):
         return self.loss(output, target)
 
     def _get_mean_loss(self, history: List[float], iteration: int) -> float:
-        losses = np.array(history[iteration - self.log_every_xth_iteration:iteration])
+        is_end_of_epoch = iteration % self.iterations_per_epoch_train == 0 or self.log_every_xth_iteration == -1
+        losses: np.array
+        if is_end_of_epoch:
+            losses = np.array(history[iteration - self.iterations_per_epoch_train:iteration])
+        else:
+            losses = np.array(history[iteration - self.log_every_xth_iteration:iteration])
         return losses.mean()
 
     def _log_scalar(self, history: List[float], scalar_value:float, scalar_type:str, scalar_name:str, iteration:int) -> None:
@@ -215,7 +264,7 @@ class Trainer(object):
                 assert y_true.size()[0] > 0
                 f1 = f1_score(y_true, y_pred, average='macro')
             except Exception as err:
-                self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(), targets.size()))
+                self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(), targets.size()), err)
             result.append(f1)
 
         return result
@@ -234,6 +283,8 @@ class Trainer(object):
         continue_training = True
         start_time = time.time()
         
+        self.logger.info('{} Iterations per epoch with batch size of {}'.format(self.iterations_per_epoch_train, self.batch_size))
+
         self.logger.info('START training.')
         iteration = 0
 
@@ -261,8 +312,9 @@ class Trainer(object):
                 train_loss = self._step(x, y)
                 self._log_scalar(self.train_loss_history, train_loss.item(), 'loss', 'train', iteration)
 
-                if iteration % self.log_every_xth_iteration == 0 and iteration > 1:
+                if self.log_every_xth_iteration > 0 and iteration % self.log_every_xth_iteration == 0 and iteration > 1:
                     self._perform_iteration_evaluation(iteration)
+                # ----------- End of epoch loop -----------
 
             self.logger.info('End of Epoch {}'.format(self.epoch))
             # at the end of each epoch, check the accuracies
@@ -272,12 +324,11 @@ class Trainer(object):
             # early stopping if no improvement of val_acc during the last self.early_stopping epochs
             # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
             if mean_valid_f1 > self.best_f1:
-                self._reset_early_stopping()
+                self._reset_early_stopping(mean_valid_f1)
             else:    
                 self._perform_early_stopping()
                 continue_training = False
                 break
-
 
         self.logger.info('STOP training.')
 
