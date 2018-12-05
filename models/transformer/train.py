@@ -12,7 +12,7 @@ from typing import Tuple, List, Dict, Optional, Union
 from misc.utils import set_seeds, torch_summarize
 from misc.hyperparameters import HyperParameters
 
-from sklearn.metrics import f1_score
+from sklearn.metrics import precision_recall_fscore_support
 import numpy as np
 import torch
 import torch.nn as nn
@@ -145,7 +145,7 @@ class Trainer(object):
     def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float):
         if epoch == 0:
             self.logger_prediction.info('# EP\t# IT\t\ttr loss\tval loss\tf1')
-        self.logger_prediction.info('{}\t{}\t{2:.3f}\t{3:.3f}\t{4:.3f}'.format(epoch, iteration, train_loss, valid_loss, valid_f1))
+        self.logger_prediction.info('{0}\t{1}\t{2:.3f}\t{3:.3f}\t{4:.3f}'.format(epoch, iteration, train_loss, valid_loss, valid_f1))
 
     def _step(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """Make a single gradient update. This is called by train() and should not
@@ -211,15 +211,13 @@ class Trainer(object):
             x, y = valid_batch.inputs_word, valid_batch.labels
             loss = self._get_loss(x, None, y)
             losses.append(loss.item())
-        return np.array(losses).mean()
-        
+        return np.array(losses).mean()    
     
     def evaluate(self, iterator: torchtext.data.Iterator) -> Tuple[float, List[float]]:
         iterator.init_epoch()
 
         losses = []
         f1_scores = []
-
         for batch in iterator:
             x, y = batch.inputs_word, batch.labels
             loss = self._get_loss(x, None, y)
@@ -228,10 +226,13 @@ class Trainer(object):
             # TODO: Source mask
             source_mask = None
             prediction = self.model.predict(x, source_mask) # [batch_size, num_words] in the collnl2003 task num labels will contain the predicted class for the label
-            f1Socres = self.calculate_scores(prediction, y)
-
+            y_hats.append(prediction)
+            y_true.append(y)
+            
+            f_scores, p_scores, r_scores, s_scores = self.calculate_scores(prediction, y)
+            
             # average accuracy for batch
-            batch_f1 = np.array(f1Socres).mean()
+            batch_f1 = np.array(f_scores).mean()
             f1_scores.append(batch_f1)
 
         avg_loss = np.array(losses).mean()
@@ -254,21 +255,31 @@ class Trainer(object):
 
         return (mean_train_loss, mean_valid_loss, mean_valid_f1)
 
-    def calculate_scores(self, prediction: torch.Tensor, targets: torch.Tensor) -> List[float]:
+    def calculate_scores(self, prediction: torch.Tensor, targets: torch.Tensor) -> Tuple[List[float], List[float], List[float], List[float]] :
         p_size = prediction.size()
         targets = targets.view(p_size[1], p_size[0])
         labelPredictions = prediction.view(p_size[1], p_size[0]) # transform prediction so that [num_labels, batch_size]
-        result = []
+        
+        f_scores: List[float] = []
+        p_scores: List[float] = []
+        r_scores: List[float] = []
+        s_scores: List[float] = []
+
         for y_pred, y_true in zip (labelPredictions, targets):
             try:
                 assert y_pred.size() == y_true.size()
                 assert y_true.size()[0] > 0
-                f1 = f1_score(y_true, y_pred, average='macro')
+
+                # beta = 1.0 means f1 score
+                precision, recall, f_beta, support = precision_recall_fscore_support(y_true, y_pred, beta=1.0, average='micro')
             except Exception as err:
                 self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(), targets.size()), err)
-            result.append(f1)
+            f_scores.append(f_beta)
+            p_scores.append(precision)
+            r_scores.append(recall)
+            s_scores.append(support)
 
-        return result
+        return f_scores, p_scores, r_scores, s_scores
 
 
     def train(self, num_epochs: int, should_use_cuda: bool=False):
@@ -350,6 +361,7 @@ class Trainer(object):
         self.logger.info('Mean train loss: {}'.format(mean_train_loss))
         self.logger.info('Mean validation loss {}'.format(mean_valid_loss))
         self.logger.info('Mean validation f1 score {}'.format(mean_valid_f1))
+        self.print_epoch_summary(self.epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1)
 
     def _reset_early_stopping(self, iteration: int, mean_valid_f1: float) -> None:
         self.logger.debug('Epoch f1 score ({}) better than last f1 score ({}). Save checkpoint'.format(mean_valid_f1, self.best_f1))
@@ -360,7 +372,7 @@ class Trainer(object):
             'epoch': self.epoch,
             'state_dict': self.model.state_dict(),
             'val_acc': mean_valid_f1,
-            'optimizer': self.optimizer.state_dict(),
+            'optimizer': self.optimizer.optimizer.state_dict(),
         }
         self._save_checkpoint(iteration)
 
