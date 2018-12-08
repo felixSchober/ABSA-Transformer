@@ -226,8 +226,6 @@ class Trainer(object):
             # TODO: Source mask
             source_mask = None
             prediction = self.model.predict(x, source_mask) # [batch_size, num_words] in the collnl2003 task num labels will contain the predicted class for the label
-            y_hats.append(prediction)
-            y_true.append(y)
             
             f_scores, p_scores, r_scores, s_scores = self.calculate_scores(prediction, y)
             
@@ -407,7 +405,7 @@ class Trainer(object):
             self.logger.exception('Could not restore best model ', err)
 
         try:
-            self.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
+            self.optimizer.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
         except Exception as err:
             self.logger.exception('Could not restore best model ', err)
 
@@ -420,7 +418,7 @@ class Trainer(object):
         checkpoint = {
             'iteration': iteration,
             'state_dict': self.model.state_dict(),
-            'optimizer': self.optimizer.state_dict(),
+            'optimizer': self.optimizer.optimizer.state_dict(),
         }
 
         filename = 'checkpoint_{}.data'.format(iteration)

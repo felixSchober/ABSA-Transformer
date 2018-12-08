@@ -49,6 +49,7 @@ trainer = Trainer(model,
                     hyper_parameters,
                     conll2003['iters'],
                     experiment_name,
+                    log_every_xth_iteration=50,
                     enable_tensorboard=True,
                     dummy_input=conll2003['dummy_input'])
-trainer.train(4)
+trainer.train(10)

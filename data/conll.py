@@ -105,5 +105,5 @@ def conll2003_dataset(tag_type, batch_size,
         'iters': (train_iter, val_iter, test_iter), 
         'vocabs': (inputs_word.vocab, labels.vocab) ,
         'embeddings': (source_embedding, None),
-        'dummy_input': Variable(torch.zeros((batch_size, embedding_size), dtype=torch.long))
+        'dummy_input': Variable(torch.zeros((batch_size, 42), dtype=torch.long))
         }
