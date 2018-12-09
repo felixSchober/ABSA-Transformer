@@ -40,6 +40,7 @@ class Trainer(object):
     valid_iterator: torchtext.data.Iterator
     test_iterator: torchtext.data.Iterator
     experiment_name: str
+    between_epochs_validation_texts: str
     early_stopping: int
     checkpoint_dir: str
     seed: int
@@ -83,6 +84,8 @@ class Trainer(object):
         self.loss = loss
         self.optimizer = optimizer
         self.parameters = parameters
+
+        self.between_epochs_validation_texts = ''
 
         self.train_iterator, self.valid_iterator, self.test_iterator = data_iterators
         self.iterations_per_epoch_train = len(self.train_iterator)
@@ -144,9 +147,24 @@ class Trainer(object):
         self._reset_histories()
 
     def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float):
-        if epoch == 0:
-            self.logger_prediction.info('# EP\t# IT\t\ttr loss\tval loss\tf1')
-        self.logger_prediction.info('{0}\t{1}\t{2:.3f}\t{3:.3f}\t{4:.3f}'.format(epoch, iteration, train_loss, valid_loss, valid_f1))
+        
+        summary = '{0}\t{1}\t{2:.3f}\t\t{3:.3f}\t\t{4:.3f}'.format(epoch, iteration, train_loss, valid_loss, valid_f1)
+        # end of epoch -> directly output + results during epoch training
+        if iteration % self.iterations_per_epoch_train == 0:
+            if epoch == 0:
+                self.logger_prediction.info('# EP\t# IT\ttr loss\t\tval loss\tf1')
+
+
+            if self.between_epochs_validation_texts != '':
+                self.logger_prediction.info(self.between_epochs_validation_texts)
+                self.between_epochs_validation_texts = ''
+            self.logger_prediction.info(summary)
+        else:
+            if self.between_epochs_validation_texts == '':
+                self.between_epochs_validation_texts = summary
+            else:
+                self.between_epochs_validation_texts += '\n' + summary
+
 
     def _step(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """Make a single gradient update. This is called by train() and should not
@@ -172,7 +190,7 @@ class Trainer(object):
         loss.backward()
         self.optimizer.step()
 
-        return loss
+        return loss.data
 
     def _get_loss(self, input: torch.Tensor, source_mask: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """Calculates loss but does not perform gradient updates
@@ -215,29 +233,35 @@ class Trainer(object):
         return np.array(losses).mean()    
     
     def evaluate(self, iterator: torchtext.data.Iterator) -> Tuple[float, List[float]]:
-        iterator.init_epoch()
+        with torch.no_grad():
 
-        losses = []
-        f1_scores = []
-        for batch in iterator:
-            x, y = batch.inputs_word, batch.labels
-            loss = self._get_loss(x, None, y)
-            losses.append(loss.item())
+            iterator.init_epoch()
 
-            # TODO: Source mask
-            source_mask = None
-            prediction = self.model.predict(x, source_mask) # [batch_size, num_words] in the collnl2003 task num labels will contain the predicted class for the label
-            
-            f_scores, p_scores, r_scores, s_scores = self.calculate_scores(prediction, y)
-            
-            # average accuracy for batch
-            batch_f1 = np.array(f_scores).mean()
-            f1_scores.append(batch_f1)
+            losses = []
+            f1_scores = []
+            for batch in iterator:
+                x, y = batch.inputs_word, batch.labels
+                loss = self._get_loss(x, None, y)
+                losses.append(loss.item())
 
-        avg_loss = np.array(losses).mean()
+                # TODO: Source mask
+                source_mask = None
+                prediction = self.model.predict(x, source_mask) # [batch_size, num_words] in the collnl2003 task num labels will contain the predicted class for the label
+                
+                f_scores, p_scores, r_scores, s_scores = self.calculate_scores(prediction.data, y)
+                
+                # average accuracy for batch
+                batch_f1 = np.array(f_scores).mean()
+                f1_scores.append(batch_f1)
+            # free up memory
+            del batch
+            del prediction
+            del x
+            del y
+            avg_loss = np.array(losses).mean()
 
-        f1_scores = np.array(f1_scores)
-        avg_f1 = f1_scores.mean()
+            f1_scores = np.array(f1_scores)
+            avg_f1 = f1_scores.mean()
         return (avg_loss, avg_f1)
 
     def _evaluate_and_log_train(self, iteration: int) -> Tuple[float, float, float]:
@@ -330,6 +354,8 @@ class Trainer(object):
                 train_loss = self._step(x, y)
                 self._log_scalar(self.train_loss_history, train_loss.item(), 'loss', 'train', iteration)
                 self._log_scalar(None, self.optimizer.rate(), 'lr', '', iteration)
+                del train_loss
+                torch.cuda.empty_cache()
 
                 if self.log_every_xth_iteration > 0 and iteration % self.log_every_xth_iteration == 0 and iteration > 1:
                     self._perform_iteration_evaluation(iteration)
