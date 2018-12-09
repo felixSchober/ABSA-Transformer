@@ -10,7 +10,7 @@ from models.transformer.train import Trainer
 from criterion import NllLoss
 
 import torch
-experiment_name = 'Pos2'
+experiment_name = 'with_embedding_training'
 PREFERENCES.defaults(
     data_root='./data/conll2003',
     data_train='eng.train.txt',
@@ -21,13 +21,16 @@ PREFERENCES.defaults(
 
 hyper_parameters = get_default_params()
 hyper_parameters.model_size = 300
+hyper_parameters.batch_size = 80
+hyper_parameters.early_stopping = -1
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
 
 conll2003 = conll2003_dataset('ner', hyper_parameters.batch_size,
                               root=PREFERENCES.data_root,
                               train_file=PREFERENCES.data_train,
                               validation_file=PREFERENCES.data_validation,
-                              test_file=PREFERENCES.data_test)
+                              test_file=PREFERENCES.data_test,
+                              use_cuda=True)
 
 # 10 words with a 100-length embedding
 target_vocab = conll2003['vocabs'][0]
@@ -53,4 +56,4 @@ trainer = Trainer(model,
                     log_every_xth_iteration=50,
                     enable_tensorboard=True,
                     dummy_input=conll2003['dummy_input'])
-trainer.train(10)
+trainer.train(10, True)

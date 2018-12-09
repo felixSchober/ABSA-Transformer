@@ -368,7 +368,7 @@ class Trainer(object):
 
             # early stopping if no improvement of val_acc during the last self.early_stopping epochs
             # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
-            if mean_valid_f1 > self.best_f1 and self.early_stopping > 0:
+            if mean_valid_f1 > self.best_f1 or self.early_stopping <= 0:
                 self._reset_early_stopping(iteration, mean_valid_f1)
             else:    
                 self._perform_early_stopping()
@@ -442,7 +442,7 @@ class Trainer(object):
         except Exception as err:
             self.logger.exception('Could not restore best model ')
 
-        self.logger.info('Best model parameters were at \nIteration {}\nValidation f1 score {}'
+        self.logger.info('Best model parameters were at \nEpoch {}\nValidation f1 score {}'
                             .format(self.best_model_checkpoint['epoch'], self.best_model_checkpoint['val_acc']))
 
     def _save_checkpoint(self, iteration: int) -> None:

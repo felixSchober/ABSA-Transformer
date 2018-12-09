@@ -43,7 +43,7 @@ class TransformerEncoder(nn.Module):
             self.src_embeddings = Embeddings(d_model, d_vocab)
         else:
             self.src_embeddings = src_embeddings
-            self.src_embeddings.weight.requires_grad = False
+            #self.src_embeddings.weight.requires_grad = False
 
         self.positional_encoding = PositionalEncoding2(d_model)
         self.n_head = n_head
