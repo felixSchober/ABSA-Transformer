@@ -229,9 +229,9 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         # in the paper they are called W^Q, W^k and W^V
         # the projections do not use a non-linearity or bias
         # TODO: Check against other implementations
-        self.query_projections = nn.Sequential(nn.Linear(self.d_model, self.d_k * self.n_head, bias=False))
-        self.key_projections = nn.Sequential(nn.Linear(self.d_model, self.d_k * self.n_head, bias=False))
-        self.value_projections = nn.Sequential(nn.Linear(self.d_model, self.d_v * self.n_head, bias=False))
+        self.query_projections = nn.Linear(self.d_model, self.d_k * self.n_head, bias=False)
+        self.key_projections = nn.Linear(self.d_model, self.d_k * self.n_head, bias=False)
+        self.value_projections = nn.Linear(self.d_model, self.d_v * self.n_head, bias=False)
 
         # one 'attention_layer' is sufficient even if the model uses multiple heads since the layer
         # only performs a forward pass without any learned parameters
@@ -244,23 +244,23 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         # The input of this layer is the output of the forward pass of head attention head, multiplied by the number of heads
         # The output should be the model dimension again, so that the input dimension of the layer 
         # input_MultiHeadedSelfAttentionLayer = output_MultiHeadedSelfAttentionLayer
-        self.w_0 = nn.Sequential(nn.Linear(self.n_head * self.d_v, self.d_model, bias=False))
+        self.w_0 = nn.Linear(self.n_head * self.d_v, self.d_model, bias=False)
         
         if dropout_rate is not None:
             self.dropout = nn.Dropout(dropout_rate)
         else:
             self.dropout = None
 
-        self._initialize_layers(True)
+        #self._initialize_layers(True)
 
 
     def _initialize_layers(self, normal: bool = True):
         if (normal):
-            nn.init.normal(self.query_projections._modules['0'].weight, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_k)))
-            nn.init.normal(self.key_projections._modules['0'].weight, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_k)))
-            nn.init.normal(self.value_projections._modules['0'].weight, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_v)))
+            nn.init.normal(self.query_projections.weight, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_k)))
+            nn.init.normal(self.key_projections.weight, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_k)))
+            nn.init.normal(self.value_projections.weight, mean=0, std=np.sqrt(2.0 / (self.d_model + self.d_v)))
 
-        nn.init.xavier_normal_(self.w_0._modules['0'].weight)
+        nn.init.xavier_normal_(self.w_0.weight)
 
     def _split_heads(self, s):
         None
@@ -332,6 +332,7 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         result += indentation + "\t- " + self.layer_norm.__str__() + "\n"
         result += indentation + "]\n"
         return result
+
 
 class LayerNorm(nn.Module):
 

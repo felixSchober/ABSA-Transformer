@@ -46,7 +46,6 @@ class TransformerEncoder(nn.Module):
 
         self.positional_encoding = PositionalEncoding2(d_model)
         self.n_head = n_head
-        self.encoder_blocks = []
         self.n_enc_blocks = n_enc_blocks
         self.d_model = d_model
         self.dropout_rate = dropout_rate
@@ -54,13 +53,15 @@ class TransformerEncoder(nn.Module):
         self.d_k = d_k
         self.d_v = d_v
 
-        self._initialize_encoder_blocks()
+        self.encoder_blocks = self._initialize_encoder_blocks()
         self.layer_norm = LayerNorm(d_model)
         
 
-    def _initialize_encoder_blocks(self):
+    def _initialize_encoder_blocks(self) -> nn.ModuleList:
+        blocks = []
         for _ in range(self.n_enc_blocks):
-            self.encoder_blocks.append(EncoderBlock(self.dropout_rate, self.pointwise_layer_size, self.d_model, self.d_k, self.d_v, self.n_head))
+            blocks.append(EncoderBlock(self.dropout_rate, self.pointwise_layer_size, self.d_model, self.d_k, self.d_v, self.n_head))
+        return nn.ModuleList(blocks)
 
     def forward(self, x: torch.Tensor, mask: torch.Tensor=None) -> torch.Tensor:
 
@@ -70,7 +71,7 @@ class TransformerEncoder(nn.Module):
         encoder_output = self.positional_encoding(x)
 
         # apply the forward pass for each encoding sub layer
-        for enc_sub_layer in self.encoder_blocks:
+        for _, enc_sub_layer in enumerate(self.encoder_blocks):
             encoder_output = enc_sub_layer(encoder_output, mask)
 
         return encoder_output

@@ -29,3 +29,5 @@ class TransformerTagger(nn.Module):
         _, predictions = torch.max(result, dim=-1) 
         return predictions # [batch_size, ]
 
+
+

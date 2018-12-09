@@ -102,9 +102,10 @@ class Trainer(object):
 
         # this logger will both print to the console as well as the file
         self.logger_prediction = logging.getLogger('prediction')
+        self.pre_training = logging.getLogger('pre_training')
 
         model_summary = torch_summarize(self.model)
-        self.logger.info(model_summary)
+        self.pre_training.info(model_summary)
 
         if enable_tensorboard:
             self._setup_tensorboard(dummy_input, model_summary)
@@ -268,6 +269,12 @@ class Trainer(object):
                 assert y_pred.size() == y_true.size()
                 assert y_true.size()[0] > 0
 
+                if y_pred.is_cuda:
+                    y_pred = y_pred.cpu()
+
+                if y_true.is_cuda:
+                    y_true = y_true.cpu()
+
                 # beta = 1.0 means f1 score
                 precision, recall, f_beta, support = precision_recall_fscore_support(y_true, y_pred, beta=1.0, average='micro')
             except Exception as err:
@@ -280,21 +287,21 @@ class Trainer(object):
         return f_scores, p_scores, r_scores, s_scores
 
 
-    def train(self, num_epochs: int, should_use_cuda: bool=False):
+    def train(self, num_epochs: int, use_cuda: bool=False):
 
-        if should_use_cuda and torch.cuda.is_available():
-            self.model.cuda()
-            self.logger.debug('train with cuda support')
+        if use_cuda and torch.cuda.is_available():
+            self.model = self.model.cuda()
+            self.pre_training.debug('train with cuda support')
         else:
-            self.logger.debug('train without cuda support')
+            self.pre_training.debug('train without cuda support')
 
         set_seeds(self.seed)
         continue_training = True
         start_time = time.time()
         
-        self.logger.info('{} Iterations per epoch with batch size of {}'.format(self.iterations_per_epoch_train, self.batch_size))
+        self.pre_training.info('{} Iterations per epoch with batch size of {}'.format(self.iterations_per_epoch_train, self.batch_size))
 
-        self.logger.info('START training.')
+        self.pre_training.info('START training.')
         print('\n\n')
 
         iteration = 0
@@ -335,7 +342,7 @@ class Trainer(object):
 
             # early stopping if no improvement of val_acc during the last self.early_stopping epochs
             # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
-            if mean_valid_f1 > self.best_f1:
+            if mean_valid_f1 > self.best_f1 and self.early_stopping > 0:
                 self._reset_early_stopping(iteration, mean_valid_f1)
             else:    
                 self._perform_early_stopping()

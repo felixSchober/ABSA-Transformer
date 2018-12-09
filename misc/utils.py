@@ -82,7 +82,7 @@ def create_loggers(log_path=None, experiment_name=None, log_file_name='run.log')
                         level=logging.DEBUG)
 
     # create loggers
-    logger_main = logging.getLogger('main')
+    logger_main = logging.getLogger('pre_training')
     logger_main.setLevel(logging.DEBUG)
 
     logger_prediction = logging.getLogger('prediction')
