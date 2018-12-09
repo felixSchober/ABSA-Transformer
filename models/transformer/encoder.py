@@ -44,7 +44,7 @@ class TransformerEncoder(nn.Module):
         else:
             self.src_embeddings = src_embeddings
 
-        self.positional_encoding = PositionalEncoding(d_model)
+        self.positional_encoding = PositionalEncoding2(d_model)
         self.n_head = n_head
         self.encoder_blocks = []
         self.n_enc_blocks = n_enc_blocks

@@ -10,7 +10,7 @@ from models.transformer.train import Trainer
 from criterion import NllLoss
 
 import torch
-experiment_name = 'noam_test'
+experiment_name = 'Pos2'
 PREFERENCES.defaults(
     data_root='./data/conll2003',
     data_train='eng.train.txt',
@@ -20,6 +20,7 @@ PREFERENCES.defaults(
 )
 
 hyper_parameters = get_default_params()
+hyper_parameters.model_size = 300
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
 
 conll2003 = conll2003_dataset('ner', hyper_parameters.batch_size,
@@ -36,10 +37,10 @@ loss = NllLoss(target_size)
 # transformer = GoogleTransformer(True, target_size, target_size, num_units, 2, 2, 512, 0.1)
 transformer = TransformerEncoder(conll2003['embeddings'][0],
                                  n_enc_blocks=2,
-                                 n_head=2,
+                                 n_head=3,
                                  d_model=hyper_parameters.model_size,
-                                 d_k=128,
-                                 d_v=128)
+                                 d_k=100,
+                                 d_v=100)
 tagging_softmax = SoftmaxOutputLayer(hyper_parameters.model_size, target_size)
 model = TransformerTagger(transformer, tagging_softmax)
 optimizer = get_default_optimizer(model, hyper_parameters)
