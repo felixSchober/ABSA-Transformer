@@ -10,6 +10,9 @@ import sys
 from torch.nn.modules.module import _addindent
 import torch
 import random
+import locale
+
+locale.setlocale(locale.LC_ALL, '')
 
 def set_seeds(seed: int) -> None:
     random.seed(seed)
@@ -144,7 +147,7 @@ def torch_summarize(model, show_weights=True, show_parameters=True):
 
     summary, num_params = summarize(model, 0, show_weights, show_parameters)
 
-    summary = summary + '\n==================================\nTotal Number of parameters: {0}\n==================================\n'.format(num_params)
+    summary = summary + '\n==================================\nTotal Number of parameters: {0:n}\n==================================\n'.format(num_params)
     return summary
 
 
