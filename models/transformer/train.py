@@ -123,7 +123,7 @@ class Trainer(object):
         try:
             self.tb_writer.add_graph(self.model, dummy_input, verbose=True)
         except Exception as err:
-            self.logger.exception('Could not generate graph', err)
+            self.logger.exception('Could not generate graph')
         self.logger.debug('Graph Saved')
 
     def _reset_histories(self) -> None:
@@ -271,7 +271,7 @@ class Trainer(object):
                 # beta = 1.0 means f1 score
                 precision, recall, f_beta, support = precision_recall_fscore_support(y_true, y_pred, beta=1.0, average='micro')
             except Exception as err:
-                self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(), targets.size()), err)
+                self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(), targets.size()))
             f_scores.append(f_beta)
             p_scores.append(precision)
             r_scores.append(recall)
@@ -295,7 +295,7 @@ class Trainer(object):
         self.logger.info('{} Iterations per epoch with batch size of {}'.format(self.iterations_per_epoch_train, self.batch_size))
 
         self.logger.info('START training.')
-        print('\n')
+        print('\n\n')
 
         iteration = 0
 
@@ -394,7 +394,7 @@ class Trainer(object):
             try:
                 self.tb_writer.export_scalars_to_json(os.path.join(os.getcwd(), 'logs', self.experiment_name, "model_all_scalars.json"))
             except Exception as err:
-                self.logger.exception('TensorboardX could not save scalar json values', err)
+                self.logger.exception('TensorboardX could not save scalar json values')
             finally:
                 self.tb_writer.close()
 
@@ -402,12 +402,12 @@ class Trainer(object):
         try:
             self.model.load_state_dict(self.best_model_checkpoint['state_dict'])
         except Exception as err:
-            self.logger.exception('Could not restore best model ', err)
+            self.logger.exception('Could not restore best model ')
 
         try:
             self.optimizer.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
         except Exception as err:
-            self.logger.exception('Could not restore best model ', err)
+            self.logger.exception('Could not restore best model ')
 
         self.logger.info('Best model parameters were at \nIteration {}\nValidation f1 score {}'
                             .format(self.best_model_checkpoint['epoch'], self.best_model_checkpoint['val_acc']))
@@ -426,4 +426,4 @@ class Trainer(object):
             torch.save(checkpoint, os.path.join(self.checkpoint_dir, filename))
             #shutil.copyfile(filename, os.path.join(self.checkpoint_dir, filename))
         except Exception as err:
-            self.logger.exception('Could not save model.', err)
+            self.logger.exception('Could not save model.')

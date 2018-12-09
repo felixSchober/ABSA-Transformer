@@ -83,8 +83,9 @@ def conll2003_dataset(tag_type, batch_size,
     
     # Build vocab
     # inputs_char.build_vocab(train.inputs_char, val.inputs_char, test.inputs_char)
+    glove_vectors = GloVe(name='6B', dim=300)
     inputs_word.build_vocab(train.inputs_word, val.inputs_word, test.inputs_word, max_size=50000,
-                        vectors=[GloVe(name='6B', dim='200'), CharNGram()])
+                        vectors=[glove_vectors])
     
     labels.build_vocab(train.labels)
     logger.info('Input vocab size:%d'%(len(inputs_word.vocab)))
