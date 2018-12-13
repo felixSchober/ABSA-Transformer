@@ -4,6 +4,7 @@ warnings.filterwarnings('ignore') # see https://stackoverflow.com/questions/4316
 import os
 import logging
 from tensorboardX import SummaryWriter
+from misc.torchsummary import summary
 import time
 import os
 import shutil
@@ -29,6 +30,15 @@ ModelCheckpoint = Optional[
         float,
         any
     ]]
+]
+
+EvaluationResult = Tuple[float, float]
+
+TrainResult = Dict[
+    str, Union[
+        nn.Module,
+        EvaluationResult
+    ]
 ]
 class Trainer(object):
 
@@ -109,6 +119,7 @@ class Trainer(object):
 
         model_summary = torch_summarize(self.model)
         self.pre_training.info(model_summary)
+        self.pre_training.info(summary(self.model, input_size=(42,), dtype='long'))
 
         if enable_tensorboard:
             self._setup_tensorboard(dummy_input, model_summary)
@@ -310,8 +321,7 @@ class Trainer(object):
 
         return f_scores, p_scores, r_scores, s_scores
 
-
-    def train(self, num_epochs: int, use_cuda: bool=False):
+    def train(self, num_epochs: int, use_cuda: bool=False) -> TrainResult:
 
         if use_cuda and torch.cuda.is_available():
             self.model = self.model.cuda()
@@ -380,9 +390,52 @@ class Trainer(object):
         # At the end of training swap the best params into the model
         # Restore best model
         self._restore_best_model()
+
+        ((tr_loss, tr_f1), (val_loss, val_f1), (te_loss, te_f1)) = self.perform_final_evaluation()
+
         self._close_tb_writer()
         self.logger.debug('Exit training')
-        return self.model
+
+        return {
+            'model': self.model,
+            'result_train': (tr_loss, tr_f1),
+            'result_valid': (val_loss, val_f1),
+            'result_test': (te_loss, te_f1)
+        }
+
+    def perform_final_evaluation(self, use_test_set: bool=False) -> Tuple[EvaluationResult, EvaluationResult, EvaluationResult]:
+        self.pre_training.info('Perform final model evaluation')
+        self.pre_training.debug('--- Train Scores ---')
+        self.train_iterator.train = False
+        self.valid_iterator.train = False
+
+        tr_loss, tr_f1 = self.evaluate(self.train_iterator)
+        self.logger.info('TRAIN loss:\t{}'.format(tr_loss))
+        self.logger.info('TRAIN f1-s:\t{}'.format(tr_f1))
+        self._log_scalar(None, tr_loss, 'final', 'train/loss', 0)
+        self._log_scalar(None, tr_f1, 'final', 'train/f1', 0)
+
+        self.pre_training.debug('--- Valid Scores ---')
+        val_loss, val_f1 = self.evaluate(self.valid_iterator)
+        self.logger.info('VALID loss:\t{}'.format(val_loss))
+        self.logger.info('VALID f1-s:\t{}'.format(val_f1))
+        self._log_scalar(None, val_loss, 'final', 'train/loss', 0)
+        self._log_scalar(None, val_f1, 'final', 'train/f1', 0)
+
+        te_loss = -1
+        te_f1 = -1
+        if use_test_set:
+            self.test_iterator.train = False
+
+            te_loss, te_f1 = self.evaluate(self.test_iterator)
+            self.logger.info('TEST loss:\t{}'.format(te_loss))
+            self.logger.info('TEST f1-s:\t{}'.format(te_f1))
+            self._log_scalar(None, te_loss, 'final', 'test/loss', 0)
+            self._log_scalar(None, te_f1, 'final', 'test/f1', 0)
+
+        return ((tr_loss, tr_f1), (val_loss, val_f1), (te_loss, te_f1))
+
+
 
     def _perform_iteration_evaluation(self, iteration: int) -> None:
         self.logger.debug('Starting evaluation in epoch {}. Current Iteration {}'.format(self.epoch, iteration))
