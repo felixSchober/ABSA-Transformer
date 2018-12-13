@@ -1,3 +1,4 @@
+from typing import Tuple, List, Dict, Optional, Union
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -10,10 +11,14 @@ from torchtext.vocab import Vectors, GloVe, CharNGram
 import numpy as np
 import random
 import logging
-
+import spacy
 from data.data_loader import get_embedding
 
 logger = logging.getLogger(__name__)
+
+ExamplePair = Tuple[str, str] # x, y
+ExampleSentence = List[ExamplePair]
+ExampleList = List[ExampleSentence]
 
 
 def conll2003_dataset(tag_type, batch_size,
@@ -101,10 +106,26 @@ def conll2003_dataset(tag_type, batch_size,
     embedding_size = inputs_word.vocab.vectors.shape[1]
     source_embedding = get_embedding(inputs_word.vocab, embedding_size)
     
+    examples = train.examples[0:3] + val.examples[0:3] + test.examples[0:3]
     return {
         'task': 'conll2003.%s'%tag_type,
         'iters': (train_iter, val_iter, test_iter), 
         'vocabs': (inputs_word.vocab, labels.vocab) ,
         'embeddings': (source_embedding, None),
+        'examples': examples,
         'dummy_input': Variable(torch.zeros((batch_size, 42), dtype=torch.long))
         }
+
+def extract_samples(samples: List[torchtext.data.example.Example]) -> ExampleList:
+    result: ExampleList = []
+    for example in samples:
+        input_words: List[str] = example.inputs_word
+        labels: List[str] = example.labels
+        result.append(list(zip(input_words, labels)))
+    return result
+
+def print_samples(samples: ExampleList) -> None:
+    for sample in samples:
+        for word, label in sample:
+            print('{} - {}'.format(word, label))
+        print('\n#######################\n')
