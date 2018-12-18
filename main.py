@@ -31,7 +31,7 @@ conll2003 = conll2003_dataset('ner', hyper_parameters.batch_size,
                               train_file=PREFERENCES.data_train,
                               validation_file=PREFERENCES.data_validation,
                               test_file=PREFERENCES.data_test,
-                              use_cuda=True)
+                              use_cuda=False)
 samples = extract_samples(conll2003['examples'])
 
 
@@ -51,8 +51,9 @@ transformer = TransformerEncoder(conll2003['embeddings'][0],
 tagging_softmax = SoftmaxOutputLayer(hyper_parameters.model_size, target_size)
 model = TransformerTagger(transformer, tagging_softmax)
 
-test_sample_iter = iterate_with_sample_data(conll2003['iters'][2])
-print_samples_with_prediction(model, test_sample_iter)
+test_sample_iter = iterate_with_sample_data(conll2003['iters'][0], 50)
+df = predict_some_examples_to_df(model, test_sample_iter, num_samples=50)
+
 
 optimizer = get_default_optimizer(model, hyper_parameters)
 trainer = Trainer(model,

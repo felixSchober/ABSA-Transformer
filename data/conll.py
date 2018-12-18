@@ -13,6 +13,8 @@ import random
 import logging
 import spacy
 from data.data_loader import get_embedding
+from data.custom_fields import ReversibleField
+from data.custom_datasets import CustomSequenceTaggingDataSet
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +22,7 @@ ExamplePair = Tuple[str, str] # x, y
 ExampleSentence = List[ExamplePair]
 ExampleList = List[ExampleSentence]
 
-ExampleBatch = Tuple[torch.Tensor, torch.Tensor, List[str], List[str]]
+ExampleBatch = Tuple[torch.Tensor, torch.Tensor, List[str], List[str], data.ReversibleField]
 ExampleIterator = Iterable[ExampleBatch]
 
 
@@ -53,18 +55,10 @@ def conll2003_dataset(tag_type, batch_size,
     """
     
     # Setup fields with batch dimension first
-    inputs_word = data.Field(init_token="<bos>", eos_token="<eos>", batch_first=True, lower=True,
+    inputs_word = ReversibleField(init_token="<bos>", eos_token="<eos>", batch_first=True, lower=True,
                                 preprocessing=data.Pipeline(
                                     lambda w: '0' if convert_digits and w.isdigit() else w ))
 
-    input_sentences = data.Field(
-                        use_vocab=False,
-                        init_token="<bos>",
-                        eos_token="<eos>",
-                        batch_first=True,
-                        lower=True,
-                        preprocessing=data.Pipeline(
-                            lambda w: '0' if convert_digits and w.isdigit() else w ))
 
     #inputs_char_nesting = data.Field(tokenize=list, init_token="<bos>", eos_token="<eos>", 
                                     #batch_first=True)
@@ -77,18 +71,15 @@ def conll2003_dataset(tag_type, batch_size,
     #   - Part of speech tag
     #   - syntactic chunk tag   (I-TYPE)
     #   - named entity tag      (I-TYPE)
-    labels = data.Field(init_token="<bos>", eos_token="<eos>", batch_first=True, is_target=True)
+    labels = ReversibleField(init_token="<bos>", eos_token="<eos>", batch_first=True, is_target=True)
 
     words_field = [('inputs_word', inputs_word)]
     labels_field = [('labels', labels) if label == tag_type else (None, None) 
                 for label in ['pos', 'chunk', 'ner']]
-
-    complete_sentence_field = [('inputs_word', input_sentences)]
-
-    fields = ( words_field + labels_field + complete_sentence_field)
+    fields = ( words_field + labels_field)
 
     # Load the data
-    train, val, test = SequenceTaggingDataset.splits(
+    train, val, test = CustomSequenceTaggingDataSet.splits(
                                 path=root, 
                                 train=train_file, 
                                 validation=validation_file, 
@@ -116,6 +107,7 @@ def conll2003_dataset(tag_type, batch_size,
                             (train, val, test), batch_size=batch_size, 
                             device=torch.device("cuda:0" if torch.cuda.is_available() and use_cuda else "cpu"))
     train_iter.repeat = False
+    val_iter.repeat = False
 
     # add embeddings
     embedding_size = inputs_word.vocab.vectors.shape[1]
@@ -144,14 +136,16 @@ def iterate_with_sample_data(data_iterator: torchtext.data.Iterator, num_samples
     
     data_iterator.batch_size = 1
     data_iterator.init_epoch()
-    data_iterator.shuffle = False
+    data_iterator.shuffle = True
 
-    for i, batch in zip(range(num_samples), data_iterator):
+    for i, batch in enumerate(data_iterator):
+        if i > num_samples:
+            break
         x = batch.inputs_word
         y = batch.labels
 
-        sample_text = batch.dataset.examples[i].inputs_word
-        sample_label = batch.dataset.examples[i].labels
+        reversed_input = batch.dataset.fields['inputs_word'].reverse(x)
+        reversed_label = batch.dataset.fields['labels'].reverse(y)
 
-        yield (x, y, sample_text, sample_label)
+        yield (x, y, reversed_input, reversed_label, batch.dataset.fields['labels'])
 
