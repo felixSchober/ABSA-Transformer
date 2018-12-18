@@ -1,5 +1,6 @@
-from data.conll import conll2003_dataset
+from data.conll import conll2003_dataset, extract_samples, iterate_with_sample_data
 from misc.preferences import PREFERENCES
+from misc.visualizer import *
 from misc.hyperparameters import get_default_params
 from optimizer import get_default_optimizer
 from misc import utils
@@ -31,6 +32,9 @@ conll2003 = conll2003_dataset('ner', hyper_parameters.batch_size,
                               validation_file=PREFERENCES.data_validation,
                               test_file=PREFERENCES.data_test,
                               use_cuda=True)
+samples = extract_samples(conll2003['examples'])
+
+
 
 # 10 words with a 100-length embedding
 target_vocab = conll2003['vocabs'][0]
@@ -46,6 +50,10 @@ transformer = TransformerEncoder(conll2003['embeddings'][0],
                                  d_v=100)
 tagging_softmax = SoftmaxOutputLayer(hyper_parameters.model_size, target_size)
 model = TransformerTagger(transformer, tagging_softmax)
+
+test_sample_iter = iterate_with_sample_data(conll2003['iters'][2])
+print_samples_with_prediction(model, test_sample_iter)
+
 optimizer = get_default_optimizer(model, hyper_parameters)
 trainer = Trainer(model,
                     loss,
