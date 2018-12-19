@@ -406,22 +406,22 @@ class Trainer(object):
             'result_test': (te_loss, te_f1)
         }
 
-    def perform_final_evaluation(self, use_test_set: bool=False) -> Tuple[EvaluationResult, EvaluationResult, EvaluationResult]:
+    def perform_final_evaluation(self, use_test_set: bool=True) -> Tuple[EvaluationResult, EvaluationResult, EvaluationResult]:
         self.pre_training.info('Perform final model evaluation')
         self.pre_training.debug('--- Train Scores ---')
         self.train_iterator.train = False
         self.valid_iterator.train = False
 
         tr_loss, tr_f1 = self.evaluate(self.train_iterator)
-        self.logger.info('TRAIN loss:\t{}'.format(tr_loss))
-        self.logger.info('TRAIN f1-s:\t{}'.format(tr_f1))
+        self.pre_training.info('TRAIN loss:\t{}'.format(tr_loss))
+        self.pre_training.info('TRAIN f1-s:\t{}'.format(tr_f1))
         self._log_scalar(None, tr_loss, 'final', 'train/loss', 0)
         self._log_scalar(None, tr_f1, 'final', 'train/f1', 0)
 
         self.pre_training.debug('--- Valid Scores ---')
         val_loss, val_f1 = self.evaluate(self.valid_iterator)
-        self.logger.info('VALID loss:\t{}'.format(val_loss))
-        self.logger.info('VALID f1-s:\t{}'.format(val_f1))
+        self.pre_training.info('VALID loss:\t{}'.format(val_loss))
+        self.pre_training.info('VALID f1-s:\t{}'.format(val_f1))
         self._log_scalar(None, val_loss, 'final', 'train/loss', 0)
         self._log_scalar(None, val_f1, 'final', 'train/f1', 0)
 
@@ -431,8 +431,8 @@ class Trainer(object):
             self.test_iterator.train = False
 
             te_loss, te_f1 = self.evaluate(self.test_iterator)
-            self.logger.info('TEST loss:\t{}'.format(te_loss))
-            self.logger.info('TEST f1-s:\t{}'.format(te_f1))
+            self.pre_training.info('TEST loss:\t{}'.format(te_loss))
+            self.pre_training.info('TEST f1-s:\t{}'.format(te_f1))
             self._log_scalar(None, te_loss, 'final', 'test/loss', 0)
             self._log_scalar(None, te_f1, 'final', 'test/f1', 0)
 

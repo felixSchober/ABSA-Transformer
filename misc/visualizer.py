@@ -1,4 +1,5 @@
 import logging
+from typing import Tuple, List, Dict, Optional, Union, Iterable
 import pandas as pd
 from data.conll import ExampleList
 import torch
@@ -7,7 +8,7 @@ import torch.nn.functional as F
 from tqdm.autonotebook import tqdm
 import torchtext
 
-ExampleBatch = Tuple[torch.Tensor, torch.Tensor, List[str], List[str], data.ReversibleField]
+ExampleBatch = Tuple[torch.Tensor, torch.Tensor, List[str], List[str], torchtext.data.ReversibleField]
 ExampleIterator = Iterable[ExampleBatch]
 
 logger = logging.getLogger('prediction')
