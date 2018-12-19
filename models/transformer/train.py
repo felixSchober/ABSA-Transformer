@@ -124,6 +124,9 @@ class Trainer(object):
         if enable_tensorboard:
             self._setup_tensorboard(dummy_input, model_summary)
 
+        self.text_reverser = [iterator.dataset.fields['inputs_word'] for iterator in data_iterators]
+        self.label_reverser = self.train_iterator.dataset.fields['labels']
+
         # TODO: initialize the rest of the trainings parameters
         # https://github.com/kolloldas/torchnlp/blob/master/torchnlp/common/train.py
 
@@ -258,7 +261,7 @@ class Trainer(object):
                 # TODO: Source mask
                 source_mask = None
                 prediction = self.model.predict(x, source_mask) # [batch_size, num_words] in the collnl2003 task num labels will contain the predicted class for the label
-                
+                #text = self.text_reverser[1].reverse(x)
                 f_scores, p_scores, r_scores, s_scores = self.calculate_scores(prediction.data, y)
                 
                 # average accuracy for batch
@@ -355,7 +358,7 @@ class Trainer(object):
                     break
 
                 iteration += 1
-
+                self.logger.debug('Iteration ' + str(iteration))
                 # Sets the module in training mode
                 self.model.train()
 
