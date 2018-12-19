@@ -1,4 +1,4 @@
-from data.conll import conll2003_dataset, extract_samples, iterate_with_sample_data
+from data.conll import conll2003_dataset, extract_samples
 from misc.preferences import PREFERENCES
 from misc.visualizer import *
 from misc.hyperparameters import get_default_params
@@ -11,7 +11,7 @@ from models.transformer.train import Trainer
 from criterion import NllLoss
 
 import torch
-experiment_name = 'with_embedding_training'
+experiment_name = 'just-testing'
 PREFERENCES.defaults(
     data_root='./data/conll2003',
     data_train='eng.train.txt',
@@ -51,8 +51,8 @@ transformer = TransformerEncoder(conll2003['embeddings'][0],
 tagging_softmax = SoftmaxOutputLayer(hyper_parameters.model_size, target_size)
 model = TransformerTagger(transformer, tagging_softmax)
 
-test_sample_iter = iterate_with_sample_data(conll2003['iters'][0], 50)
-df = predict_some_examples_to_df(model, test_sample_iter, num_samples=50)
+#test_sample_iter = iterate_with_sample_data(conll2003['iters'][0], 50)
+#df = predict_some_examples_to_df(model, test_sample_iter, num_samples=50)
 
 
 optimizer = get_default_optimizer(model, hyper_parameters)
@@ -62,7 +62,7 @@ trainer = Trainer(model,
                     hyper_parameters,
                     conll2003['iters'],
                     experiment_name,
-                    log_every_xth_iteration=50,
+                    log_every_xth_iteration=-1,
                     enable_tensorboard=True,
                     dummy_input=conll2003['dummy_input'])
-trainer.train(10, True)
+trainer.train(1, True)
