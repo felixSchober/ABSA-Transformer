@@ -22,9 +22,6 @@ ExamplePair = Tuple[str, str] # x, y
 ExampleSentence = List[ExamplePair]
 ExampleList = List[ExampleSentence]
 
-ExampleBatch = Tuple[torch.Tensor, torch.Tensor, List[str], List[str], data.ReversibleField]
-ExampleIterator = Iterable[ExampleBatch]
-
 
 def conll2003_dataset(tag_type, batch_size,
                           root='./conll2003', 
@@ -130,22 +127,4 @@ def extract_samples(samples: List[torchtext.data.example.Example]) -> ExampleLis
         labels: List[str] = example.labels
         result.append(list(zip(input_words, labels)))
     return result
-
-def iterate_with_sample_data(data_iterator: torchtext.data.Iterator, num_samples:int=5) -> ExampleIterator:
-    assert num_samples > 0
-    
-    data_iterator.batch_size = 1
-    data_iterator.init_epoch()
-    data_iterator.shuffle = True
-
-    for i, batch in enumerate(data_iterator):
-        if i > num_samples:
-            break
-        x = batch.inputs_word
-        y = batch.labels
-
-        reversed_input = batch.dataset.fields['inputs_word'].reverse(x)
-        reversed_label = batch.dataset.fields['labels'].reverse(y)
-
-        yield (x, y, reversed_input, reversed_label, batch.dataset.fields['labels'])
 

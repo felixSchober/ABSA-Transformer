@@ -1,11 +1,14 @@
 import logging
 import pandas as pd
-from data.conll import ExampleList, ExampleIterator, iterate_with_sample_data
+from data.conll import ExampleList
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm.autonotebook import tqdm
+import torchtext
 
+ExampleBatch = Tuple[torch.Tensor, torch.Tensor, List[str], List[str], data.ReversibleField]
+ExampleIterator = Iterable[ExampleBatch]
 
 logger = logging.getLogger('prediction')
 
@@ -16,8 +19,26 @@ def print_samples(samples: ExampleList) -> None:
             print('{} - {}'.format(word, label))
         print('\n#######################\n')
 
-def predict_samples(model: nn.Module, iterator: ExampleIterator, num_samples: int=5):
-    #with torch.no_grad:
+def iterate_with_sample_data(data_iterator: torchtext.data.Iterator, num_samples:int=5) -> ExampleIterator:
+    assert num_samples > 0
+    
+    data_iterator.batch_size = 1
+    data_iterator.init_epoch()
+
+    for i, batch in enumerate(data_iterator):
+        if i > num_samples:
+            break
+        x = batch.inputs_word
+        y = batch.labels
+
+        reversed_input = batch.dataset.fields['inputs_word'].reverse(x)
+        reversed_label = batch.dataset.fields['labels'].reverse(y)
+
+        yield (x, y, reversed_input, reversed_label, batch.dataset.fields['labels'])
+
+def predict_samples(model: nn.Module, data_iterator: torchtext.data.Iterator, num_samples: int=5):
+    with torch.no_grad:
+        iterator = iterate_with_sample_data(data_iterator, num_samples)
         for x, y, sample_text, sample_label, label_reverser in iterator:
             prediction = model.predict(x, None)
             matches = count_matches(y, prediction)
