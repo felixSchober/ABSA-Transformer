@@ -237,3 +237,8 @@ def weights_init(m):
         w_bound = np.sqrt(6. / (fan_in + fan_out))
         m.weight.data.uniform_(-w_bound, w_bound)
         m.bias.data.fill_(0)
+
+
+def to_one_hot(labels: torch.Tensor, num_classes: int) -> torch.Tensor:
+    y = torch.eye(num_classes)
+    return y[labels]

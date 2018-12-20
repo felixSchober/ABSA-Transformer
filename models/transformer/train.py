@@ -4,24 +4,28 @@ warnings.filterwarnings('ignore') # see https://stackoverflow.com/questions/4316
 import os
 import logging
 from tensorboardX import SummaryWriter
-from misc.torchsummary import summary
+from misc.visualizer import plot_confusion_matrix
 import time
 import os
 import shutil
 from typing import Tuple, List, Dict, Optional, Union
+import matplotlib.pyplot as plt
 
-from misc.utils import set_seeds, torch_summarize
+
+from misc.utils import set_seeds, torch_summarize, to_one_hot
 from misc.hyperparameters import HyperParameters
+from misc.torchsummary import summary
 
-from sklearn.metrics import precision_recall_fscore_support
+
+from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchtext
 from torch.autograd import *
-from tqdm.autonotebook import tqdm
-
+#from tqdm.autonotebook import tqdm
+from tqdm import tqdm
 DEFAULT_CHECKPOINT_PATH = ''
 
 ModelCheckpoint = Optional[
@@ -60,6 +64,7 @@ class Trainer(object):
     logger_prediction: logging.Logger
     tb_writer: SummaryWriter
 
+    num_labels: int
     epoch: int
     iterations_per_epoch_train: int
     batch_size: int
@@ -71,8 +76,10 @@ class Trainer(object):
     val_acc_history: List[float]
     val_loss_history: List[float]
 
+    class_labels: List[str]
 
     def __init__(self,
+                num_labels: int,
                 model: nn.Module, 
                 loss: nn.Module,
                 optimizer: torch.optim.Optimizer,
@@ -127,6 +134,10 @@ class Trainer(object):
         self.text_reverser = [iterator.dataset.fields['inputs_word'] for iterator in data_iterators]
         self.label_reverser = self.train_iterator.dataset.fields['labels']
 
+        self.class_labels = list(self.train_iterator.dataset.fields['labels'].vocab.freqs.keys())
+        self.num_labels = num_labels
+
+        self.pre_training.info('Classes: {}'.format(self.class_labels))
         # TODO: initialize the rest of the trainings parameters
         # https://github.com/kolloldas/torchnlp/blob/master/torchnlp/common/train.py
 
@@ -235,7 +246,18 @@ class Trainer(object):
             history.append(scalar_value)
 
         if self.enable_tensorboard:
-            self.tb_writer.add_scalar('data/{}/{}'.format(scalar_type, scalar_name), scalar_value, iteration)
+            self.tb_writer.add_scalar('{}/{}'.format(scalar_type, scalar_name), scalar_value, iteration)
+
+    def _log_scalars(self, scalar_values, scalar_type: str, iteration: int):
+        if self.enable_tensorboard:
+            self.tb_writer.add_scalars(scalar_type, scalar_values, iteration)
+
+    def _log_confusion_matrices(self, c_matrices, figure_name, iteration):
+        if c_matrices is not None and c_matrices != []:
+            fig = plot_confusion_matrix(c_matrices, self.class_labels)
+            if self.enable_tensorboard:
+                self.tb_writer.add_figure('confusion_matrix/{}'.format(figure_name), fig, iteration)
+        None
 
     def _compute_validation_losses(self) -> float:
         self.valid_iterator.init_epoch()
@@ -246,24 +268,33 @@ class Trainer(object):
             losses.append(loss.item())
         return np.array(losses).mean()    
     
-    def evaluate(self, iterator: torchtext.data.Iterator) -> Tuple[float, List[float]]:
+    def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=True) -> Tuple[float, List[float], np.array]:
+        self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(iterator.epoch, len(iterator)))
         with torch.no_grad():
 
             iterator.init_epoch()
 
+            # use batch size of 1 for evaluation
+            prev_batch_size = iterator.batch_size
+            iterator.batch_size = 1
+
             losses = []
             f1_scores = []
+            c_matrices: List[np.array] = []
             for batch in iterator:
                 x, y = batch.inputs_word, batch.labels
                 loss = self._get_loss(x, None, y)
                 losses.append(loss.item())
-
                 # TODO: Source mask
                 source_mask = None
                 prediction = self.model.predict(x, source_mask) # [batch_size, num_words] in the collnl2003 task num labels will contain the predicted class for the label
                 #text = self.text_reverser[1].reverse(x)
                 f_scores, p_scores, r_scores, s_scores = self.calculate_scores(prediction.data, y)
-                
+                if show_c_matrix:
+                    y_single = y.squeeze()
+                    y_hat_single = prediction.squeeze()
+                    c_matrices.append(confusion_matrix(y_single, y_hat_single, labels=range(self.num_labels)))
+
                 # average accuracy for batch
                 batch_f1 = np.array(f_scores).mean()
                 f1_scores.append(batch_f1)
@@ -276,7 +307,16 @@ class Trainer(object):
 
             f1_scores = np.array(f1_scores)
             avg_f1 = f1_scores.mean()
-        return (avg_loss, avg_f1)
+
+            iterator.batch_size = prev_batch_size
+
+            if show_c_matrix:
+                c_matrices = np.array(c_matrices)
+                # sum element wise to get total count
+                c_matrices = c_matrices.sum(axis=0)
+
+        self.logger.debug('Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(avg_loss, avg_f1, c_matrices))
+        return (avg_loss, avg_f1, c_matrices)
 
     def _evaluate_and_log_train(self, iteration: int) -> Tuple[float, float, float]:
         mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
@@ -284,11 +324,19 @@ class Trainer(object):
 
         # perform validation loss
         self.logger.debug('Start Evaluation')
-        mean_valid_loss, mean_valid_f1 = self.evaluate(self.valid_iterator)
+        mean_valid_loss, mean_valid_f1, c_matrices = self.evaluate(self.valid_iterator)
         self.logger.debug('Evaluation Complete')
         # log results
         self._log_scalar(self.val_loss_history, mean_valid_loss, 'loss', 'valid/mean', iteration)
         self._log_scalar(self.val_acc_history, mean_valid_f1, 'f1', 'valid/mean', iteration)
+
+        # log combined scalars
+        self._log_scalars({
+            'train': mean_train_loss,
+            'validation': mean_valid_loss
+        }, 'loss', iteration)
+
+        self._log_confusion_matrices(c_matrices, 'valid', iteration)
 
         return (mean_train_loss, mean_valid_loss, mean_valid_f1)
 
@@ -412,11 +460,15 @@ class Trainer(object):
         self.train_iterator.train = False
         self.valid_iterator.train = False
 
-        tr_loss, tr_f1 = self.evaluate(self.train_iterator)
+        tr_loss, tr_f1, c_matrices = self.evaluate(self.train_iterator)
         self.pre_training.info('TRAIN loss:\t{}'.format(tr_loss))
         self.pre_training.info('TRAIN f1-s:\t{}'.format(tr_f1))
         self._log_scalar(None, tr_loss, 'final', 'train/loss', 0)
         self._log_scalar(None, tr_f1, 'final', 'train/f1', 0)
+
+        if c_matrices:
+            fig = plot_confusion_matrix(c_matrices, self.class_labels)
+            plt.show()
 
         self.pre_training.debug('--- Valid Scores ---')
         val_loss, val_f1 = self.evaluate(self.valid_iterator)
@@ -424,6 +476,9 @@ class Trainer(object):
         self.pre_training.info('VALID f1-s:\t{}'.format(val_f1))
         self._log_scalar(None, val_loss, 'final', 'train/loss', 0)
         self._log_scalar(None, val_f1, 'final', 'train/f1', 0)
+        if c_matrices:
+            fig = plot_confusion_matrix(c_matrices, self.class_labels)
+            plt.show()
 
         te_loss = -1
         te_f1 = -1
@@ -435,6 +490,10 @@ class Trainer(object):
             self.pre_training.info('TEST f1-s:\t{}'.format(te_f1))
             self._log_scalar(None, te_loss, 'final', 'test/loss', 0)
             self._log_scalar(None, te_f1, 'final', 'test/f1', 0)
+            if c_matrices:
+                fig = plot_confusion_matrix(c_matrices, self.class_labels)
+                plt.show()
+                
 
         return ((tr_loss, tr_f1), (val_loss, val_f1), (te_loss, te_f1))
 

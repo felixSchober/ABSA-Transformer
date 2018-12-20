@@ -235,11 +235,14 @@ class CustomSequenceTaggingDataSet(Dataset):
 
         with open(path) as input_file:
             for line in input_file:
+                if line.startswith("-DOCSTART-"):
+                    continue
+                
                 line = line.strip()
                 if line == "":
                     if columns:
                         # copy first column as a complete sentence that is not tokenized
-                        sentence = columns[0].copy()
+                        #sentence = columns[0].copy()
                         #columns.append(sentence)
                         examples.append(data.Example.fromlist(columns, fields))
                     columns = []
