@@ -1,3 +1,8 @@
+
+import matplotlib
+matplotlib.rcParams['backend'] = 'Qt4Agg'
+matplotlib.rcParams['backend.qt4'] = 'PyQt4'
+
 from data.conll import conll2003_dataset, extract_samples
 from misc.preferences import PREFERENCES
 from misc.visualizer import *
@@ -37,7 +42,7 @@ samples = extract_samples(conll2003['examples'])
 
 
 # 10 words with a 100-length embedding
-target_vocab = conll2003['vocabs'][0]
+target_vocab = conll2003['vocabs'][1]
 target_size = len(target_vocab)
 
 loss = NllLoss(target_size)
@@ -56,13 +61,15 @@ model = TransformerTagger(transformer, tagging_softmax)
 
 
 optimizer = get_default_optimizer(model, hyper_parameters)
-trainer = Trainer(model,
+trainer = Trainer(
+                    target_size,
+                    model,
                     loss,
                     optimizer,
                     hyper_parameters,
                     conll2003['iters'],
                     experiment_name,
-                    log_every_xth_iteration=-1,
+                    log_every_xth_iteration=2,
                     enable_tensorboard=True,
                     dummy_input=conll2003['dummy_input'])
 trainer.train(1, True)

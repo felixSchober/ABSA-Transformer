@@ -8,6 +8,13 @@ import torch.nn.functional as F
 from tqdm.autonotebook import tqdm
 import torchtext
 
+import itertools
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.metrics import confusion_matrix
+
+
 ExampleBatch = Tuple[torch.Tensor, torch.Tensor, List[str], List[str], torchtext.data.ReversibleField]
 ExampleIterator = Iterable[ExampleBatch]
 
@@ -69,3 +76,32 @@ def predict_some_examples(model: nn.Module, iterator: ExampleIterator, num_sampl
 def predict_some_examples_to_df(model: nn.Module, iterator: ExampleIterator, num_samples: int=5):
     predictions = predict_some_examples(model, iterator, num_samples)
     return pd.DataFrame(predictions, columns=['Sentence', 'Targets', 'Predictions', '# Matches'])
+
+def plot_confusion_matrix(c_matrix,
+                            classes,
+                            normalize=True,
+                            title='Confusion Matrix',
+                            color_map=plt.cm.Blues):
+    fig = plt.figure()
+
+    if normalize:
+        c_matrix = c_matrix.astype('float') / c_matrix.sum(axis=1)[:, np.newaxis]
+
+    plt.imshow(c_matrix, interpolation='nearest', cmap=color_map, figure=fig)
+    plt.title(title, figure=fig)
+    plt.colorbar(figure=fig)
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45, figure=fig)
+    plt.yticks(tick_marks, classes, figure=fig)
+    fmt = '.2f' if normalize else 'd'
+    thresh = c_matrix.max() / 2.
+    for i, j in itertools.product(range(c_matrix.shape[0]), range(c_matrix.shape[1])):
+        plt.text(j, i, format(c_matrix[i, j], fmt),
+                 horizontalalignment="center",
+                 figure=fig,
+                 color="white" if c_matrix[i, j] > thresh else "black")
+
+    plt.ylabel('True label', figure=fig)
+    plt.xlabel('Predicted label', figure=fig)
+    plt.tight_layout(figure=fig)
+    return fig
