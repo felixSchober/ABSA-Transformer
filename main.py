@@ -1,7 +1,7 @@
 
 import matplotlib
-matplotlib.rcParams['backend'] = 'Qt4Agg'
-matplotlib.rcParams['backend.qt4'] = 'PyQt4'
+matplotlib.rcParams['backend'] = 'Qt5Agg'
+matplotlib.rcParams['backend.qt5'] = 'PyQt5'
 
 from data.conll import conll2003_dataset, extract_samples
 from misc.preferences import PREFERENCES
@@ -36,7 +36,7 @@ conll2003 = conll2003_dataset('ner', hyper_parameters.batch_size,
                               train_file=PREFERENCES.data_train,
                               validation_file=PREFERENCES.data_validation,
                               test_file=PREFERENCES.data_test,
-                              use_cuda=False)
+                              use_cuda=True)
 samples = extract_samples(conll2003['examples'])
 
 
@@ -56,8 +56,10 @@ transformer = TransformerEncoder(conll2003['embeddings'][0],
 tagging_softmax = SoftmaxOutputLayer(hyper_parameters.model_size, target_size)
 model = TransformerTagger(transformer, tagging_softmax)
 
-#test_sample_iter = iterate_with_sample_data(conll2003['iters'][0], 50)
-#df = predict_some_examples_to_df(model, test_sample_iter, num_samples=50)
+# test_sample_iter = iterate_with_sample_data(conll2003['iters'][1], 200)
+# test_sample_iter = iterate_with_sample_data(conll2003['iters'][1], 200)
+
+# df = predict_some_examples_to_df(model, conll2003['iters'][1], num_samples=50)
 
 
 optimizer = get_default_optimizer(model, hyper_parameters)
@@ -69,7 +71,8 @@ trainer = Trainer(
                     hyper_parameters,
                     conll2003['iters'],
                     experiment_name,
-                    log_every_xth_iteration=2,
+                    log_every_xth_iteration=10,
                     enable_tensorboard=True,
                     dummy_input=conll2003['dummy_input'])
-trainer.train(1, True)
+result = trainer.train(1, True, False)
+evaluation_results = trainer.perform_final_evaluation()

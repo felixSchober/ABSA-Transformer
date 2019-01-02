@@ -31,6 +31,7 @@ def iterate_with_sample_data(data_iterator: torchtext.data.Iterator, num_samples
     assert num_samples > 0
     
     data_iterator.batch_size = 1
+    data_iterator.shuffle = True
     data_iterator.init_epoch()
 
     for i, batch in enumerate(data_iterator):
@@ -79,7 +80,7 @@ def predict_some_examples_to_df(model: nn.Module, iterator: ExampleIterator, num
 
 def plot_confusion_matrix(c_matrix,
                             classes,
-                            normalize=True,
+                            normalize=False,
                             title='Confusion Matrix',
                             color_map=plt.cm.Blues):
     fig = plt.figure()
@@ -89,7 +90,7 @@ def plot_confusion_matrix(c_matrix,
 
     plt.imshow(c_matrix, interpolation='nearest', cmap=color_map, figure=fig)
     plt.title(title, figure=fig)
-    plt.colorbar(figure=fig)
+    plt.colorbar()
     tick_marks = np.arange(len(classes))
     plt.xticks(tick_marks, classes, rotation=45, figure=fig)
     plt.yticks(tick_marks, classes, figure=fig)
@@ -103,5 +104,5 @@ def plot_confusion_matrix(c_matrix,
 
     plt.ylabel('True label', figure=fig)
     plt.xlabel('Predicted label', figure=fig)
-    plt.tight_layout(figure=fig)
+    plt.tight_layout()
     return fig

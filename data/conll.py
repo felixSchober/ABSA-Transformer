@@ -52,23 +52,15 @@ def conll2003_dataset(tag_type, batch_size,
     """
     
     # Setup fields with batch dimension first
-    inputs_word = ReversibleField(init_token="<bos>", eos_token="<eos>", batch_first=True, lower=True,
+    inputs_word = ReversibleField(batch_first=True, lower=True,
                                 preprocessing=data.Pipeline(
-                                    lambda w: '0' if convert_digits and w.isdigit() else w ))
-
-
-    #inputs_char_nesting = data.Field(tokenize=list, init_token="<bos>", eos_token="<eos>", 
-                                    #batch_first=True)
-
-    # inputs_char = data.NestedField(inputs_char_nesting, 
-    #                                 init_token="<bos>", eos_token="<eos>")
-                        
+                                    lambda w: '0' if convert_digits and w.isdigit() else w ))           
 
     # the label constits of three parts:
     #   - Part of speech tag
     #   - syntactic chunk tag   (I-TYPE)
     #   - named entity tag      (I-TYPE)
-    labels = ReversibleField(init_token="<bos>", eos_token="<eos>", batch_first=True, is_target=True)
+    labels = ReversibleField(batch_first=True, is_target=True)
 
     words_field = [('inputs_word', inputs_word)]
     labels_field = [('labels', labels) if label == tag_type else (None, None) 
@@ -114,7 +106,8 @@ def conll2003_dataset(tag_type, batch_size,
     return {
         'task': 'conll2003.%s'%tag_type,
         'iters': (train_iter, val_iter, test_iter), 
-        'vocabs': (inputs_word.vocab, labels.vocab) ,
+        'vocabs': (inputs_word.vocab, labels.vocab),
+        'word_field': inputs_word,
         'examples': examples,
         'embeddings': (source_embedding, None),
         'dummy_input': Variable(torch.zeros((batch_size, 42), dtype=torch.long))
@@ -128,3 +121,7 @@ def extract_samples(samples: List[torchtext.data.example.Example]) -> ExampleLis
         result.append(list(zip(input_words, labels)))
     return result
 
+def manual_process(input: str, data_field: torchtext.data.field.Field) -> torch.Tensor:
+    preprocessed_input = data_field.preprocess(input)
+    input_tensor = data_field.process(preprocessed_input)
+    return input_tensor

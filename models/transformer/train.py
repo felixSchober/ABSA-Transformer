@@ -36,7 +36,7 @@ ModelCheckpoint = Optional[
     ]]
 ]
 
-EvaluationResult = Tuple[float, float]
+EvaluationResult = Tuple[float, float, np.array]
 
 TrainResult = Dict[
     str, Union[
@@ -57,6 +57,7 @@ class Trainer(object):
     between_epochs_validation_texts: str
     early_stopping: int
     checkpoint_dir: str
+    log_imgage_dir: str
     seed: int
     enable_tensorboard: bool
     log_every_xth_iteration: int
@@ -97,6 +98,13 @@ class Trainer(object):
         assert loss is not None
         assert optimizer is not None
 
+        # this logger will not print to the console. Only to the file.
+        self.logger = logging.getLogger(__name__)
+
+        # this logger will both print to the console as well as the file
+        self.logger_prediction = logging.getLogger('prediction')
+        self.pre_training = logging.getLogger('pre_training')
+
         self.model = model
         self.loss = loss
         self.optimizer = optimizer
@@ -111,6 +119,7 @@ class Trainer(object):
         self.early_stopping = parameters.early_stopping
 
         self.checkpoint_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
+        self.log_imgage_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'images')
 
         self._reset()
         self.seed = seed
@@ -124,12 +133,7 @@ class Trainer(object):
         self.logger_prediction = logging.getLogger('prediction')
         self.pre_training = logging.getLogger('pre_training')
 
-        model_summary = torch_summarize(self.model)
-        self.pre_training.info(model_summary)
-        self.pre_training.info(summary(self.model, input_size=(42,), dtype='long'))
-
-        if enable_tensorboard:
-            self._setup_tensorboard(dummy_input, model_summary)
+        self.pre_training.info(summary(self.model, input_size=(42,), dtype='long'))        
 
         self.text_reverser = [iterator.dataset.fields['inputs_word'] for iterator in data_iterators]
         self.label_reverser = self.train_iterator.dataset.fields['labels']
@@ -138,6 +142,12 @@ class Trainer(object):
         self.num_labels = num_labels
 
         self.pre_training.info('Classes: {}'.format(self.class_labels))
+
+        model_summary = torch_summarize(model)
+        self.pre_training.info(model_summary)
+        if enable_tensorboard:
+            self._setup_tensorboard(dummy_input, model_summary)
+        self._log_hyperparameters()
         # TODO: initialize the rest of the trainings parameters
         # https://github.com/kolloldas/torchnlp/blob/master/torchnlp/common/train.py
 
@@ -245,7 +255,7 @@ class Trainer(object):
         if history is not None:
             history.append(scalar_value)
 
-        if self.enable_tensorboard:
+        if self.enable_tensorboard and self.tb_writer is not None:
             self.tb_writer.add_scalar('{}/{}'.format(scalar_type, scalar_name), scalar_value, iteration)
 
     def _log_scalars(self, scalar_values, scalar_type: str, iteration: int):
@@ -255,9 +265,17 @@ class Trainer(object):
     def _log_confusion_matrices(self, c_matrices, figure_name, iteration):
         if c_matrices is not None and c_matrices != []:
             fig = plot_confusion_matrix(c_matrices, self.class_labels)
-            if self.enable_tensorboard:
+            plt.savefig(os.path.join(self.log_imgage_dir, 'c_{}.png'.format(iteration)))
+            if self.enable_tensorboard and self.tb_writer is not None:
                 self.tb_writer.add_figure('confusion_matrix/{}'.format(figure_name), fig, iteration)
+
+    def _log_text(self, text: str, name: str):
+        if self.enable_tensorboard and self.tb_writer is not None:
+            self.tb_writer.add_text(name, text, 0)
+
+    def _log_hyperparameters(self):
         None
+        # TODO
 
     def _compute_validation_losses(self) -> float:
         self.valid_iterator.init_epoch()
@@ -268,7 +286,7 @@ class Trainer(object):
             losses.append(loss.item())
         return np.array(losses).mean()    
     
-    def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False, progress_label: str="") -> Tuple[float, List[float], np.array]:
+    def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False, progress_label: str="") -> Tuple[float, float, float, np.array]:
         self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(iterator.epoch, len(iterator)))
         with torch.no_grad():
 
@@ -285,7 +303,8 @@ class Trainer(object):
 
             if show_progress:
                 iterator = tqdm(iterator, desc=progress_label)
-
+            true_pos = 0
+            total = 0
             for batch in iterator:
                 x, y = batch.inputs_word, batch.labels
                 loss = self._get_loss(x, None, y)
@@ -294,10 +313,20 @@ class Trainer(object):
                 source_mask = None
                 prediction = self.model.predict(x, source_mask) # [batch_size, num_words] in the collnl2003 task num labels will contain the predicted class for the label
                 #text = self.text_reverser[1].reverse(x)
+
+                # get true positives
+                true_pos += ((y == prediction).sum()).item()
+                total += y.shape[0] * y.shape[1]
+
                 f_scores, p_scores, r_scores, s_scores = self.calculate_scores(prediction.data, y)
                 if show_c_matrix:
-                    y_single = y.squeeze().cpu().numpy()
-                    y_hat_single = prediction.squeeze().cpu().numpy()
+                    
+                    if y.shape != (1, 1) and prediction.shape != (1, 1):
+                        y_single = y.squeeze().cpu()
+                        y_hat_single = prediction.squeeze().cpu()
+                    else:
+                        y_single = y.cpu()
+                        y_hat_single = prediction.cpu()
                     c_matrices.append(confusion_matrix(y_single, y_hat_single, labels=range(self.num_labels)))
 
                 # average accuracy for batch
@@ -309,6 +338,7 @@ class Trainer(object):
             del x
             del y
             avg_loss = np.array(losses).mean()
+            accuracy = float(true_pos) / float(total)
 
             f1_scores = np.array(f1_scores)
             avg_f1 = f1_scores.mean()
@@ -320,9 +350,11 @@ class Trainer(object):
                 c_matrices = np.array(c_matrices)
                 # sum element wise to get total count
                 c_matrices = c_matrices.sum(axis=0)
+            else:
+                c_matrices = None
 
         self.logger.debug('Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(avg_loss, avg_f1, c_matrices))
-        return (avg_loss, avg_f1, c_matrices)
+        return (avg_loss, avg_f1, accuracy, c_matrices)
 
     def _evaluate_and_log_train(self, iteration: int) -> Tuple[float, float, float]:
         mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
@@ -330,12 +362,12 @@ class Trainer(object):
 
         # perform validation loss
         self.logger.debug('Start Evaluation')
-        mean_valid_loss, mean_valid_f1, c_matrices = self.evaluate(self.valid_iterator)
+        mean_valid_loss, mean_valid_f1, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=True)
         self.logger.debug('Evaluation Complete')
         # log results
         self._log_scalar(self.val_loss_history, mean_valid_loss, 'loss', 'valid/mean', iteration)
         self._log_scalar(self.val_acc_history, mean_valid_f1, 'f1', 'valid/mean', iteration)
-
+        self._log_scalar(None, accuracy, 'accuracy', 'valid/mean', iteration)
         # log combined scalars
         self._log_scalars({
             'train': mean_train_loss,
@@ -378,7 +410,7 @@ class Trainer(object):
 
         return f_scores, p_scores, r_scores, s_scores
 
-    def train(self, num_epochs: int, use_cuda: bool=False) -> TrainResult:
+    def train(self, num_epochs: int, use_cuda: bool=False, perform_evaluation: bool=True) -> TrainResult:
 
         if use_cuda and torch.cuda.is_available():
             self.model = self.model.cuda()
@@ -425,13 +457,20 @@ class Trainer(object):
                 torch.cuda.empty_cache()
 
                 if self.log_every_xth_iteration > 0 and iteration % self.log_every_xth_iteration == 0 and iteration > 1:
-                    self._perform_iteration_evaluation(iteration)
+                    try:
+                        self._perform_iteration_evaluation(iteration)
+                    except:
+                        self.logger.error("Could not complete iteration evaluation")
                 # ----------- End of epoch loop -----------
 
             self.logger.info('End of Epoch {}'.format(self.epoch))
             # at the end of each epoch, check the accuracies
-            mean_train_loss, mean_valid_loss, mean_valid_f1 = self._evaluate_and_log_train(iteration)
-            self.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1)
+            try:
+                mean_train_loss, mean_valid_loss, mean_valid_f1 = self._evaluate_and_log_train(iteration)
+                self.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1)
+            except:
+                self.logger.error("Could not complete end of epoch {} evaluation")
+           
 
             # early stopping if no improvement of val_acc during the last self.early_stopping epochs
             # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
@@ -446,18 +485,33 @@ class Trainer(object):
 
         # At the end of training swap the best params into the model
         # Restore best model
-        self._restore_best_model()
+        try:
+            self._restore_best_model()
+        except expression as identifier:
+            self.logger.error("Could not restore best model")
 
-        ((tr_loss, tr_f1), (val_loss, val_f1), (te_loss, te_f1)) = self.perform_final_evaluation()
-
-        self._close_tb_writer()
         self.logger.debug('Exit training')
 
+        if perform_evaluation:
+            try:
+                (train_results, validation_results, test_results) = self.perform_final_evaluation()
+            except expression as identifier:
+                self.logger.error("Could not perform evaluation at the end of the training.")
+                train_results = (0, 0, np.zeros((12, 12)))
+                validation_results = (0, 0, np.zeros((12, 12)))
+                test_results = (0, 0, np.zeros((12, 12)))
+        else:
+            train_results = (0, 0, np.zeros((12, 12)))
+            validation_results = (0, 0, np.zeros((12, 12)))
+            test_results = (0, 0, np.zeros((12, 12)))
+
+        self._close_tb_writer()
+        
         return {
             'model': self.model,
-            'result_train': (tr_loss, tr_f1),
-            'result_valid': (val_loss, val_f1),
-            'result_test': (te_loss, te_f1)
+            'result_train': train_results,
+            'result_valid': validation_results,
+            'result_test': test_results
         }
 
     def perform_final_evaluation(self, use_test_set: bool=True) -> Tuple[EvaluationResult, EvaluationResult, EvaluationResult]:
@@ -466,44 +520,49 @@ class Trainer(object):
         self.train_iterator.train = False
         self.valid_iterator.train = False
 
-        tr_loss, tr_f1, c_matrices = self.evaluate(self.train_iterator, show_progress=True, progress_label="Evaluating TRAIN")
+        tr_loss, tr_f1, tr_accuracy, tr_c_matrices = self.evaluate(self.train_iterator, show_progress=True, progress_label="Evaluating TRAIN")
         self.pre_training.info('TRAIN loss:\t{}'.format(tr_loss))
         self.pre_training.info('TRAIN f1-s:\t{}'.format(tr_f1))
+        self.pre_training.info('TRAIN accuracy:\t{}'.format(tr_accuracy))
+
         self._log_scalar(None, tr_loss, 'final', 'train/loss', 0)
         self._log_scalar(None, tr_f1, 'final', 'train/f1', 0)
 
-        if c_matrices:
-            fig = plot_confusion_matrix(c_matrices, self.class_labels)
+        if tr_c_matrices is not None:
+            fig = plot_confusion_matrix(tr_c_matrices, self.class_labels)
             plt.show()
 
         self.pre_training.debug('--- Valid Scores ---')
-        val_loss, val_f1, c_matrices = self.evaluate(self.valid_iterator, show_progress=True, progress_label="Evaluating VALIDATION", show_c_matrix=True)
+        val_loss, val_f1, val_accuracy, val_c_matrices = self.evaluate(self.valid_iterator, show_progress=True, progress_label="Evaluating VALIDATION", show_c_matrix=True)
         self.pre_training.info('VALID loss:\t{}'.format(val_loss))
         self.pre_training.info('VALID f1-s:\t{}'.format(val_f1))
+        self.pre_training.info('VALID accuracy:\t{}'.format(val_accuracy))
+
         self._log_scalar(None, val_loss, 'final', 'train/loss', 0)
         self._log_scalar(None, val_f1, 'final', 'train/f1', 0)
-        if c_matrices.size > 0:
-            fig = plot_confusion_matrix(c_matrices, self.class_labels)
+        if val_c_matrices is not None:
+            fig = plot_confusion_matrix(val_c_matrices, self.class_labels)
             plt.show()
 
         te_loss = -1
         te_f1 = -1
+        te_c_matrices = np.zeros((12, 12))
         if use_test_set:
             self.test_iterator.train = False
 
-            te_loss, te_f1, c_matrices = self.evaluate(self.test_iterator, show_progress=True, progress_label="Evaluating TEST")
+            te_loss, te_f1, te_accuracy, te_c_matrices = self.evaluate(self.test_iterator, show_progress=True, progress_label="Evaluating TEST")
             self.pre_training.info('TEST loss:\t{}'.format(te_loss))
             self.pre_training.info('TEST f1-s:\t{}'.format(te_f1))
+            self.pre_training.info('TEST accuracy:\t{}'.format(te_accuracy))
+
             self._log_scalar(None, te_loss, 'final', 'test/loss', 0)
             self._log_scalar(None, te_f1, 'final', 'test/f1', 0)
-            if c_matrices:
-                fig = plot_confusion_matrix(c_matrices, self.class_labels)
+            if te_c_matrices is not None:
+                fig = plot_confusion_matrix(te_c_matrices, self.class_labels)
                 plt.show()
                 
 
-        return ((tr_loss, tr_f1), (val_loss, val_f1), (te_loss, te_f1))
-
-
+        return ((tr_loss, tr_f1, tr_c_matrices), (val_loss, val_f1, val_c_matrices), (te_loss, te_f1, te_c_matrices))
 
     def _perform_iteration_evaluation(self, iteration: int) -> None:
         self.logger.debug('Starting evaluation in epoch {}. Current Iteration {}'.format(self.epoch, iteration))
@@ -551,6 +610,8 @@ class Trainer(object):
                 self.logger.exception('TensorboardX could not save scalar json values')
             finally:
                 self.tb_writer.close()
+                self.tb_writer = None
+                self.enable_tensorboard = False
 
     def _restore_best_model(self) -> None:
         try:
