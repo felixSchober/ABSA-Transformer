@@ -24,8 +24,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchtext
 from torch.autograd import *
-#from tqdm.autonotebook import tqdm
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
+#from tqdm import tqdm
 DEFAULT_CHECKPOINT_PATH = ''
 
 ModelCheckpoint = Optional[
@@ -268,7 +268,7 @@ class Trainer(object):
             losses.append(loss.item())
         return np.array(losses).mean()    
     
-    def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=True) -> Tuple[float, List[float], np.array]:
+    def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False) -> Tuple[float, List[float], np.array]:
         self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(iterator.epoch, len(iterator)))
         with torch.no_grad():
 

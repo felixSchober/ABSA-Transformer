@@ -45,26 +45,26 @@ def iterate_with_sample_data(data_iterator: torchtext.data.Iterator, num_samples
         yield (x, y, reversed_input, reversed_label, batch.dataset.fields['labels'])
 
 def predict_samples(model: nn.Module, data_iterator: torchtext.data.Iterator, num_samples: int=5):
-    with torch.no_grad:
-        iterator = iterate_with_sample_data(data_iterator, num_samples)
-        for x, y, sample_text, sample_label, label_reverser in iterator:
-            prediction = model.predict(x, None)
-            matches = count_matches(y, prediction)
-            # try to reverse prediction (might not work if model is way off)
-            try:
-                prediction = label_reverser.reverse(prediction)
-            except IndexError as err:
-                prediction = ['?']
-            except Exception as err:
-                logger.exception('Could not reverse prediction. Unexpected error')
-            yield(sample_text, sample_label, prediction, matches)
+    #with torch.no_grad:
+    iterator = iterate_with_sample_data(data_iterator, num_samples)
+    for x, y, sample_text, sample_label, label_reverser in iterator:
+        prediction = model.predict(x, None)
+        matches = count_matches(y, prediction)
+        # try to reverse prediction (might not work if model is way off)
+        try:
+            prediction = label_reverser.reverse(prediction)
+        except IndexError as err:
+            prediction = ['?']
+        except Exception as err:
+            logger.exception('Could not reverse prediction. Unexpected error')
+        yield(sample_text, sample_label, prediction, matches)
 
 def count_matches(y, y_hat) -> int:
     return ((y == y_hat).sum()).item()
 
 def predict_some_examples(model: nn.Module, iterator: ExampleIterator, num_samples: int=5):
     result = []
-    for x, y, y_hat, num_matches in tqdm(predict_samples(model, iterator, num_samples), desc='Predicting'):
+    for x, y, y_hat, num_matches in predict_samples(model, iterator, num_samples):
         line = []
         line.append(" ".join(x))
         line.append(" ".join(y))
