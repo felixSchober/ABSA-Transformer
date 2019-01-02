@@ -268,19 +268,24 @@ class Trainer(object):
             losses.append(loss.item())
         return np.array(losses).mean()    
     
-    def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False) -> Tuple[float, List[float], np.array]:
+    def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False, progress_label: str="") -> Tuple[float, List[float], np.array]:
         self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(iterator.epoch, len(iterator)))
         with torch.no_grad():
 
             iterator.init_epoch()
 
             # use batch size of 1 for evaluation
-            prev_batch_size = iterator.batch_size
-            iterator.batch_size = 1
+            if show_c_matrix:
+                prev_batch_size = iterator.batch_size
+                iterator.batch_size = 1
 
             losses = []
             f1_scores = []
             c_matrices: List[np.array] = []
+
+            if show_progress:
+                iterator = tqdm(iterator, desc=progress_label)
+
             for batch in iterator:
                 x, y = batch.inputs_word, batch.labels
                 loss = self._get_loss(x, None, y)
@@ -291,8 +296,8 @@ class Trainer(object):
                 #text = self.text_reverser[1].reverse(x)
                 f_scores, p_scores, r_scores, s_scores = self.calculate_scores(prediction.data, y)
                 if show_c_matrix:
-                    y_single = y.squeeze()
-                    y_hat_single = prediction.squeeze()
+                    y_single = y.squeeze().cpu().numpy()
+                    y_hat_single = prediction.squeeze().cpu().numpy()
                     c_matrices.append(confusion_matrix(y_single, y_hat_single, labels=range(self.num_labels)))
 
                 # average accuracy for batch
@@ -308,7 +313,8 @@ class Trainer(object):
             f1_scores = np.array(f1_scores)
             avg_f1 = f1_scores.mean()
 
-            iterator.batch_size = prev_batch_size
+            if show_c_matrix:
+                iterator.batch_size = prev_batch_size
 
             if show_c_matrix:
                 c_matrices = np.array(c_matrices)
@@ -460,7 +466,7 @@ class Trainer(object):
         self.train_iterator.train = False
         self.valid_iterator.train = False
 
-        tr_loss, tr_f1, c_matrices = self.evaluate(self.train_iterator)
+        tr_loss, tr_f1, c_matrices = self.evaluate(self.train_iterator, show_progress=True, progress_label="Evaluating TRAIN")
         self.pre_training.info('TRAIN loss:\t{}'.format(tr_loss))
         self.pre_training.info('TRAIN f1-s:\t{}'.format(tr_f1))
         self._log_scalar(None, tr_loss, 'final', 'train/loss', 0)
@@ -471,12 +477,12 @@ class Trainer(object):
             plt.show()
 
         self.pre_training.debug('--- Valid Scores ---')
-        val_loss, val_f1 = self.evaluate(self.valid_iterator)
+        val_loss, val_f1, c_matrices = self.evaluate(self.valid_iterator, show_progress=True, progress_label="Evaluating VALIDATION", show_c_matrix=True)
         self.pre_training.info('VALID loss:\t{}'.format(val_loss))
         self.pre_training.info('VALID f1-s:\t{}'.format(val_f1))
         self._log_scalar(None, val_loss, 'final', 'train/loss', 0)
         self._log_scalar(None, val_f1, 'final', 'train/f1', 0)
-        if c_matrices:
+        if c_matrices.size > 0:
             fig = plot_confusion_matrix(c_matrices, self.class_labels)
             plt.show()
 
@@ -485,7 +491,7 @@ class Trainer(object):
         if use_test_set:
             self.test_iterator.train = False
 
-            te_loss, te_f1 = self.evaluate(self.test_iterator)
+            te_loss, te_f1, c_matrices = self.evaluate(self.test_iterator, show_progress=True, progress_label="Evaluating TEST")
             self.pre_training.info('TEST loss:\t{}'.format(te_loss))
             self.pre_training.info('TEST f1-s:\t{}'.format(te_f1))
             self._log_scalar(None, te_loss, 'final', 'test/loss', 0)
