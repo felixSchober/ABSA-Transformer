@@ -380,23 +380,3 @@ class PositionalEncoding2(nn.Module):
             pe.cuda()
         x = x + pe
         return self.dropout(x)
-
-
-# testing layers individually
-if __name__ == '__main__':
-    num_units = 512
-    torch.manual_seed(42)
-    # 10 words with a 100-length embedding
-    inputs = Variable(torch.randn((100, 10)))
-
-    # first 'layer'
-    outputs = PositionalEncoding(num_units)(inputs)
-    outputs = MultiHeadedSelfAttentionLayer().forward(outputs, outputs, outputs)
-    outputs = PointWiseFCLayer().forward(outputs)
-
-    # second 'layer'
-    outputs = MultiHeadedSelfAttentionLayer()(outputs, outputs, outputs)
-    outputs = PointWiseFCLayer()(outputs)
-
-    print(outputs)   
-
