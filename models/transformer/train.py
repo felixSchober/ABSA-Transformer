@@ -138,7 +138,7 @@ class Trainer(object):
         self.text_reverser = [iterator.dataset.fields['inputs_word'] for iterator in data_iterators]
         self.label_reverser = self.train_iterator.dataset.fields['labels']
 
-        self.class_labels = list(self.train_iterator.dataset.fields['labels'].vocab.freqs.keys())
+        self.class_labels = list(self.train_iterator.dataset.fields['labels'].vocab.itos)
         self.num_labels = num_labels
 
         self.pre_training.info('Classes: {}'.format(self.class_labels))
@@ -218,8 +218,8 @@ class Trainer(object):
         self.optimizer.optimizer.zero_grad()
 
         # Compute loss and gradient
-        # TODO: Provide masks
-        loss = self._get_loss(input, None, target)
+        source_mask = self.create_padding_masks(target, 1)
+        loss = self._get_loss(input, source_mask, target)
 
         # preform training step
         loss.backward()
@@ -310,7 +310,7 @@ class Trainer(object):
                 loss = self._get_loss(x, None, y)
                 losses.append(loss.item())
                 # TODO: Source mask
-                source_mask = None
+                source_mask = self.create_padding_masks(y, 1)
                 prediction = self.model.predict(x, source_mask) # [batch_size, num_words] in the collnl2003 task num labels will contain the predicted class for the label
                 #text = self.text_reverser[1].reverse(x)
 
@@ -487,7 +487,7 @@ class Trainer(object):
         # Restore best model
         try:
             self._restore_best_model()
-        except expression as identifier:
+        except:
             self.logger.error("Could not restore best model")
 
         self.logger.debug('Exit training')
@@ -495,7 +495,7 @@ class Trainer(object):
         if perform_evaluation:
             try:
                 (train_results, validation_results, test_results) = self.perform_final_evaluation()
-            except expression as identifier:
+            except:
                 self.logger.error("Could not perform evaluation at the end of the training.")
                 train_results = (0, 0, np.zeros((12, 12)))
                 validation_results = (0, 0, np.zeros((12, 12)))
@@ -513,6 +513,10 @@ class Trainer(object):
             'result_valid': validation_results,
             'result_test': test_results
         }
+
+    def create_padding_masks(self, targets: torch.Tensor, padd_class: int) -> torch.Tensor:
+        input_mask = (targets != padd_class).unsqueeze(-2)
+        return input_mask
 
     def perform_final_evaluation(self, use_test_set: bool=True) -> Tuple[EvaluationResult, EvaluationResult, EvaluationResult]:
         self.pre_training.info('Perform final model evaluation')
