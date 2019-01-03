@@ -3,6 +3,7 @@ warnings.filterwarnings('ignore') # see https://stackoverflow.com/questions/4316
 
 import os
 import logging
+import time
 from tensorboardX import SummaryWriter
 from misc.visualizer import plot_confusion_matrix
 import time
@@ -181,13 +182,13 @@ class Trainer(object):
         self.early_stopping_counter = self.early_stopping
         self._reset_histories()
 
-    def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float):
+    def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float, valid_accuracy: float, epoch_duration: float, duration: float, total_time: float):
         
-        summary = '{0}\t{1}\t{2:.3f}\t\t{3:.3f}\t\t{4:.3f}'.format(epoch, iteration, train_loss, valid_loss, valid_f1)
+        summary = '{0}\t{1}\t{2:.3f}\t\t{3:.3f}\t\t{4:.3f}\t\t{5:.3f}\t\t{6:.2f}m - {7:.1f}m / {8:.1f}m'.format(epoch, iteration, train_loss, valid_loss, valid_f1, valid_accuracy, epoch_duration / 60, duration / 60, total_time / 60)
         # end of epoch -> directly output + results during epoch training
         if iteration % self.iterations_per_epoch_train == 0:
             if epoch == 0:
-                self.logger_prediction.info('# EP\t# IT\ttr loss\t\tval loss\tf1')
+                self.logger_prediction.info('# EP\t# IT\ttr loss\t\tval loss\tf1\t\tacc\t\tduration / total time')
 
 
             if self.between_epochs_validation_texts != '':
@@ -356,7 +357,7 @@ class Trainer(object):
         self.logger.debug('Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(avg_loss, avg_f1, c_matrices))
         return (avg_loss, avg_f1, accuracy, c_matrices)
 
-    def _evaluate_and_log_train(self, iteration: int) -> Tuple[float, float, float]:
+    def _evaluate_and_log_train(self, iteration: int) -> Tuple[float, float, float, float]:
         mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
         self._log_scalar(None, mean_train_loss, 'loss', 'train/mean', iteration)
 
@@ -376,7 +377,7 @@ class Trainer(object):
 
         self._log_confusion_matrices(c_matrices, 'valid', iteration)
 
-        return (mean_train_loss, mean_valid_loss, mean_valid_f1)
+        return (mean_train_loss, mean_valid_loss, mean_valid_f1, accuracy)
 
     def calculate_scores(self, prediction: torch.Tensor, targets: torch.Tensor) -> Tuple[List[float], List[float], List[float], List[float]] :
         p_size = prediction.size()
@@ -428,8 +429,12 @@ class Trainer(object):
         print('\n\n')
 
         iteration = 0
-
+        epoch_duration = 0
+        train_duration = 0
+        total_time_elapsed = 0
+        train_start = time.time()
         for epoch in range(num_epochs):
+            epoch_start = time.time()
             self.logger.debug('START Epoch {}. Current Iteration {}'.format(epoch, iteration))
 
             # Set up the batch generator for a new epoch
@@ -458,16 +463,17 @@ class Trainer(object):
 
                 if self.log_every_xth_iteration > 0 and iteration % self.log_every_xth_iteration == 0 and iteration > 1:
                     try:
-                        self._perform_iteration_evaluation(iteration)
+                        self._perform_iteration_evaluation(iteration, epoch_duration, time.time() - train_start, train_duration)
                     except:
                         self.logger.error("Could not complete iteration evaluation")
-                # ----------- End of epoch loop -----------
+            # ----------- End of epoch loop -----------
 
             self.logger.info('End of Epoch {}'.format(self.epoch))
             # at the end of each epoch, check the accuracies
             try:
-                mean_train_loss, mean_valid_loss, mean_valid_f1 = self._evaluate_and_log_train(iteration)
-                self.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1)
+                mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self._evaluate_and_log_train(iteration)
+                epoch_duration = time.time() - epoch_start
+                self.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy, epoch_duration, time.time() - train_start, train_duration)
             except:
                 self.logger.error("Could not complete end of epoch {} evaluation")
            
@@ -480,6 +486,8 @@ class Trainer(object):
                 self._perform_early_stopping()
                 continue_training = False
                 break
+
+            train_duration = self.calculate_train_duration(num_epochs, epoch, time.time() - train_start, epoch_duration)
 
         self.logger.info('STOP training.')
 
@@ -513,6 +521,14 @@ class Trainer(object):
             'result_valid': validation_results,
             'result_test': test_results
         }
+
+    def calculate_train_duration(self, num_epochs: int, current_epoch: int, time_elapsed: float, epoch_duration: float) -> float:
+        # calculate approximation of time for remaining epochs
+        epochs_remaining = num_epochs - (current_epoch + 1)
+        duration_for_remaining_epochs = epochs_remaining * epoch_duration
+
+        total_estimated_duration = time_elapsed + duration_for_remaining_epochs
+        return total_estimated_duration
 
     def create_padding_masks(self, targets: torch.Tensor, padd_class: int) -> torch.Tensor:
         input_mask = (targets != padd_class).unsqueeze(-2)
@@ -550,11 +566,11 @@ class Trainer(object):
 
         te_loss = -1
         te_f1 = -1
-        te_c_matrices = np.zeros((12, 12))
+        te_c_matrices = np.zeros((10, 10))
         if use_test_set:
             self.test_iterator.train = False
 
-            te_loss, te_f1, te_accuracy, te_c_matrices = self.evaluate(self.test_iterator, show_progress=True, progress_label="Evaluating TEST")
+            te_loss, te_f1, te_accuracy, te_c_matrices = self.evaluate(self.test_iterator, show_progress=True, progress_label="Evaluating TEST", show_c_matrix=True)
             self.pre_training.info('TEST loss:\t{}'.format(te_loss))
             self.pre_training.info('TEST f1-s:\t{}'.format(te_f1))
             self.pre_training.info('TEST accuracy:\t{}'.format(te_accuracy))
@@ -568,15 +584,17 @@ class Trainer(object):
 
         return ((tr_loss, tr_f1, tr_c_matrices), (val_loss, val_f1, val_c_matrices), (te_loss, te_f1, te_c_matrices))
 
-    def _perform_iteration_evaluation(self, iteration: int) -> None:
+    def  _perform_iteration_evaluation(self, iteration: int, epoch_duration: float, time_elapsed: float, total_time: float) -> None:
         self.logger.debug('Starting evaluation in epoch {}. Current Iteration {}'.format(self.epoch, iteration))
-        mean_train_loss, mean_valid_loss, mean_valid_f1 = self._evaluate_and_log_train(iteration)
+        mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self._evaluate_and_log_train(iteration)
         self.logger.debug('Evaluation completed')
         self.logger.info('Iteration {}'.format(iteration))
         self.logger.info('Mean train loss: {}'.format(mean_train_loss))
         self.logger.info('Mean validation loss {}'.format(mean_valid_loss))
         self.logger.info('Mean validation f1 score {}'.format(mean_valid_f1))
-        self.print_epoch_summary(self.epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1)
+        self.logger.info('Mean validation accuracy {}'.format(mean_valid_accuracy))
+
+        self.print_epoch_summary(self.epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy, epoch_duration, time_elapsed, total_time)
 
     def _reset_early_stopping(self, iteration: int, mean_valid_f1: float) -> None:
         self.logger.debug('Epoch f1 score ({}) better than last f1 score ({}). Save checkpoint'.format(mean_valid_f1, self.best_f1))
