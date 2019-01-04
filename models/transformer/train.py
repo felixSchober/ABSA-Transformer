@@ -190,17 +190,21 @@ class Trainer(object):
 
     def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float, valid_accuracy: float, epoch_duration: float, duration: float, total_time: float):
         
-        summary = '{0}\t{1}\t{2:.3f}\t\t{3:.3f}\t\t{4:.3f}\t\t{5:.3f}\t\t{6:.2f}m - {7:.1f}m / {8:.1f}m'.format(epoch, iteration, train_loss, valid_loss, valid_f1, valid_accuracy, epoch_duration / 60, duration / 60, total_time / 60)
+        summary = '{0}\t{1}\t{2:.3f}\t\t{3:.3f}\t\t{4:.3f}\t\t{5:.3f}\t\t{6:.2f}m - {7:.1f}m / {8:.1f}m'.format(epoch + 1, iteration, train_loss, valid_loss, valid_f1, valid_accuracy, epoch_duration / 60, duration / 60, total_time / 60)
         # end of epoch -> directly output + results during epoch training
         if iteration % self.iterations_per_epoch_train == 0:
             if epoch == 0:
-                self.logger_prediction.info('# EP\t# IT\ttr loss\t\tval loss\tf1\t\tacc\t\tduration / total time')
+                message = '# EP\t# IT\ttr loss\t\tval loss\tf1\t\tacc\t\tduration / total time'
+                self.logger.info(message)
+                print(message)
 
 
             if self.between_epochs_validation_texts != '':
-                self.logger_prediction.info(self.between_epochs_validation_texts)
+                self.logger.info(self.between_epochs_validation_texts)
+                print(self.between_epochs_validation_texts)
                 self.between_epochs_validation_texts = ''
-            self.logger_prediction.info(summary)
+            print(summary)
+            self.logger.info(summary)
         else:
             if self.between_epochs_validation_texts == '':
                 self.between_epochs_validation_texts = summary
@@ -293,7 +297,7 @@ class Trainer(object):
             losses.append(loss.item())
         return np.array(losses).mean()    
     
-    def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False, progress_label: str="") -> Tuple[float, float, float, np.array]:
+    def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False, progress_label: str="Evaluation") -> Tuple[float, float, float, np.array]:
         self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(iterator.epoch, len(iterator)))
         with torch.no_grad():
 
@@ -309,7 +313,7 @@ class Trainer(object):
             c_matrices: List[np.array] = []
 
             if show_progress:
-                iterator = tqdm(iterator, desc=progress_label)
+                iterator = tqdm(iterator, desc=progress_label, leave=False)
             true_pos = 0
             total = 0
             for batch in iterator:
@@ -363,13 +367,13 @@ class Trainer(object):
         self.logger.debug('Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(avg_loss, avg_f1, c_matrices))
         return (avg_loss, avg_f1, accuracy, c_matrices)
 
-    def _evaluate_and_log_train(self, iteration: int) -> Tuple[float, float, float, float]:
+    def _evaluate_and_log_train(self, iteration: int, show_progress: bool = False) -> Tuple[float, float, float, float]:
         mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
         self._log_scalar(None, mean_train_loss, 'loss', 'train/mean', iteration)
 
         # perform validation loss
         self.logger.debug('Start Evaluation')
-        mean_valid_loss, mean_valid_f1, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=True)
+        mean_valid_loss, mean_valid_f1, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=True, show_progress=show_progress)
         self.logger.debug('Evaluation Complete')
         # log results
         self._log_scalar(self.val_loss_history, mean_valid_loss, 'loss', 'valid/mean', iteration)
@@ -448,7 +452,7 @@ class Trainer(object):
             self.epoch = epoch
 
             # loop iterations
-            for batch in tqdm(self.train_iterator, leave=False, desc='Epoch {}'.format(epoch)): # batch is torchtext.data.batch.Batch
+            for batch in tqdm(self.train_iterator, leave=False, desc='EP {}'.format(epoch + 1)): # batch is torchtext.data.batch.Batch
 
                 if not continue_training:
                     self.logger.info('continue_training is false -> Stop training')
@@ -477,7 +481,7 @@ class Trainer(object):
             self.logger.info('End of Epoch {}'.format(self.epoch))
             # at the end of each epoch, check the accuracies
             try:
-                mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self._evaluate_and_log_train(iteration)
+                mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self._evaluate_and_log_train(iteration, show_progress=True)
                 epoch_duration = time.time() - epoch_start
                 self.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy, epoch_duration, time.time() - train_start, train_duration)
             except:
