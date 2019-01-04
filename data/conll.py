@@ -22,6 +22,8 @@ ExamplePair = Tuple[str, str] # x, y
 ExampleSentence = List[ExamplePair]
 ExampleList = List[ExampleSentence]
 
+def preprocess_test(word):
+    return '0' if word.isdigit() else word
 
 def conll2003_dataset(tag_type, batch_size,
                           root='./conll2003', 
@@ -53,8 +55,7 @@ def conll2003_dataset(tag_type, batch_size,
     
     # Setup fields with batch dimension first
     inputs_word = ReversibleField(batch_first=True, lower=True,
-                                preprocessing=data.Pipeline(
-                                    lambda w: '0' if convert_digits and w.isdigit() else w ))           
+                                preprocessing=data.Pipeline(preprocess_test))           
 
     # the label constits of three parts:
     #   - Part of speech tag
@@ -121,7 +122,4 @@ def extract_samples(samples: List[torchtext.data.example.Example]) -> ExampleLis
         result.append(list(zip(input_words, labels)))
     return result
 
-def manual_process(input: str, data_field: torchtext.data.field.Field) -> torch.Tensor:
-    preprocessed_input = data_field.preprocess(input)
-    input_tensor = data_field.process(preprocessed_input)
-    return input_tensor
+
