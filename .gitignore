@@ -114,3 +114,5 @@ data/conll2003/
 
 # misc
 .idea/
+desktop.ini
+data/germeval2017/
