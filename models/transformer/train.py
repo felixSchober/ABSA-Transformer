@@ -139,6 +139,12 @@ class Trainer(object):
         self.text_reverser = [iterator.dataset.fields['inputs_word'] for iterator in data_iterators]
         self.label_reverser = self.train_iterator.dataset.fields['labels']
 
+        # all fields should produce the same output given the same input
+        test_output = self.text_reverser[0].process([['this', 'is', 'a', 'test']])
+        assert test_output.equal(self.text_reverser[1].process([['this', 'is', 'a', 'test']]))
+        assert test_output.equal(self.text_reverser[2].process([['this', 'is', 'a', 'test']]))
+
+
         self.class_labels = list(self.train_iterator.dataset.fields['labels'].vocab.itos)
         self.num_labels = num_labels
 
@@ -664,3 +670,21 @@ class Trainer(object):
             #shutil.copyfile(filename, os.path.join(self.checkpoint_dir, filename))
         except Exception as err:
             self.logger.exception('Could not save model.')
+
+
+    def classify_sentence(self, sentence: str) -> str:
+        x = self.manual_process(sentence, self.text_reverser[1])
+        #if self.model.is_cuda:
+        x = x.cuda()
+        y_hat = self.model.predict(x)
+        predicted_labels = self.label_reverser.reverse(y_hat)
+        return predicted_labels
+
+    def manual_process(self, input: str, data_field: torchtext.data.field.Field) -> torch.Tensor:
+        preprocessed_input = data_field.preprocess(input)
+
+        # strip spaces
+        preprocessed_input = [x.strip(' ') for x in preprocessed_input]
+        preprocessed_input = [preprocessed_input]
+        input_tensor = data_field.process(preprocessed_input)
+        return input_tensor
