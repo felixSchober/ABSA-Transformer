@@ -258,6 +258,9 @@ class CustomSequenceTaggingDataSet(Dataset):
                                                      **kwargs)
 
 
+class CustomGermEval2017Dataset(Dataset):
+    None
+
 def check_split_ratio(split_ratio):
     """Check that the split ratio argument is not malformed"""
     valid_ratio = 0.
