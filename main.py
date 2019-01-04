@@ -71,8 +71,8 @@ trainer = Trainer(
                     hyper_parameters,
                     conll2003['iters'],
                     experiment_name,
-                    log_every_xth_iteration=10,
+                    log_every_xth_iteration=-1,
                     enable_tensorboard=True,
                     dummy_input=conll2003['dummy_input'])
-result = trainer.train(1, True, False)
+result = trainer.train(2, True, False)
 evaluation_results = trainer.perform_final_evaluation()
