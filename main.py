@@ -28,7 +28,7 @@ PREFERENCES.defaults(
 use_cuda = True
 hyper_parameters = get_default_params()
 hyper_parameters.model_size = 300
-hyper_parameters.batch_size = 5
+hyper_parameters.batch_size = 12
 hyper_parameters.early_stopping = -1
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
 
