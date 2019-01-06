@@ -353,7 +353,7 @@ class LayerNorm(nn.Module):
         return self.__class__.__name__
 
 class PositionalEncoding2(nn.Module):
-    def __init__(self, d_model, max_seq_len = 200, dropout = 0.1):
+    def __init__(self, d_model, max_seq_len = 5000, dropout = 0.1):
         super().__init__()
         self.d_model = d_model
         self.dropout = nn.Dropout(dropout)

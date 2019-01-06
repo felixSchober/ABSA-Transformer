@@ -8,7 +8,8 @@ import torchtext
 from torchtext import data
 from torchtext.vocab import Vectors, GloVe, CharNGram
 from torchtext.datasets import SequenceTaggingDataset, CoNLL2000Chunking
-from prettytable  import PrettyTable
+from prettytable import PrettyTable
+from stop_words import get_stop_words
 
 from data.custom_fields import ReversibleField
 from data.custom_datasets import CustomGermEval2017Dataset
@@ -32,7 +33,12 @@ def germeval2017_dataset(
                     train_file='train_v1.4.tsv',
                     validation_file='dev_v1.4.tsv',
                     test_file=None,
-                    use_cuda=False):
+                    use_cuda=False,
+                    use_stop_words=True):
+    if use_stop_words:
+        stop_words = get_stop_words('de')
+    else:
+        stop_words = []
 
     # contains the sentences                
     comment_field = ReversibleField(
@@ -43,6 +49,7 @@ def germeval2017_dataset(
                             init_token=None,
                             eos_token=None,
                             is_target=False,
+                            stop_words=stop_words,
                             preprocessing=data.Pipeline(preprocess_word))
 
     relevant_field = data.Field(
@@ -60,12 +67,21 @@ def germeval2017_dataset(
                             eos_token=None,
                             use_vocab=True)
 
+    padding_field = data.Field(
+                            batch_first=True,
+                            sequential=True,
+                            use_vocab=True,
+                            init_token=None,
+                            eos_token=None,
+                            is_target=False)
+
     fields = [
         (None, None),                                       # link to comment eg: (http://twitter.com/lolloseb/statuses/718382187792478208)
         ('comments', comment_field),                         # comment itself e.g. (@KuttnerSarah @DB_Bahn Hund = Fahrgast, Hund in Box = Gepäck.skurril, oder?)
         ('relevance', relevant_field),                      # is comment relevant true/false
         ('general_sentiments', general_sentiment_field),     # sentiment of comment (positive, negative, neutral)
-        (None, None)                                        # apsect based sentiment e.g (Allgemein#Haupt:negative Sonstige_Unregelmässigkeiten#Haupt:negative Sonstige_Unregelmässigkeiten#Haupt:negative)
+        (None, None),                                        # apsect based sentiment e.g (Allgemein#Haupt:negative Sonstige_Unregelmässigkeiten#Haupt:negative Sonstige_Unregelmässigkeiten#Haupt:negative)
+        ('padding', padding_field)                          # artificial field that we append to fill it with the padding information later to create the masks
             ]
 
     train, val, test = CustomGermEval2017Dataset.splits(
@@ -85,6 +101,7 @@ def germeval2017_dataset(
 
     comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[glove_vectors])
     general_sentiment_field.build_vocab(train.general_sentiments)
+    padding_field.build_vocab(train.padding, val.comments, test.comments)
 
     stats = _show_vocab_stats(len(comment_field.vocab), len(general_sentiment_field.vocab))
     logger.info(stats)
@@ -110,6 +127,7 @@ def germeval2017_dataset(
         'dummy_input': Variable(torch.zeros((batch_size, 42), dtype=torch.long))
         }
 
+
 def _show_stats(tr_size: int, val_size: int, te_size: int) -> str:
     t = PrettyTable(['Split', 'Size'])
     t.add_row(['train', tr_size])
@@ -117,6 +135,8 @@ def _show_stats(tr_size: int, val_size: int, te_size: int) -> str:
     t.add_row(['test', te_size])
 
     result = t.get_string(title='GERM EVAL 2017 DATASET')
+    return result
+
 
 def _show_vocab_stats(x_vocab_size, y_vocab_size):
     t = PrettyTable(['Vocabulary', 'Size'])
@@ -124,3 +144,4 @@ def _show_vocab_stats(x_vocab_size, y_vocab_size):
     t.add_row(['Sentiment', y_vocab_size])
 
     result = t.get_string(title='Vocabulary Stats')
+    return result

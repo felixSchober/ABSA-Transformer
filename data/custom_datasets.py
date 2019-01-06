@@ -7,6 +7,7 @@ import tarfile
 import gzip
 import shutil
 from functools import partial
+import string
 
 import torch.utils.data
 
@@ -16,6 +17,7 @@ from torchtext.utils import download_from_url, unicode_csv_reader
 # from .utils import RandomShuffler
 # from .example import Example
 # from ..utils import download_from_url, unicode_csv_reader
+from tqdm.autonotebook import tqdm
 
 
 class Dataset(torch.utils.data.Dataset):
@@ -259,7 +261,54 @@ class CustomSequenceTaggingDataSet(Dataset):
 
 
 class CustomGermEval2017Dataset(Dataset):
-    None
+
+    @staticmethod
+    def sort_key(example):
+        for attr in dir(example):
+            if not callable(getattr(example, attr)) and \
+                    not attr.startswith("__"):
+                return len(getattr(example, attr))
+        return 0
+    
+    def __init__(self, path, fields, separator='\t', **kwargs):
+        examples = []
+
+        # remove punctuation
+        punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "–" + "„")
+
+        with open(path, encoding="utf8") as input_file:
+            for line in tqdm(input_file, desc=f'{input_file.name.split("/")[-1][0:7]}'):
+                columns = []
+                line = line.strip()
+                if line == '':
+                    continue
+                columns = line.split(separator)
+
+                # specific sentiment is missing
+                if len(columns) == 4:
+                    columns.append('')
+
+                # remove punctuation
+                comment = columns[1].translate(punctuation_remover)
+                columns[1] = ' '.join(comment.split())
+                if columns[2] == 'false':
+                    # skip for now
+                    continue
+                # add padding field
+                columns.append('')
+                examples.append(data.Example.fromlist(columns, fields))
+
+        for example in examples:
+            comment_length: int = len(example.comments)
+            if comment_length > 1500:
+                example.comments = example.comments[0:1500]
+                comment_length = 1500
+
+            example.padding = ['0'] * comment_length
+            
+        super(CustomGermEval2017Dataset, self).__init__(examples, fields,
+                                                     **kwargs)
+    
 
 def check_split_ratio(split_ratio):
     """Check that the split ratio argument is not malformed"""
