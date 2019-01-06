@@ -671,6 +671,9 @@ class Trainer(object):
             self._restore_best_model()
 
     def _close_tb_writer(self) -> None:
+        if not self.enable_tensorboard or self.tb_writer is None:
+            return
+            
         if self.tb_writer is not None:
             self.logger.debug('Try to write scalars file and close tensorboard writer')
             try:
