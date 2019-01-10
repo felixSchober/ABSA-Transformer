@@ -85,8 +85,7 @@ class Trainer(object):
                  hyperparameters: RunConfiguration,
                  dataset: Dataset,
                  experiment_name: str,
-                 enable_tensorboard: bool = True,
-                 random_accuracy:float=0.5):
+                 enable_tensorboard: bool = True):
 
         assert hyperparameters.log_every_xth_iteration >= -1
         assert model is not None
@@ -108,7 +107,7 @@ class Trainer(object):
         self.dataset = dataset
 
         self.between_epochs_validation_texts = ''
-        self.random_accuracy = random_accuracy
+        self.random_accuracy = self.dataset.trivial_accuracy
 
         self.train_iterator = dataset.train_iter
         self.valid_iterator = dataset.valid_iter
@@ -139,15 +138,6 @@ class Trainer(object):
         summary(self.model, input_size=(42,), dtype='long')
         self.pre_training.info(model_summary)
 
-        # self.text_reverser = [iterator.dataset.fields['comments'] for iterator in data_iterators]
-        # self.label_reverser = self.train_iterator.dataset.fields['general_sentiments']
-
-        # all fields should produce the same output given the same input
-        # test_output = self.dataset.source_reverser.process([['this', 'is', 'a', 'test']])
-        # assert test_output.equal(self.text_reverser[1].process([['this', 'is', 'a', 'test']]))
-        # assert test_output.equal(self.text_reverser[2].process([['this', 'is', 'a', 'test']]))
-
-        # self.class_labels = list(self.train_iterator.dataset.fields['general_sentiments'].vocab.itos)
         self.num_labels = dataset.target_size
         self.epoch = 0
         self.pre_training.info('Classes: {}'.format(self.dataset.class_labels))

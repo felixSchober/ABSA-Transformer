@@ -69,6 +69,8 @@ class Dataset(object):
         self.padding_field_name: str = ''
         self.source_reverser = None
         self.target_reverser = None
+
+        self.trivial_accuracy = 0.0
     
     def load_data(self,
                 loader,                
@@ -128,7 +130,7 @@ class Dataset(object):
         self.logger.info(stats)
         print(stats)
 
-        stats = self._show_dataset_stats(self.vocabs[1], 'General Sentiment')
+        stats = self._calculate_dataset_stats(self.vocabs[1], 'General Sentiment')
         self.logger.info(stats)
         print(stats)
 
@@ -151,7 +153,7 @@ class Dataset(object):
         result = t.get_string(title='Vocabulary Stats')
         return result
 
-    def _show_dataset_stats(self, target_vocab, title=None):
+    def _calculate_dataset_stats(self, target_vocab, title=None):
         total_samples = 0
 
         result_str = ''
@@ -168,11 +170,11 @@ class Dataset(object):
 
         for l, freq in target_vocab.freqs.items():
             acc = float(freq) / float(total_samples)
+            self.trivial_accuracy = max(self.trivial_accuracy, acc)
             t.add_row([l, acc*100])
 
         result_str += '\n\n' + t.get_string(title=title)
 
         self.total_samples = total_samples
-
         return result_str
 
