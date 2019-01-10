@@ -28,6 +28,7 @@ def preprocess_relevance_word(word: str) -> int:
     return 1
 
 def germeval2017_dataset(
+                    pretrained_vectors,
                     batch_size=80,
                     root='./germeval2017',
                     train_file='train_v1.4.tsv',
@@ -93,19 +94,9 @@ def germeval2017_dataset(
                             fields=tuple(fields)
     )
 
-    stats = _show_stats(len(train), len(val), len(test))
-    logger.info(stats)
-    print(stats)
-
-    glove_vectors = GloVe(name='6B', dim=300)
-
-    comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[glove_vectors])
+    comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[pretrained_vectors])
     general_sentiment_field.build_vocab(train.general_sentiments)
     padding_field.build_vocab(train.padding, val.comments, test.comments)
-
-    stats = _show_vocab_stats(len(comment_field.vocab), len(general_sentiment_field.vocab))
-    logger.info(stats)
-    print(stats)
 
     train_device = torch.device('cuda:0' if torch.cuda.is_available() and use_cuda else 'cpu')
     train_iter, val_iter, test_iter = data.BucketIterator.splits(
@@ -119,29 +110,14 @@ def germeval2017_dataset(
 
     return {
         'task': 'germeval2017',
+        'split_length': (len(train), len(val), len(test)),
         'iters': (train_iter, val_iter, test_iter), 
         'vocabs': (comment_field.vocab, general_sentiment_field.vocab),
-        'word_field': comment_field,
+        'fields': [comment_field, relevant_field, general_sentiment_field, padding_field],
+        'source_field_name': 'comments',
+        'target_field_name': 'general_sentiments',
+        'padding_field_name': 'padding',
         'examples': examples,
         'embeddings': (source_embedding, None),
         'dummy_input': Variable(torch.zeros((batch_size, 42), dtype=torch.long))
         }
-
-
-def _show_stats(tr_size: int, val_size: int, te_size: int) -> str:
-    t = PrettyTable(['Split', 'Size'])
-    t.add_row(['train', tr_size])
-    t.add_row(['validation', val_size])
-    t.add_row(['test', te_size])
-
-    result = t.get_string(title='GERM EVAL 2017 DATASET')
-    return result
-
-
-def _show_vocab_stats(x_vocab_size, y_vocab_size):
-    t = PrettyTable(['Vocabulary', 'Size'])
-    t.add_row(['Comments', x_vocab_size])
-    t.add_row(['Sentiment', y_vocab_size])
-
-    result = t.get_string(title='Vocabulary Stats')
-    return result

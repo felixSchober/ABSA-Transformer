@@ -1,22 +1,12 @@
 import warnings
-
 warnings.filterwarnings(
     'ignore')  # see https://stackoverflow.com/questions/43162506/undefinedmetricwarning-f-score-is-ill-defined-and-being-set-to-0-0-in-labels-wi
 
 import os
 import logging
 import time
-from tensorboardX import SummaryWriter
-from misc.visualizer import plot_confusion_matrix
-import time
-import os
 import shutil
 from typing import Tuple, List, Dict, Optional, Union
-import matplotlib.pyplot as plt
-
-from misc.utils import set_seeds, torch_summarize, to_one_hot
-from misc.hyperparameters import HyperParameters
-from misc.torchsummary import summary
 
 from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
 import numpy as np
@@ -26,8 +16,15 @@ import torch.nn.functional as F
 import torchtext
 from torch.autograd import *
 from tqdm.autonotebook import tqdm
+from tensorboardX import SummaryWriter
+import matplotlib.pyplot as plt
 
-# from tqdm import tqdm
+from misc.visualizer import plot_confusion_matrix
+from misc.utils import set_seeds, torch_summarize, to_one_hot, get_class_variable_table
+from misc.run_configuration import RunConfiguration
+from misc.torchsummary import summary
+from data.data_loader import Dataset
+
 DEFAULT_CHECKPOINT_PATH = ''
 
 ModelCheckpoint = Optional[
@@ -52,10 +49,11 @@ class Trainer(object):
     model: nn.Module
     loss: nn.Module
     optimizer: torch.optim.Optimizer
-    parameters: HyperParameters
+    parameters: RunConfiguration
     trainIterator: torchtext.data.Iterator
     valid_iterator: torchtext.data.Iterator
     test_iterator: torchtext.data.Iterator
+    dataset: Dataset
     experiment_name: str
     between_epochs_validation_texts: str
     early_stopping: int
@@ -80,26 +78,21 @@ class Trainer(object):
     val_acc_history: List[float]
     val_loss_history: List[float]
 
-    class_labels: List[str]
-
     def __init__(self,
-                 num_labels: int,
                  model: nn.Module,
                  loss: nn.Module,
                  optimizer: torch.optim.Optimizer,
-                 parameters: HyperParameters,
-                 data_iterators: Tuple[torchtext.data.Iterator, torchtext.data.Iterator, torchtext.data.Iterator],
+                 hyperparameters: RunConfiguration,
+                 dataset: Dataset,
                  experiment_name: str,
-                 seed: int = 42,
                  enable_tensorboard: bool = True,
-                 dummy_input: torch.Tensor = None,
-                 log_every_xth_iteration=-1):
+                 random_accuracy:float=0.5):
 
-        assert len(data_iterators) == 3
-        assert log_every_xth_iteration >= -1
+        assert hyperparameters.log_every_xth_iteration >= -1
         assert model is not None
         assert loss is not None
         assert optimizer is not None
+        assert dataset is not None
 
         # this logger will not print to the console. Only to the file.
         self.logger = logging.getLogger(__name__)
@@ -111,23 +104,28 @@ class Trainer(object):
         self.model = model
         self.loss = loss
         self.optimizer = optimizer
-        self.parameters = parameters
+        self.hyperparameters = hyperparameters
+        self.dataset = dataset
 
         self.between_epochs_validation_texts = ''
+        self.random_accuracy = random_accuracy
 
-        self.train_iterator, self.valid_iterator, self.test_iterator = data_iterators
+        self.train_iterator = dataset.train_iter
+        self.valid_iterator = dataset.valid_iter
+        self.test_iterator = dataset.test_iter
+        
         self.iterations_per_epoch_train = len(self.train_iterator)
         self.batch_size = self.train_iterator.batch_size
         self.experiment_name = experiment_name
-        self.early_stopping = parameters.early_stopping
+        self.early_stopping = hyperparameters.early_stopping
 
         self.checkpoint_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
         self.log_imgage_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'images')
 
         self._reset()
-        self.seed = seed
+        self.seed = hyperparameters.seed
         self.enable_tensorboard = enable_tensorboard
-        self.log_every_xth_iteration = log_every_xth_iteration
+        self.log_every_xth_iteration = hyperparameters.log_every_xth_iteration
 
         # this logger will not print to the console. Only to the file.
         self.logger = logging.getLogger(__name__)
@@ -136,26 +134,28 @@ class Trainer(object):
         self.logger_prediction = logging.getLogger('prediction')
         self.pre_training = logging.getLogger('pre_training')
 
-        self.pre_training.info(summary(self.model, input_size=(42,), dtype='long'))
-
-        self.text_reverser = [iterator.dataset.fields['comments'] for iterator in data_iterators]
-        self.label_reverser = self.train_iterator.dataset.fields['general_sentiments']
-
-        # all fields should produce the same output given the same input
-        test_output = self.text_reverser[0].process([['this', 'is', 'a', 'test']])
-        assert test_output.equal(self.text_reverser[1].process([['this', 'is', 'a', 'test']]))
-        assert test_output.equal(self.text_reverser[2].process([['this', 'is', 'a', 'test']]))
-
-        self.class_labels = list(self.train_iterator.dataset.fields['general_sentiments'].vocab.itos)
-        self.num_labels = num_labels
-        self.epoch = 0
-        self.pre_training.info('Classes: {}'.format(self.class_labels))
-
         model_summary = torch_summarize(model)
         self.pre_training.info(model_summary)
+        summary(self.model, input_size=(42,), dtype='long')
+        self.pre_training.info(model_summary)
+
+        # self.text_reverser = [iterator.dataset.fields['comments'] for iterator in data_iterators]
+        # self.label_reverser = self.train_iterator.dataset.fields['general_sentiments']
+
+        # all fields should produce the same output given the same input
+        # test_output = self.dataset.source_reverser.process([['this', 'is', 'a', 'test']])
+        # assert test_output.equal(self.text_reverser[1].process([['this', 'is', 'a', 'test']]))
+        # assert test_output.equal(self.text_reverser[2].process([['this', 'is', 'a', 'test']]))
+
+        # self.class_labels = list(self.train_iterator.dataset.fields['general_sentiments'].vocab.itos)
+        self.num_labels = dataset.target_size
+        self.epoch = 0
+        self.pre_training.info('Classes: {}'.format(self.dataset.class_labels))
+        
         if enable_tensorboard:
-            self._setup_tensorboard(dummy_input, model_summary)
+            self._setup_tensorboard(dataset.dummy_input, model_summary)
         self._log_hyperparameters()
+
         # TODO: initialize the rest of the trainings parameters
         # https://github.com/kolloldas/torchnlp/blob/master/torchnlp/common/train.py
 
@@ -276,7 +276,7 @@ class Trainer(object):
 
     def _log_confusion_matrices(self, c_matrices, figure_name, iteration):
         if c_matrices is not None and c_matrices != []:
-            fig = plot_confusion_matrix(c_matrices, self.class_labels)
+            fig = plot_confusion_matrix(c_matrices, self.dataset.class_labels)
             plt.savefig(os.path.join(self.log_imgage_dir, 'c_{}.png'.format(iteration)))
             if self.enable_tensorboard and self.tb_writer is not None:
                 self.tb_writer.add_figure('confusion_matrix/{}'.format(figure_name), fig, iteration)
@@ -286,8 +286,13 @@ class Trainer(object):
             self.tb_writer.add_text(name, text, 0)
 
     def _log_hyperparameters(self):
-        None
-        # TODO
+        varibable_output = get_class_variable_table(self, 'Trainer')
+        self.logger.debug(varibable_output)
+        self._log_text(varibable_output, 'parameters/trainer')
+
+        varibable_output = get_class_variable_table(self.hyperparameters, 'Hyper Parameters')
+        self.logger.debug(varibable_output)
+        self._log_text(varibable_output, 'parameters/hyperparameters')
 
     def _compute_validation_losses(self) -> float:
         self.valid_iterator.init_epoch()
@@ -385,7 +390,10 @@ class Trainer(object):
         # log results
         self._log_scalar(self.val_loss_history, mean_valid_loss, 'loss', 'valid/mean', iteration)
         self._log_scalar(self.val_acc_history, mean_valid_f1, 'f1', 'valid/mean', iteration)
-        self._log_scalar(None, accuracy, 'accuracy', 'valid/mean', iteration)
+        self._log_scalars({
+            'random': self.random_accuracy,
+            'current': accuracy
+        }, 'valid/accuracy', iteration)
         # log combined scalars
         self._log_scalars({
             'train': mean_train_loss,
@@ -590,7 +598,7 @@ class Trainer(object):
         self._log_scalar(None, tr_f1, 'final', 'train/f1', 0)
 
         if tr_c_matrices is not None:
-            fig = plot_confusion_matrix(tr_c_matrices, self.class_labels)
+            fig = plot_confusion_matrix(tr_c_matrices, self.dataset.class_labels)
             plt.show()
 
         self.pre_training.debug('--- Valid Scores ---')
@@ -604,7 +612,7 @@ class Trainer(object):
         self._log_scalar(None, val_loss, 'final', 'train/loss', 0)
         self._log_scalar(None, val_f1, 'final', 'train/f1', 0)
         if val_c_matrices is not None:
-            fig = plot_confusion_matrix(val_c_matrices, self.class_labels)
+            fig = plot_confusion_matrix(val_c_matrices, self.dataset.class_labels)
             plt.show()
 
         te_loss = -1
@@ -623,7 +631,7 @@ class Trainer(object):
             self._log_scalar(None, te_loss, 'final', 'test/loss', 0)
             self._log_scalar(None, te_f1, 'final', 'test/f1', 0)
             if te_c_matrices is not None:
-                fig = plot_confusion_matrix(te_c_matrices, self.class_labels)
+                fig = plot_confusion_matrix(te_c_matrices, self.dataset.class_labels)
                 plt.show()
 
         return ((tr_loss, tr_f1, tr_c_matrices), (val_loss, val_f1, val_c_matrices), (te_loss, te_f1, te_c_matrices))
@@ -673,7 +681,7 @@ class Trainer(object):
     def _close_tb_writer(self) -> None:
         if not self.enable_tensorboard or self.tb_writer is None:
             return
-            
+
         if self.tb_writer is not None:
             self.logger.debug('Try to write scalars file and close tensorboard writer')
             try:
@@ -717,11 +725,11 @@ class Trainer(object):
             self.logger.exception('Could not save model.')
 
     def classify_sentence(self, sentence: str) -> str:
-        x = self.manual_process(sentence, self.text_reverser[1])
+        x = self.manual_process(sentence, self.dataset.source_reverser[1])
         # if self.model.is_cuda:
         x = x.cuda()
         y_hat = self.model.predict(x)
-        predicted_labels = self.label_reverser.reverse(y_hat)
+        predicted_labels = self.dataset.target_reverser.reverse(y_hat)
         return predicted_labels
 
     def manual_process(self, input: str, data_field: torchtext.data.field.Field) -> torch.Tensor:

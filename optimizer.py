@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from misc.hyperparameters import HyperParameters
+from misc.run_configuration import RunConfiguration
 
 class NoamOptimizer(object):
     "Noam Optim wrapper that implements rate."
@@ -37,12 +37,12 @@ class NoamOptimizer(object):
 
 
         
-def get_default_optimizer(model, hyper_parameters: HyperParameters):
+def get_default_optimizer(model, hyperparameters: RunConfiguration):
     adam = torch.optim.Adam(model.parameters(),
-                            lr=hyper_parameters.learning_rate,
-                            betas=(hyper_parameters.optim_adam_beta1, hyper_parameters.optim_adam_beta2),
+                            lr=hyperparameters.learning_rate,
+                            betas=(hyperparameters.optim_adam_beta1, hyperparameters.optim_adam_beta2),
                             eps=1e-9)
-    return NoamOptimizer(hyper_parameters.model_size,
-                         hyper_parameters.learning_rate_factor,
-                         hyper_parameters.learning_rate_warmup,
+    return NoamOptimizer(hyperparameters.model_size,
+                         hyperparameters.learning_rate_factor,
+                         hyperparameters.learning_rate_warmup,
                          adam)

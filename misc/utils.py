@@ -11,6 +11,8 @@ from torch.nn.modules.module import _addindent
 import torch
 import random
 import locale
+from prettytable import PrettyTable
+
 
 locale.setlocale(locale.LC_ALL, '')
 
@@ -242,3 +244,35 @@ def weights_init(m):
 def to_one_hot(labels: torch.Tensor, num_classes: int) -> torch.Tensor:
     y = torch.eye(num_classes)
     return y[labels]
+
+def get_class_variables(instance: object):
+    var = []
+    cls = instance.__class__
+    for v in cls.__dict__:
+        if not callable(getattr(cls, v)) and not str.startswith(v, '_'):
+            var.append(v)
+
+    return var
+
+def get_instance_variables(instance: object):
+    var = []
+    for v in instance.__dict__:
+        if not str.startswith(v, '_'):
+            var.append(v)
+    return var
+
+def get_class_variable_table(instance: object, title: str=None) -> str:
+    variables = get_instance_variables(instance)
+
+    if title is None:
+        title = type(instance).__name__
+
+    t = PrettyTable(['Parameter', 'Value'])
+    for var in variables:
+        var_value = str(instance.__dict__[var])
+        if len(var_value) > 40:
+            var_value = var_value[:40] + '[...]' + var_value[-4:]
+        t.add_row([var, str(var_value)])
+    
+    result = t.get_string(title=title)
+    return result

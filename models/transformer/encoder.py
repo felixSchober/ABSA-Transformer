@@ -7,12 +7,14 @@ import numpy as np
 import models.transformer.constants as constants
 from models.transformer.layers import *
 from models.transformer.embeddings import Embeddings
+from misc.run_configuration import RunConfiguration
 
 class TransformerEncoder(nn.Module):
 
     def __init__(self,
                 src_embeddings: nn.Embedding,
                 d_vocab: int = None,
+                hyperparameters: RunConfiguration=None,
                 n_enc_blocks=constants.DEFAULT_ENCODER_BLOCKS,
                 n_head=constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS,
                 d_model=constants.DEFAULT_LAYER_SIZE,
@@ -45,17 +47,30 @@ class TransformerEncoder(nn.Module):
             self.src_embeddings = src_embeddings
             #self.src_embeddings.weight.requires_grad = False
 
-        self.positional_encoding = PositionalEncoding2(d_model)
-        self.n_head = n_head
-        self.n_enc_blocks = n_enc_blocks
-        self.d_model = d_model
-        self.dropout_rate = dropout_rate
-        self.pointwise_layer_size = pointwise_layer_size
-        self.d_k = d_k
-        self.d_v = d_v
+        
+
+        if hyperparameters is None:
+            self.n_head = n_head
+            self.n_enc_blocks = n_enc_blocks
+            self.d_model = d_model
+            self.dropout_rate = dropout_rate
+            self.pointwise_layer_size = pointwise_layer_size
+            self.d_k = d_k
+            self.d_v = d_v
+        else:
+            self.n_head = hyperparameters.n_heads
+            self.n_enc_blocks = hyperparameters.n_enc_blocks
+            self.d_model = hyperparameters.model_size
+            self.dropout_rate = hyperparameters.dropout_rate
+            self.pointwise_layer_size = hyperparameters.pointwise_layer_size
+            self.d_k = hyperparameters.d_k
+            self.d_v = hyperparameters.d_v
+
+        self.positional_encoding = PositionalEncoding2(self.d_model)
+
 
         self.encoder_blocks = self._initialize_encoder_blocks()
-        self.layer_norm = LayerNorm(d_model)
+        self.layer_norm = LayerNorm(self.d_model)
         
 
     def _initialize_encoder_blocks(self) -> nn.ModuleList:
