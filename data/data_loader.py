@@ -39,7 +39,7 @@ class Dataset(object):
         self.dataset = None
         self.vocabs = []
         self.task = ''
-        self.exaples = []
+        self.examples = []
 
         self.batch_size = configuration.batch_size
         self.language = configuration.language
@@ -98,7 +98,8 @@ class Dataset(object):
         self.split_length = self.dataset['split_length']
         self.train_iter, self.valid_iter, self.test_iter = self.dataset['iters']
         self.fields = self.dataset['fields']
-        self.exaples = self.dataset['examples']
+        self.target = self.dataset['target']
+        self.examples = self.dataset['examples']
         self.embedding = self.dataset['embeddings']
         self.dummy_input = self.dataset['dummy_input']
         self.source_field_name = self.dataset['source_field_name']
@@ -109,8 +110,8 @@ class Dataset(object):
         self.source_embedding = self.embedding[self.source_index]
         self.class_labels = list(self.vocabs[self.target_vocab_index].itos)
 
-        self.source_reverser = self.fields[self.source_index]
-        self.target_reverser = self.fields[self.target_vocab_index]
+        self.source_reverser = self.dataset['source_field']
+        self.target_reverser = self.target[0]
 
         self.log_parameters()
         self.show_stats()
@@ -145,36 +146,40 @@ class Dataset(object):
 
     def _show_field_stats(self):
         t = PrettyTable(['Vocabulary', 'Size'])
-        t.add_row(['Comments', len(self.fields[0].vocab)])
-        t.add_row(['Relevant', 2])
-        t.add_row(['General Sentiment', len(self.fields[2].vocab)])
-        t.add_row(['Padding', 2])
+        for (name, f) in self.fields.items():
+            if name is None or not f.use_vocab:
+                continue
+            t.add_row([name, len(f.vocab)])
 
         result = t.get_string(title='Vocabulary Stats')
         return result
 
     def _calculate_dataset_stats(self, target_vocab, title=None):
-        total_samples = 0
 
-        result_str = ''
+        result_str = '\n\n'
+        for name, f in self.target:
+            if name is None or not f.use_vocab:
+                continue
+            total_samples = 0
 
-        t = PrettyTable(['Label', 'Samples'])
-        for l, freq in target_vocab.freqs.items():
-            t.add_row([l, freq])
-            total_samples += freq
-        t.add_row(['Sum', total_samples])
-        result_str = t.get_string(title=title)
 
-        # trivial classifier
-        t = PrettyTable(['Label', 'Triv. Accuracy'])
+            t = PrettyTable(['Label', 'Samples'])
+            for l, freq in f.vocab.freqs.items():
+                t.add_row([l, freq])
+                total_samples += freq
+            t.add_row(['Sum', total_samples])
+            result_str += t.get_string(title=name)
 
-        for l, freq in target_vocab.freqs.items():
-            acc = float(freq) / float(total_samples)
-            self.trivial_accuracy = max(self.trivial_accuracy, acc)
-            t.add_row([l, acc*100])
+            # trivial classifier
+            t = PrettyTable(['Label', 'Triv. Accuracy'])
 
-        result_str += '\n\n' + t.get_string(title=title)
+            for l, freq in target_vocab.freqs.items():
+                acc = float(freq) / float(total_samples)
+                self.trivial_accuracy = max(self.trivial_accuracy, acc)
+                t.add_row([l, acc*100])
 
-        self.total_samples = total_samples
+            result_str += '\n\n' + t.get_string(title=name) + '\n\n'
+
+            self.total_samples = total_samples
         return result_str
 

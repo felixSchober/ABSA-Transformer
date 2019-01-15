@@ -104,8 +104,10 @@ def germeval2017_dataset(
     padding_field.build_vocab(train.padding, val.comments, test.comments)
 
     # build aspect fields
+    aspect_sentiment_fields = []
     for s_cat, f in train.aspect_sentiment_fields:
         f.build_vocab(train.__getattr__(s_cat), val.__getattr__(s_cat), test.__getattr__(s_cat))
+        aspect_sentiment_fields.append(f)
 
     train_device = torch.device('cuda:0' if torch.cuda.is_available() and use_cuda else 'cpu')
     train_iter, val_iter, test_iter = data.BucketIterator.splits(
@@ -122,9 +124,11 @@ def germeval2017_dataset(
         'split_length': (len(train), len(val), len(test)),
         'iters': (train_iter, val_iter, test_iter), 
         'vocabs': (comment_field.vocab, general_sentiment_field.vocab),
-        'fields': [comment_field, relevant_field, general_sentiment_field, padding_field],
+        'fields': fields,
         'source_field_name': 'comments',
+        'source_field': comment_field,
         'target_field_name': 'general_sentiments',
+        'target': [('general_sentiments', general_sentiment_field)] + train.aspect_sentiment_fields,
         'padding_field_name': 'padding',
         'examples': examples,
         'embeddings': (source_embedding, None),
