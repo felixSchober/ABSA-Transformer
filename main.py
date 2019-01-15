@@ -25,6 +25,7 @@ from models.transformer.train import Trainer
 
 
 experiment_name = 'just-testing'
+print('\n\nABSA Transformer\n\n')
 
 PREFERENCES.defaults(
     data_root='./data/germeval2017',
@@ -47,7 +48,7 @@ experiment_name = utils.create_loggers(experiment_name=experiment_name)
 
 dataset = Dataset(
     'germeval',
-    logging.getLogger('pre_training'),
+    logging.getLogger('dataset'),
     hyperparameters,
     source_index=0,
     target_vocab_index=1,

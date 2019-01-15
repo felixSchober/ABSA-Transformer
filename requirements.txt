@@ -1,0 +1,8 @@
+PTable==0.9.2
+stop-words==2018.7.23
+torch==1.0.0
+torchtext==0.3.1
+tensorboaordX==1.5
+spacy==2.0.16
+sklearn==0.20.1
+tqdm==4.28.1

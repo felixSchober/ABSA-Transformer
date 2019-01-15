@@ -58,6 +58,7 @@ def germeval2017_dataset(
                             is_target=True,
                             sequential=False,
                             use_vocab=False,
+                            unk_token=None,
                             preprocessing=data.Pipeline(preprocess_relevance_word))
 
     general_sentiment_field = ReversibleField(
@@ -66,6 +67,7 @@ def germeval2017_dataset(
                             sequential=False,
                             init_token=None,
                             eos_token=None,
+                            unk_token=None,
                             use_vocab=True)
 
     padding_field = data.Field(
@@ -74,6 +76,7 @@ def germeval2017_dataset(
                             use_vocab=True,
                             init_token=None,
                             eos_token=None,
+                            unk_token=None,
                             is_target=False)
 
     fields = [
@@ -91,12 +94,18 @@ def germeval2017_dataset(
                             validation=validation_file,
                             test=test_file,
                             separator='\t',
-                            fields=tuple(fields)
+                            fields=fields
     )
 
+    # use updated fields
+    fields = train.fields
     comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[pretrained_vectors])
     general_sentiment_field.build_vocab(train.general_sentiments)
     padding_field.build_vocab(train.padding, val.comments, test.comments)
+
+    # build aspect fields
+    for s_cat, f in train.aspect_sentiment_fields:
+        f.build_vocab(train.__getattr__(s_cat), val.__getattr__(s_cat), test.__getattr__(s_cat))
 
     train_device = torch.device('cuda:0' if torch.cuda.is_available() and use_cuda else 'cpu')
     train_iter, val_iter, test_iter = data.BucketIterator.splits(

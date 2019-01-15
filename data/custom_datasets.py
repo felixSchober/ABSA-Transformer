@@ -8,6 +8,7 @@ import gzip
 import shutil
 from functools import partial
 import string
+from typing import Dict, List, Tuple, Union
 
 import torch.utils.data
 
@@ -19,6 +20,7 @@ from torchtext.utils import download_from_url, unicode_csv_reader
 # from ..utils import download_from_url, unicode_csv_reader
 from tqdm.autonotebook import tqdm
 
+from data.custom_fields import ReversibleField
 
 class Dataset(torch.utils.data.Dataset):
     """Defines a dataset composed of Examples along with its Fields.
@@ -77,12 +79,19 @@ class Dataset(torch.utils.data.Dataset):
         """
         if path is None:
             path = cls.download(root)
+
         train_data = None if train is None else cls(
             os.path.join(path, train), **kwargs)
+
+        # make sure, we use exactly the same fields across all splits
+        train_fields = train_data.fields
+
         val_data = None if validation is None else cls(
-            os.path.join(path, validation), **kwargs)
+            os.path.join(path, validation), fields=train_data.fields, **kwargs)
+
         test_data = None if test is None else cls(
-            os.path.join(path, test), **kwargs)
+            os.path.join(path, test), fields=train_data.fields, **kwargs)
+
         return tuple(d for d in (train_data, val_data, test_data)
                      if d is not None)
 
@@ -211,7 +220,6 @@ class Dataset(torch.utils.data.Dataset):
                 setattr(example, field_name, example_part)
             self.examples[i] = example
 
-
 class CustomSequenceTaggingDataSet(Dataset):
     """Defines a dataset for sequence tagging. Examples in this dataset
     contain paired lists -- paired list of words and tags.
@@ -269,24 +277,130 @@ class CustomGermEval2017Dataset(Dataset):
                     not attr.startswith("__"):
                 return len(getattr(example, attr))
         return 0
-    
-    def __init__(self, path, fields, separator='\t', **kwargs):
-        examples = []
 
+    @classmethod
+    def splits(cls, path=None, root='.data', train=None, validation=None,
+               test=None, **kwargs) -> Tuple[Dataset]:
+        """Create Dataset objects for multiple splits of a dataset.
+        Arguments:
+            path (str): Common prefix of the splits' file paths, or None to use
+                the result of cls.download(root).
+            root (str): Root dataset storage directory. Default is '.data'.
+            train (str): Suffix to add to path for the train set, or None for no
+                train set. Default is None.
+            validation (str): Suffix to add to path for the validation set, or None
+                for no validation set. Default is None.
+            test (str): Suffix to add to path for the test set, or None for no test
+                set. Default is None.
+            Remaining keyword arguments: Passed to the constructor of the
+                Dataset (sub)class being used.
+        Returns:
+            Tuple[Dataset]: Datasets for train, validation, and
+            test splits in that order, if provided.
+        """
+        if path is None:
+            path = cls.download(root)
+
+        train_data = None if train is None else cls(
+            os.path.join(path, train), **kwargs)
+        print('Train loading finished')
+        # make sure, we use exactly the same fields across all splits
+        train_aspects = train_data.aspects
+
+        val_data = None if validation is None else cls(
+            os.path.join(path, validation), a_sentiment=train_aspects, **kwargs)
+
+        test_data = None if test is None else cls(
+            os.path.join(path, test), a_sentiment=train_aspects, **kwargs)
+
+        return tuple(d for d in (train_data, val_data, test_data)
+                     if d is not None)
+    
+    def __init__(self, path, fields, a_sentiment=[], separator='\t', **kwargs):
+        examples = []
+        self.aspect_sentiment_fields = []
+        self.aspects = a_sentiment if len(a_sentiment) > 0 else []
         # remove punctuation
         punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "–" + "„")
 
+        # In the end, those are the fields
+        # The file has the aspect sentiment at the first aspect sentiment position
+        # 0: link
+        # 1: Comment
+        # 2: Is Relevant
+        # 3: General Sentiment
+        # 4: Padding Field
+        # 5: aspect Sentiment 1/20
+        # 6: aspect Sentiment 2/20
+        # 7: aspect Sentiment 3/20
+        # 8: aspect Sentiment 4/20
+        # 9: aspect Sentiment 5/20
+        # 10: aspect Sentiment 6/20
+        # 11: aspect Sentiment 7/20
+        # 12: aspect Sentiment 8/20
+        # 13: aspect Sentiment 9/20
+        # 14: aspect Sentiment 10/20
+        # 15: aspect Sentiment 11/20
+        # 16: aspect Sentiment 12/20
+        # 17: aspect Sentiment 13/20
+        # 18: aspect Sentiment 14/20
+        # 19: aspect Sentiment 15/20
+        # 20: aspect Sentiment 16/20
+        # 21: aspect Sentiment 17/20
+        # 22: aspect Sentiment 18/20
+        # 23: aspect Sentiment 19/20
+        # 24: aspect Sentiment 20/20
+
+
         with open(path, encoding="utf8") as input_file:
-            for line in tqdm(input_file, desc=f'{input_file.name.split("/")[-1][0:7]}'):
+            aspect_sentiment_categories = set()
+            aspect_sentiments: List[Dict[str, str]] = []
+
+            raw_examples: List[List[Union[str, List[Dict[str, str]]]]] = []
+            for line in tqdm(input_file, desc=f'Load {input_file.name.split("/")[-1][0:7]}'):
                 columns = []
                 line = line.strip()
                 if line == '':
                     continue
                 columns = line.split(separator)
 
-                # specific sentiment is missing
+                # aspect sentiment is missing
                 if len(columns) == 4:
                     columns.append('')
+                    columns.append(dict())
+                else:
+                    # handle aspect sentiment which comes in a form of 
+                    # PART#Allgemein:negative PART#Allgemein:negative PART#Sicherheit:negative 
+
+                    # list of category - sentiment pair (Allgemein:negative)
+                    sentiments = columns[4]
+                    sentiments = sentiments.strip()
+                    sentiments = sentiments.split(' ')
+
+                    sentiment_dict = dict()
+                    for s in sentiments:
+                        category = ''
+                        sentiment = ''
+                        # remove #part
+                        s = s.split('#')
+
+                        if len(s) == 1:
+                            s = s[0]
+                            kv = s.split(':')
+                            category = kv[0]
+                            sentiment = kv[1]
+                        else:
+                            category = s[0]
+                            kv = s[1].split(':')
+                            sentiment = kv[1]
+
+                        sentiment_dict[category] = sentiment
+                    
+                    # add all new potential keys to set
+                    for s_category in sentiment_dict.keys():
+                        aspect_sentiment_categories.add(s_category)
+                    columns.append(sentiment_dict) 
+                    #aspect_sentiments.append(sentiment_dict)
 
                 # remove punctuation
                 comment = columns[1].translate(punctuation_remover)
@@ -296,8 +410,39 @@ class CustomGermEval2017Dataset(Dataset):
                     continue
                 # add padding field
                 columns.append('')
-                examples.append(data.Example.fromlist(columns, fields))
+                raw_examples.append(columns)
 
+        # process the aspect sentiment
+        if len(self.aspects) == 0:
+            aspect_sentiment_categories.add('QR-Code')
+            self.aspects = list(aspect_sentiment_categories)
+
+            # construct the fields
+            for s_cat in self.aspects:
+
+                f = ReversibleField(
+                                batch_first=True,
+                                is_target=True,
+                                sequential=False,
+                                init_token=None,
+                                eos_token=None,
+                                unk_token=None,
+                                use_vocab=True)
+                self.aspect_sentiment_fields.append((s_cat, f))
+                fields.append((s_cat, f))
+
+        for raw_example in raw_examples:
+            # go through each aspect sentiment and add it at the corresponding position
+            ss = [''] * len(self.aspects)
+            for s_category, s in raw_example[-2].items():
+                pos = self.aspects.index(s_category)
+                ss[pos] = s
+            
+            # construct example and add it
+            example = raw_example[0:5] + [raw_example[6]] + ss
+            examples.append(data.Example.fromlist(example, tuple(fields)))
+
+        # clip comments
         for example in examples:
             comment_length: int = len(example.comments)
             if comment_length > 1500:
@@ -305,10 +450,10 @@ class CustomGermEval2017Dataset(Dataset):
                 comment_length = 1500
 
             example.padding = ['0'] * comment_length
+
             
-        super(CustomGermEval2017Dataset, self).__init__(examples, fields,
-                                                     **kwargs)
-    
+        super(CustomGermEval2017Dataset, self).__init__(examples, tuple(fields),
+                                                     **kwargs)    
 
 def check_split_ratio(split_ratio):
     """Check that the split ratio argument is not malformed"""
