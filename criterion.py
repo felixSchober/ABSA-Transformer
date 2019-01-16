@@ -21,11 +21,14 @@ class CrossEntropyLoss2d(nn.Module):
 
 
 class NllLoss(nn.Module):
-    def __init__(self, output_size, weight:List[float]=None):
+    def __init__(self, output_size, weight:List[float]=None, use_cuda=True):
         super().__init__()
         self.output_size = output_size
         if weight is not None:
             self.weight = torch.Tensor(weight)
+
+            if use_cuda and torch.cuda.is_available():
+                self.weight = self.weight.cuda()
         else:
             self.weight = None
 
