@@ -132,5 +132,9 @@ def germeval2017_dataset(
         'padding_field_name': 'padding',
         'examples': examples,
         'embeddings': (source_embedding, None),
-        'dummy_input': Variable(torch.zeros((batch_size, 42), dtype=torch.long))
+        'dummy_input': Variable(torch.zeros((batch_size, 42), dtype=torch.long)),
+        'baselines': {
+            'germeval_baseline': 0.667,
+            'germeval_best': 0.749
+        }
         }

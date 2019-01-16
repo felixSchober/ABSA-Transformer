@@ -107,8 +107,6 @@ class Trainer(object):
         self.dataset = dataset
 
         self.between_epochs_validation_texts = ''
-        self.random_accuracy = self.dataset.trivial_accuracy
-
         self.train_iterator = dataset.train_iter
         self.valid_iterator = dataset.valid_iter
         self.test_iterator = dataset.test_iter
@@ -380,10 +378,8 @@ class Trainer(object):
         # log results
         self._log_scalar(self.val_loss_history, mean_valid_loss, 'loss', 'valid/mean', iteration)
         self._log_scalar(self.val_acc_history, mean_valid_f1, 'f1', 'valid/mean', iteration)
-        self._log_scalars({
-            'random': self.random_accuracy,
-            'current': accuracy
-        }, 'valid/accuracy', iteration)
+        self.dataset.baselines['current'] = accuracy
+        self._log_scalars(self.dataset.baselines, 'valid/accuracy', iteration)
         # log combined scalars
         self._log_scalars({
             'train': mean_train_loss,

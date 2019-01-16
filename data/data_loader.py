@@ -69,8 +69,9 @@ class Dataset(object):
         self.padding_field_name: str = ''
         self.source_reverser = None
         self.target_reverser = None
+        self.baselines = {}
 
-        self.trivial_accuracy = 0.0
+        self.majority_class_baseline = 0.0
     
     def load_data(self,
                 loader,                
@@ -105,6 +106,7 @@ class Dataset(object):
         self.source_field_name = self.dataset['source_field_name']
         self.target_field_name = self.dataset['target_field_name']
         self.padding_field_name = self.dataset['padding_field_name']
+        self.baselines = self.dataset['baselines']
 
         self.target_size = len(self.vocabs[self.target_vocab_index])
         self.source_embedding = self.embedding[self.source_index]
@@ -162,24 +164,25 @@ class Dataset(object):
                 continue
             total_samples = 0
 
-
-            t = PrettyTable(['Label', 'Samples'])
             for l, freq in f.vocab.freqs.items():
-                t.add_row([l, freq])
                 total_samples += freq
-            t.add_row(['Sum', total_samples])
-            result_str += t.get_string(title=name)
 
-            # trivial classifier
-            t = PrettyTable(['Label', 'Triv. Accuracy'])
-
+            majority_class_baseline = 0.0
+            t = PrettyTable(['Label', 'Samples', 'Triv. Accuracy'])
             for l, freq in target_vocab.freqs.items():
                 acc = float(freq) / float(total_samples)
-                self.trivial_accuracy = max(self.trivial_accuracy, acc)
-                t.add_row([l, acc*100])
+                majority_class_baseline = max(majority_class_baseline, acc)
+                t.add_row([l, freq, acc*100])
+
+            t.add_row(['Sum', total_samples, ''])
+
+            if not 'majority_class' in self.baselines:
+                self.baselines['majority_class'] = majority_class_baseline
+                self.majority_class_baseline = majority_class_baseline
+                self.total_samples = total_samples
+
 
             result_str += '\n\n' + t.get_string(title=name) + '\n\n'
 
-            self.total_samples = total_samples
         return result_str
 
