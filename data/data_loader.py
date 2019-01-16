@@ -70,6 +70,7 @@ class Dataset(object):
         self.source_reverser = None
         self.target_reverser = None
         self.baselines = {}
+        self.class_weights = []
 
         self.majority_class_baseline = 0.0
     
@@ -133,7 +134,7 @@ class Dataset(object):
         self.logger.info(stats)
         print(stats)
 
-        stats = self._calculate_dataset_stats(self.vocabs[1], 'General Sentiment')
+        stats = self._calculate_dataset_stats()
         self.logger.info(stats)
         print(stats)
 
@@ -156,7 +157,7 @@ class Dataset(object):
         result = t.get_string(title='Vocabulary Stats')
         return result
 
-    def _calculate_dataset_stats(self, target_vocab, title=None):
+    def _calculate_dataset_stats(self):
 
         result_str = '\n\n'
         for name, f in self.target:
@@ -164,23 +165,29 @@ class Dataset(object):
                 continue
             total_samples = 0
 
-            for l, freq in f.vocab.freqs.items():
+            f_vocab = f.vocab
+
+            for l, freq in f_vocab.freqs.items():
                 total_samples += freq
 
             majority_class_baseline = 0.0
-            t = PrettyTable(['Label', 'Samples', 'Triv. Accuracy'])
-            for l, freq in target_vocab.freqs.items():
+            class_weight = [1.0] * len(f_vocab.itos)
+            t = PrettyTable(['Label', 'Samples', 'Triv. Accuracy', 'Class Weight'])
+            for l, freq in f_vocab.freqs.items():
                 acc = float(freq) / float(total_samples)
                 majority_class_baseline = max(majority_class_baseline, acc)
-                t.add_row([l, freq, acc*100])
+                stoi_pos = f_vocab.stoi[l]
+                class_weight[stoi_pos] = 1 - acc
 
-            t.add_row(['Sum', total_samples, ''])
+                t.add_row([l, freq, acc*100, class_weight[stoi_pos]])
+
+            t.add_row(['Sum', total_samples, '', 1.0])
 
             if not 'majority_class' in self.baselines:
                 self.baselines['majority_class'] = majority_class_baseline
                 self.majority_class_baseline = majority_class_baseline
                 self.total_samples = total_samples
-
+                self.class_weights = class_weight
 
             result_str += '\n\n' + t.get_string(title=name) + '\n\n'
 

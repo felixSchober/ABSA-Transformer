@@ -39,9 +39,10 @@ hyperparameters = get_default_params()
 hyperparameters.model_size = 300
 hyperparameters.batch_size = 12
 hyperparameters.early_stopping = -1
-hyperparameters.use_cuda = True
+hyperparameters.use_cuda = False
 hyperparameters.language = 'de'
 hyperparameters.num_epochs = 25
+hyperparameters.log_every_xth_iteration = -1
 
 
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
@@ -63,7 +64,7 @@ dataset = Dataset(
 dataset.load_data(germeval2017_dataset)
 
 
-loss = NllLoss(dataset.target_size)
+loss = NllLoss(dataset.target_size, weight=dataset.class_weights)
 transformer = TransformerEncoder(dataset.source_embedding,
                                  hyperparameters=hyperparameters)
 tagging_softmax = SoftmaxOutputLayerWithCommentWiseClass(hyperparameters.model_size, dataset.target_size)
