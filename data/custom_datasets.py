@@ -1,5 +1,5 @@
 import torchtext.data as data
-
+import re
 import io
 import os
 import zipfile
@@ -14,13 +14,13 @@ import torch.utils.data
 
 from torchtext.data.utils import RandomShuffler
 from torchtext.utils import download_from_url, unicode_csv_reader
-
-# from .utils import RandomShuffler
-# from .example import Example
-# from ..utils import download_from_url, unicode_csv_reader
-from tqdm.autonotebook import tqdm
-
 from data.custom_fields import ReversibleField
+from tqdm.autonotebook import tqdm
+#from tqdm import tqdm
+import spacy
+spacy_nlp = spacy.load('de')
+from spellchecker import SpellChecker
+
 
 class Dataset(torch.utils.data.Dataset):
     """Defines a dataset composed of Examples along with its Fields.
@@ -316,7 +316,7 @@ class CustomGermEval2017Dataset(Dataset):
         return tuple(d for d in (train_data, val_data, test_data)
                      if d is not None)
     
-    def __init__(self, path, fields, a_sentiment=[], separator='\t', **kwargs):
+    def __init__(self, path, fields, a_sentiment=[], separator='\t',  use_spellchecker=False, **kwargs):
         examples = []
         self.aspect_sentiment_fields = []
         self.aspects = a_sentiment if len(a_sentiment) > 0 else []
@@ -350,6 +350,10 @@ class CustomGermEval2017Dataset(Dataset):
         # 22: aspect Sentiment 18/20
         # 23: aspect Sentiment 19/20
         # 24: aspect Sentiment 20/20
+        if use_spellchecker:
+            spell = SpellChecker(language='de')  # German dictionary
+        else:
+            spell = None
 
 
         with open(path, encoding="utf8") as input_file:
@@ -400,11 +404,12 @@ class CustomGermEval2017Dataset(Dataset):
                     for s_category in sentiment_dict.keys():
                         aspect_sentiment_categories.add(s_category)
                     columns.append(sentiment_dict) 
-                    #aspect_sentiments.append(sentiment_dict)
 
-                # remove punctuation
+                # remove punctuation and clean text
                 comment = columns[1].translate(punctuation_remover)
-                columns[1] = ' '.join(comment.split())
+                comment = ' '.join(comment.split())
+                comment = text_cleaner(columns[1], 'de', spell)
+                columns[1] = comment
                 if columns[2] == 'false':
                     # skip for now
                     continue
@@ -517,3 +522,80 @@ def rationed_split(examples, train_ratio, test_ratio, val_ratio, rnd):
     data = tuple([examples[i] for i in index] for index in indices)
 
     return data
+
+def text_cleaner(text: str, language: str, spellChecker):
+
+    if language == 'en':
+        text = en_contraction_removal(text)
+
+    parsed = spacy_nlp(text)
+    final_tokens = []
+    for t in parsed:
+        if t.is_punct or t.is_space or t.like_num or t.like_url or str(t).startswith('@'):
+            continue
+
+        if spellChecker is not None:
+            # test if word is spelled correctly
+            pass
+        
+        if t.lemma_ == '-PRON-':
+            final_tokens.append(str(t))
+        else:
+            sc_removed = re.sub("[^a-zA-Zäöüß]", '', str(t.lemma_))
+            if len(sc_removed) > 1:
+                final_tokens.append(sc_removed)
+    joined = ' '.join(final_tokens)
+    spell_corrected = re.sub(r'(.)\1+', r'\1\1', joined)
+    return spell_corrected
+
+
+def en_contraction_removal(text: str) -> str:
+    apostrophe_handled = re.sub("’", "'", text)
+    # from https://gist.githubusercontent.com/tthustla/74e99a00541264e93c3bee8b2b49e6d8/raw/599100471e8127d6efad446717dc951a10b69777/yatwapart1_01.py
+    contraction_mapping = {"ain't": "is not", "aren't": "are not","can't": "cannot", 
+                   "can't've": "cannot have", "'cause": "because", "could've": "could have", 
+                   "couldn't": "could not", "couldn't've": "could not have","didn't": "did not", 
+                   "doesn't": "does not", "don't": "do not", "hadn't": "had not", 
+                   "hadn't've": "had not have", "hasn't": "has not", "haven't": "have not", 
+                   "he'd": "he would", "he'd've": "he would have", "he'll": "he will", 
+                   "he'll've": "he will have", "he's": "he is", "how'd": "how did", 
+                   "how'd'y": "how do you", "how'll": "how will", "how's": "how is", 
+                   "I'd": "I would", "I'd've": "I would have", "I'll": "I will", 
+                   "I'll've": "I will have","I'm": "I am", "I've": "I have", 
+                   "i'd": "i would", "i'd've": "i would have", "i'll": "i will", 
+                   "i'll've": "i will have","i'm": "i am", "i've": "i have", 
+                   "isn't": "is not", "it'd": "it would", "it'd've": "it would have", 
+                   "it'll": "it will", "it'll've": "it will have","it's": "it is", 
+                   "let's": "let us", "ma'am": "madam", "mayn't": "may not", 
+                   "might've": "might have","mightn't": "might not","mightn't've": "might not have", 
+                   "must've": "must have", "mustn't": "must not", "mustn't've": "must not have", 
+                   "needn't": "need not", "needn't've": "need not have","o'clock": "of the clock", 
+                   "oughtn't": "ought not", "oughtn't've": "ought not have", "shan't": "shall not",
+                   "sha'n't": "shall not", "shan't've": "shall not have", "she'd": "she would", 
+                   "she'd've": "she would have", "she'll": "she will", "she'll've": "she will have", 
+                   "she's": "she is", "should've": "should have", "shouldn't": "should not", 
+                   "shouldn't've": "should not have", "so've": "so have","so's": "so as", 
+                   "this's": "this is",
+                   "that'd": "that would", "that'd've": "that would have","that's": "that is", 
+                   "there'd": "there would", "there'd've": "there would have","there's": "there is", 
+                       "here's": "here is",
+                   "they'd": "they would", "they'd've": "they would have", "they'll": "they will", 
+                   "they'll've": "they will have", "they're": "they are", "they've": "they have", 
+                   "to've": "to have", "wasn't": "was not", "we'd": "we would", 
+                   "we'd've": "we would have", "we'll": "we will", "we'll've": "we will have", 
+                   "we're": "we are", "we've": "we have", "weren't": "were not", 
+                   "what'll": "what will", "what'll've": "what will have", "what're": "what are", 
+                   "what's": "what is", "what've": "what have", "when's": "when is", 
+                   "when've": "when have", "where'd": "where did", "where's": "where is", 
+                   "where've": "where have", "who'll": "who will", "who'll've": "who will have", 
+                   "who's": "who is", "who've": "who have", "why's": "why is", 
+                   "why've": "why have", "will've": "will have", "won't": "will not", 
+                   "won't've": "will not have", "would've": "would have", "wouldn't": "would not", 
+                   "wouldn't've": "would not have", "y'all": "you all", "y'all'd": "you all would",
+                   "y'all'd've": "you all would have","y'all're": "you all are","y'all've": "you all have",
+                   "you'd": "you would", "you'd've": "you would have", "you'll": "you will", 
+                   "you'll've": "you will have", "you're": "you are", "you've": "you have" }
+    expanded = ' '.join([contraction_mapping[t] if t in contraction_mapping else t for t in apostrophe_handled.split(" ")])
+    return expanded
+
+    
