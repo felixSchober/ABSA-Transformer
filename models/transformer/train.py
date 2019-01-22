@@ -312,7 +312,11 @@ class Trainer(object):
                 iterator = tqdm(iterator, desc=progress_label, leave=False)
             true_pos = 0
             total = 0
+            e_iteration = 0
+            self.logger.debug(f'Start evaluation with batch size {iterator.batch_size}.')
             for batch in iterator:
+                self.logger.debug(f'Starting evaluation @{e_iteration}')
+                e_iteration += 1
                 x, y, padding = batch.comments, batch.general_sentiments, batch.padding
                 source_mask = self.create_padding_masks(padding, 1)
 
@@ -321,15 +325,17 @@ class Trainer(object):
 
                 # [batch_size, num_words] in the collnl2003 task num labels will contain the
                 # predicted class for the label
+                self.logger.debug(f'Predicting samples with size {x.size()}.')
                 prediction = self.model.predict(x, source_mask)
 
                 # get true positives
+                self.logger.debug('Prediction finished. Calculating scores')
                 true_pos += ((y == prediction).sum()).item()
                 # total += y.shape[0] * y.shape[1]
                 total += y.shape[0]
                 f_scores, p_scores, r_scores, s_scores = self.calculate_scores(prediction.data, y)
                 if show_c_matrix:
-
+                    self.logger.debug('Calculating c_matrices')
                     if len(y.shape) > 1 and len(prediction.shape) > 1 and y.shape != (1, 1) and prediction.shape != (1, 1):
                         y_single = y.squeeze().cpu()
                         y_hat_single = prediction.squeeze().cpu()
@@ -341,11 +347,22 @@ class Trainer(object):
                 # average accuracy for batch
                 batch_f1 = np.array(f_scores).mean()
                 f1_scores.append(batch_f1)
+                self.logger.debug(f'Evaluation iteration finished with f1 of {batch_f1}.')
+                self.logger.debug('Clearing up memory')
+                del batch
+                del prediction
+                del x
+                del y
+                del loss
+
             # free up memory
+            self.logger.debug('Evaluation finished. Clearing up memory')
             del batch
             del prediction
             del x
             del y
+            self.logger.debug('Memory cleared')
+
             avg_loss = np.array(losses).mean()
             accuracy = float(true_pos) / float(total)
 
@@ -353,9 +370,11 @@ class Trainer(object):
             avg_f1 = f1_scores.mean()
 
             if show_c_matrix:
+                self.logger.debug(f'Resetting batch size to {prev_batch_size}.')
                 iterator.batch_size = prev_batch_size
 
             if show_c_matrix:
+                self.logger.debug('Calculating confusion matrix sum')
                 c_matrices = np.array(c_matrices)
                 # sum element wise to get total count
                 c_matrices = c_matrices.sum(axis=0)
@@ -494,8 +513,8 @@ class Trainer(object):
                     try:
                         self._perform_iteration_evaluation(iteration, epoch_duration, time.time() - train_start,
                                                            train_duration)
-                    except:
-                        self.logger.error("Could not complete iteration evaluation")
+                    except Exception as err:
+                        self.logger.exception("Could not complete iteration evaluation")
             # ----------- End of epoch loop -----------
 
             self.logger.info('End of Epoch {}'.format(self.epoch))
@@ -507,8 +526,8 @@ class Trainer(object):
                 epoch_duration = time.time() - epoch_start
                 self.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1,
                                          mean_valid_accuracy, epoch_duration, time.time() - train_start, train_duration)
-            except:
-                self.logger.error("Could not complete end of epoch {} evaluation")
+            except Exception as err:
+                self.logger.exception("Could not complete end of epoch {} evaluation")
 
             # early stopping if no improvement of val_acc during the last self.early_stopping epochs
             # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
@@ -527,16 +546,16 @@ class Trainer(object):
         # Restore best model
         try:
             self._restore_best_model()
-        except:
-            self.logger.error("Could not restore best model")
+        except Exception as err:
+            self.logger.exception("Could not restore best model")
 
         self.logger.debug('Exit training')
 
         if perform_evaluation:
             try:
                 (train_results, validation_results, test_results) = self.perform_final_evaluation()
-            except:
-                self.logger.error("Could not perform evaluation at the end of the training.")
+            except Exception as err:
+                self.logger.exception("Could not perform evaluation at the end of the training.")
                 train_results = (0, 0, np.zeros((12, 12)))
                 validation_results = (0, 0, np.zeros((12, 12)))
                 test_results = (0, 0, np.zeros((12, 12)))

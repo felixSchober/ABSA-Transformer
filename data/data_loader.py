@@ -123,19 +123,19 @@ class Dataset(object):
 
     def log_parameters(self):
         parameter_table = get_class_variable_table(self, 'Data Loader')
-        self.logger.info(parameter_table)
+        self.logger.info('\n' + parameter_table)
 
     def show_stats(self):
         stats = self._show_split_stats()
-        self.logger.info(stats)
+        self.logger.info('\n' + stats)
         print(stats)
 
         stats = self._show_field_stats()
-        self.logger.info(stats)
+        self.logger.info('\n' + stats)
         print(stats)
 
         stats = self._calculate_dataset_stats()
-        self.logger.info(stats)
+        self.logger.info('\n' + stats)
         print(stats)
 
     def _show_split_stats(self) -> str:

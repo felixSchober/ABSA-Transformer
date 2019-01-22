@@ -406,9 +406,12 @@ class CustomGermEval2017Dataset(Dataset):
                     columns.append(sentiment_dict) 
 
                 # remove punctuation and clean text
-                comment = columns[1].translate(punctuation_remover)
-                comment = ' '.join(comment.split())
-                comment = text_cleaner(columns[1], 'de', spell)
+                comment = columns[1]
+                comment = harmonize_bahn_names(comment.split(' '))
+                comment = ' '.join(comment)
+                comment = text_cleaner(comment, 'de', spell)
+                comment = comment.translate(punctuation_remover)
+
                 columns[1] = comment
                 if columns[2] == 'false':
                     # skip for now
@@ -531,6 +534,7 @@ def text_cleaner(text: str, language: str, spellChecker):
     parsed = spacy_nlp(text)
     final_tokens = []
     for t in parsed:
+
         if t.is_punct or t.is_space or t.like_num or t.like_url or str(t).startswith('@'):
             continue
 
@@ -598,4 +602,28 @@ def en_contraction_removal(text: str) -> str:
     expanded = ' '.join([contraction_mapping[t] if t in contraction_mapping else t for t in apostrophe_handled.split(" ")])
     return expanded
 
-    
+def harmonize_bahn_names(text_tokens: List[str]) -> List[str]:
+    bahn_syn = [
+        'db',
+        'deutschebahn',
+        "db_bahn",
+        "bahn.de",
+        "@db_bahn",
+        "#db",
+        "@db",
+        "#db_bahn",
+        "@bahn",
+        "#bahn",
+        "@dbbahn",
+        "#dbbahn",
+        "#dbbahn"
+        "www.bahn.de",
+        "dbbahn"
+    ]
+    result = []
+    for token in text_tokens:
+        if token.lower() in bahn_syn:
+            result.append('db')
+        else:
+            result.append(token)
+    return result
