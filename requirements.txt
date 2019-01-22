@@ -6,3 +6,4 @@ tensorboaordX==1.5
 spacy==2.0.16
 sklearn==0.20.1
 tqdm==4.28.1
+pyspellchecker==0.3.0
