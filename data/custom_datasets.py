@@ -453,9 +453,9 @@ class CustomGermEval2017Dataset(Dataset):
         # clip comments
         for example in examples:
             comment_length: int = len(example.comments)
-            if comment_length > 1500:
-                example.comments = example.comments[0:1500]
-                comment_length = 1500
+            if comment_length > 100:
+                example.comments = example.comments[0:100]
+                comment_length = 100
 
             example.padding = ['0'] * comment_length
 
