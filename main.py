@@ -22,8 +22,6 @@ from models.softmax_output import SoftmaxOutputLayer, OutputLayer, SoftmaxOutput
 from models.transformer_tagger import TransformerTagger
 from models.transformer.train import Trainer
 
-
-
 experiment_name = 'just-testing'
 print('\n\nABSA Transformer\n\n')
 
@@ -39,7 +37,7 @@ hyperparameters = get_default_params()
 hyperparameters.model_size = 300
 hyperparameters.batch_size = 12
 hyperparameters.early_stopping = -1
-hyperparameters.use_cuda = False
+hyperparameters.use_cuda = True
 hyperparameters.language = 'de'
 hyperparameters.num_epochs = 25
 hyperparameters.log_every_xth_iteration = -1

@@ -38,6 +38,16 @@ def get_uuid():
     return str(x)
 
 
+def get_current_git_commit():
+    import subprocess
+    try:
+        label = subprocess.check_output(["git", "describe", "--always"]).strip()
+    except Exception as err:
+        print('Could not get git commit hash. ' + err)
+        return 'unkown'
+    return str(label)
+
+
 def create_dir_if_necessary(path):
     """ Save way for creating a directory (if it does not exist yet).
     From http://stackoverflow.com/questions/273192/in-python-check-if-a-directory-exists-and-create-it-if-necessary

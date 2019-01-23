@@ -82,6 +82,8 @@ class Dataset(object):
         word_vectors: vocab
         if self.pretrained_word_embeddings == 'glove':
             word_vectors = vocab.GloVe(name=self.pretrained_word_embeddings_name, dim=self.pretrained_word_embeddings_dim)
+        elif self.pretrained_word_embeddings == 'fasttext':
+            word_vectors = vocab.FastText(language=self.language)
         self.logger.info('Word vectors successfully loaded.')
                 
         self.logger.debug('Start loading dataset')

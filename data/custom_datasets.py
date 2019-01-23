@@ -409,7 +409,7 @@ class CustomGermEval2017Dataset(Dataset):
                 comment = columns[1]
                 comment = harmonize_bahn_names(comment.split(' '))
                 comment = ' '.join(comment)
-                comment = text_cleaner(comment, 'de', spell)
+                #comment = text_cleaner(comment, 'de', spell)
                 comment = comment.translate(punctuation_remover)
 
                 columns[1] = comment

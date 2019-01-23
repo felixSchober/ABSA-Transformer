@@ -5,6 +5,7 @@ warnings.filterwarnings(
 import os
 import logging
 import time
+import datetime
 import shutil
 from typing import Tuple, List, Dict, Optional, Union
 
@@ -20,7 +21,7 @@ from tensorboardX import SummaryWriter
 import matplotlib.pyplot as plt
 
 from misc.visualizer import plot_confusion_matrix
-from misc.utils import set_seeds, torch_summarize, to_one_hot, get_class_variable_table
+from misc.utils import *
 from misc.run_configuration import RunConfiguration
 from misc.torchsummary import summary
 from data.data_loader import Dataset
@@ -55,6 +56,7 @@ class Trainer(object):
     test_iterator: torchtext.data.Iterator
     dataset: Dataset
     experiment_name: str
+    experiment_number: int
     between_epochs_validation_texts: str
     early_stopping: int
     checkpoint_dir: str
@@ -65,6 +67,7 @@ class Trainer(object):
     logger: logging.Logger
     logger_prediction: logging.Logger
     tb_writer: SummaryWriter
+    git_commit: str
 
     num_labels: int
     epoch: int
@@ -111,6 +114,7 @@ class Trainer(object):
         self.valid_iterator = dataset.valid_iter
         self.test_iterator = dataset.test_iter
         
+        self.num_epochs = hyperparameters.num_epochs
         self.iterations_per_epoch_train = len(self.train_iterator)
         self.batch_size = self.train_iterator.batch_size
         self.experiment_name = experiment_name
@@ -118,6 +122,8 @@ class Trainer(object):
 
         self.checkpoint_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
         self.log_imgage_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'images')
+
+        self.git_commit = get_current_git_commit()
 
         self._reset()
         self.seed = hyperparameters.seed
@@ -150,11 +156,34 @@ class Trainer(object):
     def _setup_tensorboard(self, dummy_input: torch.Tensor, model_summary: str) -> None:
         assert dummy_input is not None
 
+        # construct run path
+        # first level - experiment_name
+        # second level - date
+        # third level - num_epochs
+        # fourth level - cont. number
+        run_dir = os.path.join(os.getcwd(), 'runs', self.experiment_name)
+        create_dir_if_necessary(run_dir)
+
+        now = datetime.datetime.now()
+        date_identifier = now.strftime('%Y%m%d')
+        run_dir = os.path.join(run_dir, date_identifier)
+        create_dir_if_necessary(run_dir)
+
+        run_dir = os.path.join(run_dir, str(self.num_epochs) + 'EP')
+        create_dir_if_necessary(run_dir)
+
+        self.experiment_number = sum(os.path.isdir(i) for i in os.listdir(run_dir))
+        run_dir = os.path.join(run_dir, str(self.experiment_number))
+        create_dir_if_necessary(run_dir)
+
+        self.pre_training.info(f'Tensorboard enabled. Run will be located at /runs/{self.experiment_name}/{date_identifier}/{self.num_epochs}/{self.experiment_number}/. Full path is {run_dir}')
+
         # logdir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
-        self.tb_writer = SummaryWriter(comment=self.experiment_name)
+        self.tb_writer = SummaryWriter(log_dir=run_dir, comment=self.experiment_name)
 
         # for now until add graph works (needs pytorch version >= 0.4) add the model description as text
         self.tb_writer.add_text('model', model_summary, 0)
+        self._log_text(self.git_commit, 'git')
         try:
             self.tb_writer.add_graph(self.model, dummy_input, verbose=False)
         except Exception as err:
@@ -193,7 +222,6 @@ class Trainer(object):
             if self.between_epochs_validation_texts != '':
                 self.logger.info(self.between_epochs_validation_texts)
                 print(self.between_epochs_validation_texts)
-                self.between_epochs_validation_texts = ''
             print(summary)
             self.logger.info(summary)
         else:
@@ -256,7 +284,7 @@ class Trainer(object):
             history.append(scalar_value)
 
         if self.enable_tensorboard and self.tb_writer is not None:
-            self.tb_writer.add_scalar('{}/{}'.format(scalar_type, scalar_name), scalar_value, iteration)
+            self.tb_writer.add_scalar('{}/{}'.format(scalar_name, scalar_type), scalar_value, iteration)
 
     def _log_scalars(self, scalar_values, scalar_type: str, iteration: int):
         if self.enable_tensorboard:
@@ -313,7 +341,6 @@ class Trainer(object):
             true_pos = 0
             total = 0
             e_iteration = 0
-            self.logger.debug(f'Start evaluation with batch size {iterator.batch_size}.')
             for batch in iterator:
                 self.logger.debug(f'Starting evaluation @{e_iteration}')
                 e_iteration += 1
@@ -355,14 +382,6 @@ class Trainer(object):
                 del y
                 del loss
 
-            # free up memory
-            self.logger.debug('Evaluation finished. Clearing up memory')
-            del batch
-            del prediction
-            del x
-            del y
-            self.logger.debug('Memory cleared')
-
             avg_loss = np.array(losses).mean()
             accuracy = float(true_pos) / float(total)
 
@@ -395,8 +414,8 @@ class Trainer(object):
                                                                              show_progress=show_progress)
         self.logger.debug('Evaluation Complete')
         # log results
-        self._log_scalar(self.val_loss_history, mean_valid_loss, 'loss', 'valid/mean', iteration)
-        self._log_scalar(self.val_acc_history, mean_valid_f1, 'f1', 'valid/mean', iteration)
+        self._log_scalar(self.val_loss_history, mean_valid_loss, 'loss', 'valid', iteration)
+        self._log_scalar(self.val_acc_history, mean_valid_f1, 'f1', 'valid', iteration)
         self.dataset.baselines['current'] = accuracy
         self._log_scalars(self.dataset.baselines, 'valid/accuracy', iteration)
         # log combined scalars
@@ -451,7 +470,7 @@ class Trainer(object):
 
         return f_scores, p_scores, r_scores, s_scores
 
-    def train(self, num_epochs: int, use_cuda: bool = False, perform_evaluation: bool = True) -> TrainResult:
+    def train(self, use_cuda: bool = False, perform_evaluation: bool = True) -> TrainResult:
 
         if use_cuda and torch.cuda.is_available():
             self.model = self.model.cuda()
@@ -473,7 +492,7 @@ class Trainer(object):
         train_duration = 0
         total_time_elapsed = 0
         train_start = time.time()
-        for epoch in range(num_epochs):
+        for epoch in range(self.num_epochs):
             epoch_start = time.time()
             self.logger.debug('START Epoch {}. Current Iteration {}'.format(epoch, iteration))
 
@@ -538,7 +557,7 @@ class Trainer(object):
                 continue_training = False
                 break
 
-            train_duration = self.calculate_train_duration(num_epochs, epoch, time.time() - train_start, epoch_duration)
+            train_duration = self.calculate_train_duration(self.num_epochs, epoch, time.time() - train_start, epoch_duration)
 
         self.logger.info('STOP training.')
 
