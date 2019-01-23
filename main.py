@@ -78,5 +78,5 @@ trainer = Trainer(
                     experiment_name,
                     enable_tensorboard=True)
 
-result = trainer.train(hyperparameters.num_epochs, use_cuda=hyperparameters.use_cuda, perform_evaluation=False)
+result = trainer.train(use_cuda=hyperparameters.use_cuda, perform_evaluation=False)
 evaluation_results = trainer.perform_final_evaluation()

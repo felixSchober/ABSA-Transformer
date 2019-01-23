@@ -42,7 +42,7 @@ class TransformerEncoder(nn.Module):
 
         if src_embeddings is None:
             assert d_vocab is not None
-            self.src_embeddings = Embeddings(d_model, d_vocab)
+            self.src_embeddings = Embeddings(hyperparameters.model_size, d_vocab)
         else:
             self.src_embeddings = src_embeddings
             #self.src_embeddings.weight.requires_grad = False
