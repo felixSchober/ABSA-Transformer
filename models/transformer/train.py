@@ -693,7 +693,7 @@ class Trainer(object):
         # restore early stopping counter
         self.early_stopping_counter = self.early_stopping
 
-    def _perform_early_stopping(self) -> Boolean:
+    def _perform_early_stopping(self) -> bool:
         self.early_stopping_counter -= 1
 
         # if early_stopping_counter is 0 restore best weights and stop training
