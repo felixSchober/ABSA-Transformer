@@ -201,7 +201,7 @@ class Trainer(object):
 
     def _reset(self) -> None:
         self.epoch = 0
-        self.best_f1 = 0
+        self.best_f1 = 0.0
         self.best_model_checkpoint = None
         self.early_stopping_counter = self.early_stopping
         self._reset_histories()
@@ -342,7 +342,7 @@ class Trainer(object):
             total = 0
             e_iteration = 0
             for batch in iterator:
-                self.logger.debug(f'Starting evaluation @{e_iteration}')
+                #self.logger.debug(f'Starting evaluation @{e_iteration}')
                 e_iteration += 1
                 x, y, padding = batch.comments, batch.general_sentiments, batch.padding
                 source_mask = self.create_padding_masks(padding, 1)
@@ -352,17 +352,17 @@ class Trainer(object):
 
                 # [batch_size, num_words] in the collnl2003 task num labels will contain the
                 # predicted class for the label
-                self.logger.debug(f'Predicting samples with size {x.size()}.')
+                #self.logger.debug(f'Predicting samples with size {x.size()}.')
                 prediction = self.model.predict(x, source_mask)
 
                 # get true positives
-                self.logger.debug('Prediction finished. Calculating scores')
+                #self.logger.debug('Prediction finished. Calculating scores')
                 true_pos += ((y == prediction).sum()).item()
                 # total += y.shape[0] * y.shape[1]
                 total += y.shape[0]
                 f_scores, p_scores, r_scores, s_scores = self.calculate_scores(prediction.data, y)
                 if show_c_matrix:
-                    self.logger.debug('Calculating c_matrices')
+                    #self.logger.debug('Calculating c_matrices')
                     if len(y.shape) > 1 and len(prediction.shape) > 1 and y.shape != (1, 1) and prediction.shape != (1, 1):
                         y_single = y.squeeze().cpu()
                         y_hat_single = prediction.squeeze().cpu()
@@ -374,8 +374,8 @@ class Trainer(object):
                 # average accuracy for batch
                 batch_f1 = np.array(f_scores).mean()
                 f1_scores.append(batch_f1)
-                self.logger.debug(f'Evaluation iteration finished with f1 of {batch_f1}.')
-                self.logger.debug('Clearing up memory')
+                #self.logger.debug(f'Evaluation iteration finished with f1 of {batch_f1}.')
+                #self.logger.debug('Clearing up memory')
                 del batch
                 del prediction
                 del x
@@ -518,7 +518,7 @@ class Trainer(object):
 
                 train_loss = self._step(x, y, source_mask)
                 self._log_scalar(self.train_loss_history, train_loss.item(), 'loss', 'train', iteration)
-                self._log_scalar(None, self.optimizer.rate(), 'lr', '', iteration)
+                self._log_scalar(None, self.optimizer.rate(), 'lr', 'general', iteration)
 
                 del train_loss
                 del x
@@ -551,11 +551,13 @@ class Trainer(object):
             # early stopping if no improvement of val_acc during the last self.early_stopping epochs
             # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
             if mean_valid_f1 > self.best_f1 or self.early_stopping <= 0:
+                self.logger.info(f'Current f1 score of {mean_valid_f1} is better than last f1 score of {self.best_f1}.')
                 self._reset_early_stopping(iteration, mean_valid_f1)
             else:
-                self._perform_early_stopping()
-                continue_training = False
-                break
+                should_stop = self._perform_early_stopping()
+                if should_stop:
+                    continue_training = False
+                    break
 
             train_duration = self.calculate_train_duration(self.num_epochs, epoch, time.time() - train_start, epoch_duration)
 
@@ -675,7 +677,7 @@ class Trainer(object):
                                  mean_valid_accuracy, epoch_duration, time_elapsed, total_time)
 
     def _reset_early_stopping(self, iteration: int, mean_valid_f1: float) -> None:
-        self.logger.debug(
+        self.logger.info(
             'Epoch f1 score ({}) better than last f1 score ({}). Save checkpoint'.format(mean_valid_f1, self.best_f1))
         self.best_f1 = mean_valid_f1
 
@@ -691,7 +693,7 @@ class Trainer(object):
         # restore early stopping counter
         self.early_stopping_counter = self.early_stopping
 
-    def _perform_early_stopping(self) -> None:
+    def _perform_early_stopping(self) -> Boolean:
         self.early_stopping_counter -= 1
 
         # if early_stopping_counter is 0 restore best weights and stop training
@@ -701,6 +703,9 @@ class Trainer(object):
 
             # Restore best model
             self._restore_best_model()
+            return True
+        else:
+            return False
 
     def _close_tb_writer(self) -> None:
         if not self.enable_tensorboard or self.tb_writer is None:
