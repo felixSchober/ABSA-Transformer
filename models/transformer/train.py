@@ -150,6 +150,8 @@ class Trainer(object):
             self._setup_tensorboard(dataset.dummy_input, model_summary)
         self._log_hyperparameters()
 
+        self._checkpoint_cleanup()
+
         # TODO: initialize the rest of the trainings parameters
         # https://github.com/kolloldas/torchnlp/blob/master/torchnlp/common/train.py
 
@@ -570,6 +572,8 @@ class Trainer(object):
         except Exception as err:
             self.logger.exception("Could not restore best model")
 
+        self._checkpoint_cleanup()
+
         self.logger.debug('Exit training')
 
         if perform_evaluation:
@@ -737,6 +741,58 @@ class Trainer(object):
         self.logger.info('Best model parameters were at \nEpoch {}\nValidation f1 score {}'
                          .format(self.best_model_checkpoint['epoch'], self.best_model_checkpoint['val_acc']))
 
+    def _checkpoint_cleanup(self):
+        path = self.checkpoint_dir
+        self.logger.info('Cleaning up old checkpoints')
+        directory = os.fsencode(path)
+        for file in os.listdir(directory):
+            filename = os.fsdecode(file)
+            if filename.endswith('.data'):
+                checkpoint_path = os.path.join(path, filename)
+                self.logger.debug(f'Loading checkpoint file {filename} at path {checkpoint_path}')
+                checkpoint = torch.load(checkpoint_path)
+                if 'f1' in checkpoint:                    
+                    f1 = checkpoint['f1']
+                else:
+                    f1 = 0.0
+
+                # worse than best f1 -> delete
+                if self.best_f1 > f1:
+                    # delete file
+                    self.logger.info(f'Deleting checkpoint file {filename} at path {checkpoint_path} with f1 of {f1}.')
+                    try:
+                        os.remove(checkpoint_path)
+                    except Exception as err:
+                        self.logger.exception(f'Could not delete checkpoint file {filename} at path {checkpoint_path}.')
+
+
+    def load_model(self, file_name=None):
+        if file_name is None:
+            # search for checkpoint
+            directory = os.fsencode(self.checkpoint_dir)
+            for file in os.listdir(directory):
+                filename = os.fsdecode(file)
+                if filename.endswith('.data'):
+                    file_name = filename
+                    break
+        
+        if file_name is None:
+            self.logger.error(f'Could not find checkpoint file at path {path}')
+
+        path = os.path.join(self.checkpoint_dir, file_name)
+        if os.path.isfile(path):
+            self.pre_training.info(f'Load checkpoint at {path}')
+            checkpoint = torch.load(path)
+            self.epoch = checkpoint['epoch']
+            self.model.load_state_dict(checkpoint['state_dict'])
+            self.optimizer.optimizer.load_state_dict(checkpoint['optimizer'])
+            self.best_f1 = checkpoint['f1']
+            self.best_model_checkpoint = checkpoint
+            self.pre_training.info(f'Loaded model at epoch {self.epoch} with reported f1 of {self.best_f1}')
+        else:
+            self.pre_training.error(f'Could find checkpoint at path {path}.')
+        return self.model, self.optimizer, self.epoch
+
     def _save_checkpoint(self, iteration: int) -> None:
         self.logger.debug('Saving model... ' + self.checkpoint_dir)
 
@@ -744,6 +800,8 @@ class Trainer(object):
             'iteration': iteration,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.optimizer.state_dict(),
+            'epoch': self.epoch,
+            'f1': self.best_f1
         }
 
         filename = 'checkpoint_{}.data'.format(iteration)
