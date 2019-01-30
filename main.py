@@ -22,7 +22,7 @@ from models.softmax_output import SoftmaxOutputLayer, OutputLayer, SoftmaxOutput
 from models.transformer_tagger import TransformerTagger
 from models.transformer.train import Trainer
 
-experiment_name = 'just-testing'
+experiment_name = 'loadedModel'
 print('\n\nABSA Transformer\n\n')
 
 PREFERENCES.defaults(
@@ -37,7 +37,7 @@ hyperparameters = get_default_params()
 hyperparameters.model_size = 300
 hyperparameters.batch_size = 12
 hyperparameters.early_stopping = -1
-hyperparameters.use_cuda = True
+hyperparameters.use_cuda = torch.cuda.is_available
 hyperparameters.language = 'de'
 hyperparameters.num_epochs = 25
 hyperparameters.log_every_xth_iteration = -1
@@ -77,6 +77,7 @@ trainer = Trainer(
                     dataset,
                     experiment_name,
                     enable_tensorboard=True)
-
-result = trainer.train(use_cuda=hyperparameters.use_cuda, perform_evaluation=False)
-evaluation_results = trainer.perform_final_evaluation()
+trainer.load_model()
+trainer.perform_final_evaluation(False)
+#result = trainer.train(use_cuda=hyperparameters.use_cuda, perform_evaluation=False)
+#evaluation_results = trainer.perform_final_evaluation()

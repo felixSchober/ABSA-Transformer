@@ -150,8 +150,6 @@ class Trainer(object):
             self._setup_tensorboard(dataset.dummy_input, model_summary)
         self._log_hyperparameters()
 
-        self._checkpoint_cleanup()
-
         # TODO: initialize the rest of the trainings parameters
         # https://github.com/kolloldas/torchnlp/blob/master/torchnlp/common/train.py
 
@@ -322,7 +320,7 @@ class Trainer(object):
         return np.array(losses).mean()
 
     def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool = False, show_progress: bool = False,
-                 progress_label: str = "Evaluation") -> Tuple[float, float, float, np.array]:
+                 progress_label: str = "Evaluation", f1_strategy: str = 'micro') -> Tuple[float, float, float, np.array]:
         self.logger.debug(
             'Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(iterator.epoch, len(iterator)))
         with torch.no_grad():
@@ -336,6 +334,8 @@ class Trainer(object):
 
             losses = []
             f1_scores = []
+            predictions: torch.Tensor = None
+            targets: torch.Tensor = None
             c_matrices: List[np.array] = []
 
             if show_progress:
@@ -357,12 +357,18 @@ class Trainer(object):
                 #self.logger.debug(f'Predicting samples with size {x.size()}.')
                 prediction = self.model.predict(x, source_mask)
 
+                if predictions is None or targets is None:
+                    predictions = prediction
+                    targets = y
+                else:
+                    predictions = torch.cat((predictions, prediction), 0)
+                    targets = torch.cat((targets, y), 0)
+
                 # get true positives
                 #self.logger.debug('Prediction finished. Calculating scores')
                 true_pos += ((y == prediction).sum()).item()
-                # total += y.shape[0] * y.shape[1]
                 total += y.shape[0]
-                f_scores, p_scores, r_scores, s_scores = self.calculate_scores(prediction.data, y)
+
                 if show_c_matrix:
                     #self.logger.debug('Calculating c_matrices')
                     if len(y.shape) > 1 and len(prediction.shape) > 1 and y.shape != (1, 1) and prediction.shape != (1, 1):
@@ -373,9 +379,6 @@ class Trainer(object):
                         y_hat_single = prediction.cpu()
                     c_matrices.append(confusion_matrix(y_single, y_hat_single, labels=range(self.num_labels)))
 
-                # average accuracy for batch
-                batch_f1 = np.array(f_scores).mean()
-                f1_scores.append(batch_f1)
                 #self.logger.debug(f'Evaluation iteration finished with f1 of {batch_f1}.')
                 #self.logger.debug('Clearing up memory')
                 del batch
@@ -387,8 +390,8 @@ class Trainer(object):
             avg_loss = np.array(losses).mean()
             accuracy = float(true_pos) / float(total)
 
-            f1_scores = np.array(f1_scores)
-            avg_f1 = f1_scores.mean()
+            # calculate f1 score based on predictions and targets
+            f_scores, p_scores, r_scores, s_scores = self.calculate_scores(predictions.data, targets, f1_strategy)
 
             if show_c_matrix:
                 self.logger.debug(f'Resetting batch size to {prev_batch_size}.')
@@ -430,7 +433,7 @@ class Trainer(object):
 
         return (mean_train_loss, mean_valid_loss, mean_valid_f1, accuracy)
 
-    def calculate_scores(self, prediction: torch.Tensor, targets: torch.Tensor) -> Tuple[
+    def calculate_scores(self, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str = 'micro') -> Tuple[
         List[float], List[float], List[float], List[float]]:
         p_size = prediction.size()
 
@@ -750,7 +753,12 @@ class Trainer(object):
             if filename.endswith('.data'):
                 checkpoint_path = os.path.join(path, filename)
                 self.logger.debug(f'Loading checkpoint file {filename} at path {checkpoint_path}')
-                checkpoint = torch.load(checkpoint_path)
+
+                if not torch.cuda.is_available():
+                    checkpoint = torch.load(checkpoint_path, map_location='cpu')
+                else:
+                    checkpoint = torch.load(checkpoint_path)
+
                 if 'f1' in checkpoint:                    
                     f1 = checkpoint['f1']
                 else:
@@ -765,7 +773,6 @@ class Trainer(object):
                     except Exception as err:
                         self.logger.exception(f'Could not delete checkpoint file {filename} at path {checkpoint_path}.')
 
-
     def load_model(self, file_name=None):
         if file_name is None:
             # search for checkpoint
@@ -777,12 +784,16 @@ class Trainer(object):
                     break
         
         if file_name is None:
-            self.logger.error(f'Could not find checkpoint file at path {path}')
+            self.logger.error(f'Could not find checkpoint file at path {self.checkpoint_dir}')
 
         path = os.path.join(self.checkpoint_dir, file_name)
         if os.path.isfile(path):
             self.pre_training.info(f'Load checkpoint at {path}')
-            checkpoint = torch.load(path)
+            if not torch.cuda.is_available():
+                checkpoint = torch.load(path, map_location='cpu')
+            else:
+                checkpoint = torch.load(path)
+
             self.epoch = checkpoint['epoch']
             self.model.load_state_dict(checkpoint['state_dict'])
             self.optimizer.optimizer.load_state_dict(checkpoint['optimizer'])
