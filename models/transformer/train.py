@@ -406,8 +406,8 @@ class Trainer(object):
                 c_matrices = None
 
         self.logger.debug(
-            'Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(avg_loss, avg_f1, c_matrices))
-        return (avg_loss, avg_f1, accuracy, c_matrices)
+            'Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(avg_loss, f_scores, c_matrices))
+        return (avg_loss, f_scores, accuracy, c_matrices)
 
     def _evaluate_and_log_train(self, iteration: int, show_progress: bool = False) -> Tuple[float, float, float, float]:
         mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
