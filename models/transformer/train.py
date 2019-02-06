@@ -18,6 +18,7 @@ from torch.autograd import *
 from tqdm.autonotebook import tqdm
 from tensorboardX import SummaryWriter
 import matplotlib.pyplot as plt
+from colorama import Fore, Style
 
 from misc.visualizer import plot_confusion_matrix
 from misc.utils import *
@@ -59,12 +60,14 @@ class Trainer(object):
 	logger_prediction : logging.Logger
 	tb_writer : SummaryWriter
 	git_commit : str
+	show_summary: bool
 
 	num_labels : int
 	epoch : int
 	iterations_per_epoch_train : int
 	batch_size : int
 	best_f1 : int
+	best_loss: int
 	best_model_checkpoint : ModelCheckpoint
 	early_stopping_counter : int
 	train_loss_history : List[float]
@@ -99,6 +102,9 @@ class Trainer(object):
 		self.optimizer = optimizer
 		self.hyperparameters = hyperparameters
 		self.dataset = dataset
+
+		self.progress_bar = None
+		self.show_summary = True
 
 		self.between_epochs_validation_texts = ''
 		self.train_iterator = dataset.train_iter
@@ -195,6 +201,7 @@ class Trainer(object):
 	def _reset(self) -> None:
 		self.epoch = 0
 		self.best_f1 = 0.0
+		self.best_loss = 1000.0
 		self.best_model_checkpoint = None
 		self.early_stopping_counter = self.early_stopping
 		self._reset_histories()
@@ -202,25 +209,32 @@ class Trainer(object):
 	def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float,
 							valid_accuracy: float, epoch_duration: float, duration: float, total_time: float):
 
-		summary = '{0}\t{1}\t{2:.3f}\t\t{3:.3f}\t\t{4:.3f}\t\t{5:.3f}\t\t{6:.2f}m - {7:.1f}m / {8:.1f}m'.format(epoch + 1, iteration, train_loss, valid_loss, valid_f1, valid_accuracy, epoch_duration / 60, duration / 60,
-			total_time / 60)
-		# end of epoch -> directly output + results during epoch training
-		if iteration % self.iterations_per_epoch_train == 0:
-			if epoch == 0:
-				message = '# EP\t# IT\ttr loss\t\tval loss\tf1\t\tacc\t\tduration / total time'
-				self.logger.info(message)
-				print(message)
+		color_modifier_loss = Fore.WHITE if valid_loss >= self.best_loss else Fore.GREEN
+		color_modifier_f1 = Fore.WHITE if valid_f1 <= self.best_f1 else Fore.GREEN
 
-			if self.between_epochs_validation_texts != '':
-				self.logger.info(self.between_epochs_validation_texts)
-				print(self.between_epochs_validation_texts)
-			print(summary)
-			self.logger.info(summary)
-		else:
-			if self.between_epochs_validation_texts == '':
-				self.between_epochs_validation_texts = summary
-			else:
-				self.between_epochs_validation_texts += '\n' + summary
+		summary = '{0}\t{1}\t{2:.3f}\t\t{3}{4:.3f}\t\t{5}{6:.3f}{7}\t\t{8:.3f}\t\t{9:.2f}m - {10:.1f}m / {11:.1f}m'.format(
+			epoch + 1, 
+			iteration, 
+			train_loss, 
+			color_modifier_loss,
+			valid_loss, 
+			color_modifier_f1,
+			valid_f1, 
+			Style.RESET_ALL,
+			valid_accuracy, 
+			epoch_duration / 60, 
+			duration / 60,
+			total_time / 60)
+
+		if self.show_summary:
+			message = '# EP\t# IT\ttr loss\t\tval loss\tf1\t\tacc\t\tduration / total time'
+			self.logger.info(message)
+			self.progress_bar.write(message)
+			self.show_summary = False
+
+		self.progress_bar.write(summary)
+		self.logger.info(summary)
+		
 
 	def _step(self, input: torch.Tensor, target: torch.Tensor, source_mask: torch.Tensor) -> torch.Tensor:
 		"""Make a single gradient update. This is called by train() and should not
@@ -401,13 +415,13 @@ class Trainer(object):
 		self.logger.debug('Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(avg_loss, f_scores, c_matrices))
 		return (avg_loss, f_scores, accuracy, c_matrices)
 
-	def _evaluate_and_log_train(self, iteration: int, show_progress: bool=False) -> Tuple[float, float, float, float]:
+	def _evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=True) -> Tuple[float, float, float, float]:
 		mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
 		self._log_scalar(None, mean_train_loss, 'loss', 'train/mean', iteration)
 
 		# perform validation loss
 		self.logger.debug('Start Evaluation')
-		mean_valid_loss, mean_valid_f1, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=True,
+		mean_valid_loss, mean_valid_f1, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=show_c_matrix,
 																			 show_progress=show_progress)
 		self.logger.debug('Evaluation Complete')
 		# log results
@@ -463,7 +477,7 @@ class Trainer(object):
 			r_scores.append(recall)
 			s_scores.append(support)
 
-		return f_scores, p_scores, r_scores, s_scores
+		return f_scores[0], p_scores, r_scores, s_scores
 
 	def train(self, use_cuda: bool=False, perform_evaluation: bool=True) -> TrainResult:
 
@@ -488,12 +502,11 @@ class Trainer(object):
 		total_time_elapsed = 0
 		train_start = time.time()
 
-		with tqdm(total=iterations_per_epoch, desc='EP 1') as progress_bar:
-
+		with tqdm(total=iterations_per_epoch, position=0) as progress_bar:
+			self.progress_bar = progress_bar
 			for epoch in range(self.num_epochs):
-				progress_bar.update(0)
-				progress_bar.description = f'Epoch {epoch + 1}'
-				progress_bar.disable = False
+				progress_bar.n = 0
+				progress_bar.set_description(f'Epoch {epoch + 1}')
 
 				epoch_start = time.time()
 
@@ -504,7 +517,6 @@ class Trainer(object):
 				self.epoch = epoch
 
 				# loop iterations
-				ep_iteration = 0
 				for batch in self.train_iterator:  # batch is torchtext.data.batch.Batch
 
 					if not continue_training:
@@ -512,7 +524,6 @@ class Trainer(object):
 						break
 
 					iteration += 1
-					ep_iteration += 1
 
 					self.logger.debug('Iteration ' + str(iteration))
 					# Sets the module in training mode
@@ -539,21 +550,22 @@ class Trainer(object):
 															train_duration)
 						except Exception as err:
 							self.logger.exception("Could not complete iteration evaluation")
-					progress_bar.update(ep_iteration)
+					progress_bar.update(1)
+					progress_bar.refresh()
 				# ----------- End of epoch loop -----------
 
 				self.logger.info('End of Epoch {}'.format(self.epoch))
 
-				progress_bar.disable = True
-				progress_bar.desc = f'EP {epoch + 1} - Evaluation'
-
 				# at the end of each epoch, check the accuracies
 				mean_valid_f1 = -1
 				try:
-					mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self._evaluate_and_log_train(iteration, show_progress=True)
+					mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self._evaluate_and_log_train(iteration, show_progress=False)
 					epoch_duration = time.time() - epoch_start
 					self.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1,
 											mean_valid_accuracy, epoch_duration, time.time() - train_start, train_duration)
+
+					if mean_valid_loss < self.best_loss:
+						self.best_loss = mean_train_loss
 				except Exception as err:
 					self.logger.exception("Could not complete end of epoch {} evaluation")
 
@@ -676,16 +688,22 @@ class Trainer(object):
 	def _perform_iteration_evaluation(self, iteration: int, epoch_duration: float, time_elapsed: float,
 									  total_time: float) -> None:
 		self.logger.debug('Starting evaluation in epoch {}. Current Iteration {}'.format(self.epoch, iteration))
-		mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self._evaluate_and_log_train(iteration)
+		mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self._evaluate_and_log_train(iteration, show_c_matrix=False)
 		self.logger.debug('Evaluation completed')
 		self.logger.info('Iteration {}'.format(iteration))
 		self.logger.info('Mean train loss: {}'.format(mean_train_loss))
 		self.logger.info('Mean validation loss {}'.format(mean_valid_loss))
 		self.logger.info('Mean validation f1 score {}'.format(mean_valid_f1))
 		self.logger.info('Mean validation accuracy {}'.format(mean_valid_accuracy))
-
+		
 		self.print_epoch_summary(self.epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1,
 								 mean_valid_accuracy, epoch_duration, time_elapsed, total_time)
+
+		if mean_valid_f1 > self.best_f1:
+			self.logger.info(f'Current f1 score of {mean_valid_f1} is better than last f1 score of {self.best_f1}.')
+			self._reset_early_stopping(iteration, mean_valid_f1)
+		if mean_valid_loss < self.best_loss:
+			self.best_loss = mean_valid_loss
 
 	def _reset_early_stopping(self, iteration: int, mean_valid_f1: float) -> None:
 		self.logger.info('Epoch f1 score ({}) better than last f1 score ({}). Save checkpoint'.format(mean_valid_f1, self.best_f1))
@@ -803,6 +821,15 @@ class Trainer(object):
 			self.best_f1 = checkpoint['f1']
 			self.best_model_checkpoint = checkpoint
 			self.pre_training.info(f'Loaded model at epoch {self.epoch} with reported f1 of {self.best_f1}')
+
+			# move optimizer back to cuda 
+			# see https://github.com/pytorch/pytorch/issues/2830
+			if torch.cuda.is_available():
+				for state in self.optimizer.optimizer.state.values():
+					for k, v in state.items():
+						if isinstance(v, torch.Tensor):
+							state[k] = v.cuda()
+
 		else:
 			self.pre_training.error(f'Could find checkpoint at path {path}.')
 		return self.model, self.optimizer, self.epoch
