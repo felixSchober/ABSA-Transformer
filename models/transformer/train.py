@@ -51,7 +51,7 @@ class Trainer(object):
     loss: nn.Module
     optimizer: torch.optim.Optimizer
     parameters: RunConfiguration
-    trainIterator: torchtext.data.Iterator
+    train_iterator: torchtext.data.Iterator
     valid_iterator: torchtext.data.Iterator
     test_iterator: torchtext.data.Iterator
     dataset: Dataset
@@ -485,10 +485,13 @@ class Trainer(object):
 
         set_seeds(self.seed)
         continue_training = True
+        iterations_per_epoch = self.iterations_per_epoch_train
 
         self.pre_training.info(
             '{} Iterations per epoch with batch size of {}'.format(self.iterations_per_epoch_train, self.batch_size))
-
+        self.pre_training.info(
+            f'Total iterations: {self.iterations_per_epoch_train * self.num_epochs}'
+        )
         self.pre_training.info('START training.')
         print('\n\n')
 
@@ -497,74 +500,89 @@ class Trainer(object):
         train_duration = 0
         total_time_elapsed = 0
         train_start = time.time()
-        for epoch in range(self.num_epochs):
-            epoch_start = time.time()
-            self.logger.debug('START Epoch {}. Current Iteration {}'.format(epoch, iteration))
 
-            # Set up the batch generator for a new epoch
-            self.train_iterator.init_epoch()
-            self.epoch = epoch
+        with tqdm(total=iterations_per_epoch, desc='EP 1') as progress_bar:
 
-            # loop iterations
-            for batch in tqdm(self.train_iterator, leave=False,
-                              desc='EP {}'.format(epoch + 1)):  # batch is torchtext.data.batch.Batch
+            for epoch in range(self.num_epochs):
+                progress_bar.update(0)
+                progress_bar.description = f'Epoch {epoch + 1}'
+                progress_bar.disable = False
 
-                if not continue_training:
-                    self.logger.info('continue_training is false -> Stop training')
-                    break
+                epoch_start = time.time()
 
-                iteration += 1
-                self.logger.debug('Iteration ' + str(iteration))
-                # Sets the module in training mode
-                self.model.train()
+                self.logger.debug('START Epoch {}. Current Iteration {}'.format(epoch, iteration))
 
-                x, y, padding = batch.comments, batch.general_sentiments, batch.padding
-                source_mask = self.create_padding_masks(padding, 1)
+                # Set up the batch generator for a new epoch
+                self.train_iterator.init_epoch()
+                self.epoch = epoch
 
-                train_loss = self._step(x, y, source_mask)
-                self._log_scalar(self.train_loss_history, train_loss.item(), 'loss', 'train', iteration)
-                self._log_scalar(None, self.optimizer.rate(), 'lr', 'general', iteration)
+                # loop iterations
+                ep_iteration = 0
+                for batch in self.train_iterator:  # batch is torchtext.data.batch.Batch
 
-                del train_loss
-                del x
-                del y
-                del padding
-                del source_mask
+                    if not continue_training:
+                        self.logger.info('continue_training is false -> Stop training')
+                        break
 
-                torch.cuda.empty_cache()
+                    iteration += 1
+                    ep_iteration += 1
 
-                if self.log_every_xth_iteration > 0 and iteration % self.log_every_xth_iteration == 0 and iteration > 1:
-                    try:
-                        self._perform_iteration_evaluation(iteration, epoch_duration, time.time() - train_start,
-                                                           train_duration)
-                    except Exception as err:
-                        self.logger.exception("Could not complete iteration evaluation")
-            # ----------- End of epoch loop -----------
+                    self.logger.debug('Iteration ' + str(iteration))
+                    # Sets the module in training mode
+                    self.model.train()
 
-            self.logger.info('End of Epoch {}'.format(self.epoch))
-            # at the end of each epoch, check the accuracies
-            mean_valid_f1 = -1
-            try:
-                mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self._evaluate_and_log_train(
-                    iteration, show_progress=True)
-                epoch_duration = time.time() - epoch_start
-                self.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1,
-                                         mean_valid_accuracy, epoch_duration, time.time() - train_start, train_duration)
-            except Exception as err:
-                self.logger.exception("Could not complete end of epoch {} evaluation")
+                    x, y, padding = batch.comments, batch.general_sentiments, batch.padding
+                    source_mask = self.create_padding_masks(padding, 1)
 
-            # early stopping if no improvement of val_acc during the last self.early_stopping epochs
-            # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
-            if mean_valid_f1 > self.best_f1 or self.early_stopping <= 0:
-                self.logger.info(f'Current f1 score of {mean_valid_f1} is better than last f1 score of {self.best_f1}.')
-                self._reset_early_stopping(iteration, mean_valid_f1)
-            else:
-                should_stop = self._perform_early_stopping()
-                if should_stop:
-                    continue_training = False
-                    break
+                    train_loss = self._step(x, y, source_mask)
+                    self._log_scalar(self.train_loss_history, train_loss.item(), 'loss', 'train', iteration)
+                    self._log_scalar(None, self.optimizer.rate(), 'lr', 'general', iteration)
 
-            train_duration = self.calculate_train_duration(self.num_epochs, epoch, time.time() - train_start, epoch_duration)
+                    del train_loss
+                    del x
+                    del y
+                    del padding
+                    del source_mask
+
+                    torch.cuda.empty_cache()
+
+                    if self.log_every_xth_iteration > 0 and iteration % self.log_every_xth_iteration == 0 and iteration > 1:
+                        try:
+                            self._perform_iteration_evaluation(iteration, epoch_duration, time.time() - train_start,
+                                                            train_duration)
+                        except Exception as err:
+                            self.logger.exception("Could not complete iteration evaluation")
+                    progress_bar.update(ep_iteration)
+                # ----------- End of epoch loop -----------
+
+                self.logger.info('End of Epoch {}'.format(self.epoch))
+
+                progress_bar.disable = True
+                progress_bar.desc = f'EP {epoch + 1} - Evaluation'
+
+                # at the end of each epoch, check the accuracies
+                mean_valid_f1 = -1
+                try:
+                    mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self._evaluate_and_log_train(
+                        iteration, show_progress=True)
+                    epoch_duration = time.time() - epoch_start
+                    self.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1,
+                                            mean_valid_accuracy, epoch_duration, time.time() - train_start, train_duration)
+                except Exception as err:
+                    self.logger.exception("Could not complete end of epoch {} evaluation")
+
+                # early stopping if no improvement of val_acc during the last self.early_stopping epochs
+                # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
+                if mean_valid_f1 > self.best_f1 or self.early_stopping <= 0:
+                    self.logger.info(f'Current f1 score of {mean_valid_f1} is better than last f1 score of {self.best_f1}.')
+                    self._reset_early_stopping(iteration, mean_valid_f1)
+                else:
+                    should_stop = self._perform_early_stopping()
+                    if should_stop:
+                        continue_training = False
+                        break
+
+                train_duration = self.calculate_train_duration(self.num_epochs, epoch, time.time() - train_start, epoch_duration)
 
         self.logger.info('STOP training.')
 
