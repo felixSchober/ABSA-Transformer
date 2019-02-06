@@ -1,5 +1,5 @@
 from torchtext import data, datasets, vocab
-import torch
+from torch.nn import Embedding
 from prettytable import PrettyTable
 from misc.run_configuration import RunConfiguration
 
@@ -8,7 +8,7 @@ from misc.utils import get_class_variable_table
 # see https://github.com/mjc92/TorchTextTutorial/blob/master/01.%20Getting%20started.ipynb
 
 def get_embedding(vocabulary, embedding_size):
-    embedding = torch.nn.Embedding(len(vocabulary), embedding_size)
+    embedding = Embedding(len(vocabulary), embedding_size)
     embedding.weight.data.copy_(vocabulary.vectors)
     return embedding
 

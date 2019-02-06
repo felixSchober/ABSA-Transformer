@@ -1,6 +1,4 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 from misc.run_configuration import RunConfiguration
 

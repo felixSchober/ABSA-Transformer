@@ -1,6 +1,4 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 from torchtext.data.field import Field
 
 class ReversibleField(Field):

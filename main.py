@@ -22,7 +22,7 @@ from models.softmax_output import SoftmaxOutputLayer, OutputLayer, SoftmaxOutput
 from models.transformer_tagger import TransformerTagger
 from models.transformer.train import Trainer
 
-experiment_name = 'loadedModel'
+experiment_name = 'newEvaluation'
 print('\n\nABSA Transformer\n\n')
 
 PREFERENCES.defaults(
@@ -77,7 +77,9 @@ trainer = Trainer(
                     dataset,
                     experiment_name,
                     enable_tensorboard=True)
+
 trainer.load_model()
+result = trainer.train(use_cuda=hyperparameters.use_cuda, perform_evaluation=False)
 trainer.perform_final_evaluation(False)
-#result = trainer.train(use_cuda=hyperparameters.use_cuda, perform_evaluation=False)
+#
 #evaluation_results = trainer.perform_final_evaluation()
