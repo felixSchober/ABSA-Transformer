@@ -388,7 +388,6 @@
     <Compile Include="main.py" />
     <Compile Include="misc\preferences.py" />
     <Compile Include="misc\run_configuration.py" />
-    <Compile Include="misc\text_utils.py" />
     <Compile Include="misc\torchsummary.py" />
     <Compile Include="misc\utils.py" />
     <Compile Include="misc\visualizer.py" />
