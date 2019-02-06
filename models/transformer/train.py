@@ -479,14 +479,16 @@ class Trainer(object):
 
 		return f_scores[0], p_scores, r_scores, s_scores
 
-	def train(self, use_cuda: bool=False, perform_evaluation: bool=True) -> TrainResult:
-
+	def set_cuda(self, use_cuda: bool=False):
 		if use_cuda and torch.cuda.is_available():
 			self.model = self.model.cuda()
 			self.pre_training.debug('train with cuda support')
 		else:
 			self.pre_training.debug('train without cuda support')
 
+	def train(self, use_cuda: bool=False, perform_evaluation: bool=True) -> TrainResult:
+
+		self.set_cuda(use_cuda)
 		set_seeds(self.seed)
 		continue_training = True
 		iterations_per_epoch = self.iterations_per_epoch_train
