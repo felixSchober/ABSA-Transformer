@@ -3,7 +3,7 @@ from typing import Tuple, List, Dict, Optional, Union, Iterable
 from data.conll import ExampleList
 from torch import Tensor
 import torch.nn as nn
-
+import numpy as np
 from tqdm.autonotebook import tqdm
 from torchtext import data
 
