@@ -448,7 +448,7 @@ class CustomGermEval2017Dataset(Dataset):
 
 		for raw_example in raw_examples:
 			# go through each aspect sentiment and add it at the corresponding position
-			ss = [''] * len(self.aspects)
+			ss = ['n/a'] * len(self.aspects)
 			for s_category, s in raw_example[-2].items():
 				pos = self.aspects.index(s_category)
 				ss[pos] = s
