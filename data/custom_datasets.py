@@ -347,27 +347,28 @@ class CustomGermEval2017Dataset(Dataset):
 		# 1: Comment
 		# 2: Is Relevant
 		# 3: General Sentiment
-		# 4: Padding Field
-		# 5: aspect Sentiment 1/20
-		# 6: aspect Sentiment 2/20
-		# 7: aspect Sentiment 3/20
-		# 8: aspect Sentiment 4/20
-		# 9: aspect Sentiment 5/20
-		# 10: aspect Sentiment 6/20
-		# 11: aspect Sentiment 7/20
-		# 12: aspect Sentiment 8/20
-		# 13: aspect Sentiment 9/20
-		# 14: aspect Sentiment 10/20
-		# 15: aspect Sentiment 11/20
-		# 16: aspect Sentiment 12/20
-		# 17: aspect Sentiment 13/20
-		# 18: aspect Sentiment 14/20
-		# 19: aspect Sentiment 15/20
-		# 20: aspect Sentiment 16/20
-		# 21: aspect Sentiment 17/20
-		# 22: aspect Sentiment 18/20
-		# 23: aspect Sentiment 19/20
-		# 24: aspect Sentiment 20/20
+		# 4: Apsect Specific sentiment List
+		# 5: Padding Field
+		# 6: aspect Sentiment 1/20
+		# 7: aspect Sentiment 2/20
+		# 8: aspect Sentiment 3/20
+		# 9: aspect Sentiment 4/20
+		# 10: aspect Sentiment 5/20
+		# 11: aspect Sentiment 6/20
+		# 12: aspect Sentiment 7/20
+		# 13: aspect Sentiment 8/20
+		# 14: aspect Sentiment 9/20
+		# 15: aspect Sentiment 10/20
+		# 16: aspect Sentiment 11/20
+		# 17: aspect Sentiment 12/20
+		# 18: aspect Sentiment 13/20
+		# 19: aspect Sentiment 14/20
+		# 20: aspect Sentiment 15/20
+		# 21: aspect Sentiment 16/20
+		# 22: aspect Sentiment 17/20
+		# 23: aspect Sentiment 18/20
+		# 24: aspect Sentiment 19/20
+		# 25: aspect Sentiment 20/20
 		if use_spellchecker:
 			spell = SpellChecker(language='de')  # German dictionary
 		else:
@@ -431,9 +432,13 @@ class CustomGermEval2017Dataset(Dataset):
 				comment = comment.translate(punctuation_remover)
 
 				columns[1] = comment
+				# comment is not relevant
 				if columns[2] == 'false':
 					# skip for now
 					continue
+				# add aspect sentiment field
+				columns.append('')
+
 				# add padding field
 				columns.append('')
 				raw_examples.append(columns)
@@ -449,12 +454,14 @@ class CustomGermEval2017Dataset(Dataset):
 		for raw_example in raw_examples:
 			# go through each aspect sentiment and add it at the corresponding position
 			ss = ['n/a'] * len(self.aspects)
-			for s_category, s in raw_example[-2].items():
+			for s_category, s in raw_example[-3].items():
 				pos = self.aspects.index(s_category)
 				ss[pos] = s
+
+			raw_example[6] = ss
 			
 			# construct example and add it
-			example = raw_example[0:5] + [raw_example[6]] + ss
+			example = raw_example[0:5] + [raw_example[6]] + [raw_example[7]] + ss
 			examples.append(data.Example.fromlist(example, tuple(fields)))
 
 		# clip comments

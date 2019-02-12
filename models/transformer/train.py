@@ -212,7 +212,7 @@ class Trainer(object):
 		color_modifier_loss = Fore.WHITE if valid_loss >= self.best_loss else Fore.GREEN
 		color_modifier_f1 = Fore.WHITE if valid_f1 <= self.best_f1 else Fore.GREEN
 
-		summary = '{0}\t{1}\t{2:.3f}\t\t{3}{4:.3f}\t\t{5}{6:.3f}{7}\t\t{8:.3f}\t\t{9:.2f}m - {10:.1f}m / {11:.1f}m'.format(
+		summary = '{0}\t{1}\t{2:.2f}\t\t{3}{4:.3f}\t\t{5}{6:.3f}{7}\t\t{8:.3f}\t\t{9:.2f}m - {10:.1f}m / {11:.1f}m'.format(
 			epoch + 1, 
 			iteration, 
 			train_loss, 
@@ -351,7 +351,7 @@ class Trainer(object):
 			for batch in iterator:
 				#self.logger.debug(f'Starting evaluation @{e_iteration}')
 				e_iteration += 1
-				x, y, padding = batch.comments, batch.general_sentiments, batch.padding
+				x, y, padding = batch.comments, batch.aspect_sentiments, batch.padding
 				source_mask = self.create_padding_masks(padding, 1)
 
 				loss = self._get_loss(x, source_mask, y)
@@ -531,7 +531,7 @@ class Trainer(object):
 					# Sets the module in training mode
 					self.model.train()
 
-					x, y, padding = batch.comments, batch.general_sentiments, batch.padding
+					x, _, padding, y = batch.comments, batch.general_sentiments, batch.padding, batch.aspect_sentiments
 					source_mask = self.create_padding_masks(padding, 1)
 
 					train_loss = self._step(x, y, source_mask)
@@ -575,7 +575,7 @@ class Trainer(object):
 				# self.early_stopping epochs
 				# https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
 				if mean_valid_f1 > self.best_f1 or self.early_stopping <= 0:
-					self.logger.info(f'Current f1 score of {mean_valid_f1} is better than last f1 score of {self.best_f1}.')
+					self.logger.info(f'Current f1 score of {mean_valid_f1} (acc of {mean_valid_accuracy} is better than last f1 score of {self.best_f1}.')
 					self._reset_early_stopping(iteration, mean_valid_f1)
 				else:
 					should_stop = self._perform_early_stopping()

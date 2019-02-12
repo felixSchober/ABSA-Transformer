@@ -23,7 +23,6 @@ class JointAspectTagger(nn.Module):
 		assert num_taggers > 0
 
 		self.encoder = transformerEncoder
-		self.taggingLayer = taggingLayer
 		self.logger = logging.getLogger('pre_training')
 
 		self.model_size = model_size
@@ -55,11 +54,28 @@ class JointAspectTagger(nn.Module):
 		# provide the result to each aspect tagger
 		for _, aspect_tagger in enumerate(self.taggers):
 			tagging_result = aspect_tagger(result, *args)
+			tagging_result = torch.unsqueeze(tagging_result, 1)
 
 			if output is None:
 				output = tagging_result
 			else:
 				output = torch.cat((output, tagging_result), 1)
+
+		# output is now [batch_size, num_aspects, 4] (12, 20, 4)
+		# to reduce it to [batch_size, 4] we need to get the max 
 		return output
 
+	def predict(self, x: torch.Tensor, *args) -> torch.Tensor:
+		result = self.encoder(x, *args) # result will be [batch_size, num_words, model_size]
+		output: torch.Tensor = None
+
+		# provide the result to each aspect tagger
+		for _, aspect_tagger in enumerate(self.taggers):
+			tagging_result = aspect_tagger(result, *args)
+			_, tagging_result = torch.max(tagging_result, dim=-1) 
+			if output is None:
+				output = tagging_result.unsqueeze(1)
+			else:
+				output = torch.cat((output, tagging_result.unsqueeze(1)), 1)
+		return output 
 

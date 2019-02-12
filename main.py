@@ -15,14 +15,15 @@ from misc.run_configuration import get_default_params
 from misc import utils
 
 from optimizer import get_default_optimizer
-from criterion import NllLoss
+from criterion import NllLoss, LossCombiner
 
 from models.transformer.encoder import TransformerEncoder
-from models.softmax_output import SoftmaxOutputLayer, OutputLayer, SoftmaxOutputLayerWithCommentWiseClass
+from models.softmax_output import SoftmaxOutputLayerWithCommentWiseClass
 from models.transformer_tagger import TransformerTagger
+from models.jointAspectTagger import JointAspectTagger
 from models.transformer.train import Trainer
 
-experiment_name = 'baseline'
+experiment_name = 'testing'
 print('\n\nABSA Transformer\n\n')
 
 PREFERENCES.defaults(
@@ -40,7 +41,8 @@ hyperparameters.early_stopping = 5
 hyperparameters.use_cuda = torch.cuda.is_available
 hyperparameters.language = 'de'
 hyperparameters.num_epochs = 20
-hyperparameters.log_every_xth_iteration = 500
+hyperparameters.log_every_xth_iteration = 5
+hyperparameters.embedding_type = 'fasttext'
 
 
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
@@ -50,7 +52,7 @@ dataset = Dataset(
 	logging.getLogger('dataset'),
 	hyperparameters,
 	source_index=0,
-	target_vocab_index=1,
+	target_vocab_index=2,
 	data_path=PREFERENCES.data_root,
 	train_file=PREFERENCES.data_train,
 	valid_file=PREFERENCES.data_validation,
@@ -62,11 +64,14 @@ dataset = Dataset(
 dataset.load_data(germeval2017_dataset)
 
 
-loss = NllLoss(dataset.target_size, weight=dataset.class_weights)
+#loss = NllLoss(4, weight=dataset.class_weights)
+loss = LossCombiner(4, dataset.class_weights, NllLoss)
+
 transformer = TransformerEncoder(dataset.source_embedding,
 								 hyperparameters=hyperparameters)
 tagging_softmax = SoftmaxOutputLayerWithCommentWiseClass(hyperparameters.model_size, dataset.target_size)
-model = TransformerTagger(transformer, tagging_softmax)
+model = JointAspectTagger(transformer, hyperparameters.model_size, 4, 20)
+#model = TransformerTagger(transformer, tagging_softmax)
 
 optimizer = get_default_optimizer(model, hyperparameters)
 trainer = Trainer(
@@ -78,9 +83,9 @@ trainer = Trainer(
 					experiment_name,
 					enable_tensorboard=True)
 
-trainer.load_model()
-trainer.set_cuda(True)
-#result = trainer.train(use_cuda=hyperparameters.use_cuda, perform_evaluation=False)
+#trainer.load_model()
+#trainer.set_cuda(True)
+result = trainer.train(use_cuda=hyperparameters.use_cuda, perform_evaluation=False)
 trainer.perform_final_evaluation(False)
 
 #evaluation_results = trainer.perform_final_evaluation()
