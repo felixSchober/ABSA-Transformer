@@ -81,9 +81,10 @@ def predict_some_examples_to_df(model: nn.Module, iterator: ExampleIterator, num
 
 def plot_confusion_matrix(c_matrix,
 							classes,
-							normalize=False,
+							normalize=True,
 							title='Confusion Matrix',
 							color_map=plt.cm.Blues):
+	plt.clf()
 	fig = plt.figure()
 
 	if normalize:

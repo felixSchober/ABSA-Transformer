@@ -1,4 +1,5 @@
 import logging
+from typing import Optional, List
 import torch
 import torch.nn as nn
 
@@ -15,7 +16,7 @@ class JointAspectTagger(nn.Module):
 	num_taggers: int
 	logger: logging.RootLogger
 
-	def __init__(self, transformerEncoder: TransformerEncoder, model_size: int, target_size: int, num_taggers: int):
+	def __init__(self, transformerEncoder: TransformerEncoder, model_size: int, target_size: int, num_taggers: int, names: List[str]=[]):
 		super(JointAspectTagger, self).__init__()
 
 		assert model_size > 0
@@ -28,6 +29,7 @@ class JointAspectTagger(nn.Module):
 		self.model_size = model_size
 		self.target_size = target_size
 		self.num_taggers = num_taggers
+		self.names = names
 		
 		self.taggers = self.initialize_aspect_taggers()
 		self.logger.debug(f"{self.num_taggers} initialized")
@@ -41,8 +43,9 @@ class JointAspectTagger(nn.Module):
 
 	def initialize_aspect_taggers(self):
 		taggers = []
-		for i in range(self.num_taggers):
-			tagger = SoftmaxOutputLayerWithCommentWiseClass(self.model_size, self.target_size, 'Apsect' + str(i))
+		names = self.names if len(self.names) > 0 else range(self.num_taggers)
+		for n in names:
+			tagger = SoftmaxOutputLayerWithCommentWiseClass(self.model_size, self.target_size, 'Apsect ' + n)
 			taggers.append(tagger)
 		return nn.ModuleList(taggers)
 

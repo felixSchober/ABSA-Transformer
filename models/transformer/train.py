@@ -212,7 +212,7 @@ class Trainer(object):
 		color_modifier_loss = Fore.WHITE if valid_loss >= self.best_loss else Fore.GREEN
 		color_modifier_f1 = Fore.WHITE if valid_f1 <= self.best_f1 else Fore.GREEN
 
-		summary = '{0}\t{1}\t{2:.2f}\t\t{3}{4:.3f}\t\t{5}{6:.3f}{7}\t\t{8:.3f}\t\t{9:.2f}m - {10:.1f}m / {11:.1f}m'.format(
+		summary = '{0}\t{1}\t{2:.2f}\t\t{3}{4:.2f}\t\t{5}{6:.3f}{7}\t\t{8:.3f}\t\t{9:.2f}m - {10:.1f}m / {11:.1f}m'.format(
 			epoch + 1, 
 			iteration, 
 			train_loss, 
@@ -298,10 +298,16 @@ class Trainer(object):
 
 	def _log_confusion_matrices(self, c_matrices, figure_name, iteration):
 		if c_matrices is not None and c_matrices != []:
-			fig = plot_confusion_matrix(c_matrices, self.dataset.class_labels)
-			plt.savefig(os.path.join(self.log_imgage_dir, 'c_{}.png'.format(iteration)))
+			fig_abs = plot_confusion_matrix(c_matrices, self.dataset.class_labels, normalize=False)
+			plt.savefig(os.path.join(self.log_imgage_dir, 'abs_c_{}.png'.format(iteration)))
 			if self.enable_tensorboard and self.tb_writer is not None:
-				self.tb_writer.add_figure('confusion_matrix/{}'.format(figure_name), fig, iteration)
+				self.tb_writer.add_figure('confusion_matrix/abs/{}'.format(figure_name), fig_abs, iteration)
+
+			fig_norm = plot_confusion_matrix(c_matrices, self.dataset.class_labels)
+			plt.savefig(os.path.join(self.log_imgage_dir, 'norm_c_{}.png'.format(iteration)))
+
+			if self.enable_tensorboard and self.tb_writer is not None:
+				self.tb_writer.add_figure('confusion_matrix/norm/{}'.format(figure_name), fig_norm, iteration)
 
 	def _log_text(self, text: str, name: str):
 		if self.enable_tensorboard and self.tb_writer is not None:
@@ -373,7 +379,7 @@ class Trainer(object):
 				# get true positives
 				#self.logger.debug('Prediction finished.  Calculating scores')
 				true_pos += ((y == prediction).sum()).item()
-				total += y.shape[0]
+				total += y.shape[0] * y.shape[1]
 
 				if show_c_matrix:
 					#self.logger.debug('Calculating c_matrices')
@@ -398,8 +404,7 @@ class Trainer(object):
 			accuracy = float(true_pos) / float(total)
 
 			# calculate f1 score based on predictions and targets
-			f_scores, p_scores, r_scores, s_scores = self.calculate_scores(predictions.data, targets, f1_strategy)
-
+			f_scores, p_scores, r_scores, s_scores = self.calculate_multiheaded_scores(predictions.data, targets, f1_strategy)
 			if show_c_matrix:
 				self.logger.debug(f'Resetting batch size to {prev_batch_size}.')
 				iterator.batch_size = prev_batch_size
@@ -410,9 +415,9 @@ class Trainer(object):
 				# sum element wise to get total count
 				c_matrices = c_matrices.sum(axis=0)
 			else:
-				c_matrices = None
+				c_matrices = None			
 
-		self.logger.debug('Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(avg_loss, f_scores, c_matrices))
+		self.logger.debug('Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(avg_loss, np.mean(f_scores), c_matrices))
 		return (avg_loss, f_scores, accuracy, c_matrices)
 
 	def _evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=True) -> Tuple[float, float, float, float]:
@@ -421,10 +426,18 @@ class Trainer(object):
 
 		# perform validation loss
 		self.logger.debug('Start Evaluation')
-		mean_valid_loss, mean_valid_f1, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=show_c_matrix,
+		mean_valid_loss, f_scores, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=show_c_matrix,
 																			 show_progress=show_progress)
+
 		self.logger.debug('Evaluation Complete')
 		# log results
+		# report scores for each aspect
+		mean_valid_f1 = np.mean(f_scores)
+		names = self.model.names
+		for score, name in zip(f_scores, names):
+			self.logger.info(f'Aspect {name} with f1 score: {score}.')
+			self._log_scalar(None, score, 'f1', 'valid/' + name, iteration)
+
 		self._log_scalar(self.val_loss_history, mean_valid_loss, 'loss', 'valid', iteration)
 		self._log_scalar(self.val_acc_history, mean_valid_f1, 'f1', 'valid', iteration)
 		self.dataset.baselines['current'] = accuracy
@@ -438,6 +451,39 @@ class Trainer(object):
 		self._log_confusion_matrices(c_matrices, 'valid', iteration)
 
 		return (mean_train_loss, mean_valid_loss, mean_valid_f1, accuracy)
+
+	def calculate_multiheaded_scores(self, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro') -> Tuple[List[float], List[float], List[float], List[float]]:
+		predictions = torch.t(prediction)
+		targets = torch.t(targets)
+
+		f_scores : List[float] = []
+		p_scores : List[float] = []
+		r_scores : List[float] = []
+		s_scores : List[float] = []
+
+		for i in range(20):
+			try:
+				y_pred = predictions[i]
+				y_true = targets[i]
+
+				if y_pred.is_cuda:
+					y_pred = y_pred.cpu()
+
+				if y_true.is_cuda:
+					y_true = y_true.cpu()
+
+				# beta = 1.0 means f1 score
+				precision, recall, f_beta, support = precision_recall_fscore_support(y_true, y_pred, beta=1.0,
+																					 average=f1_strategy)
+			except Exception as err:
+				self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(),
+																								  targets.size()))
+			f_scores.append(f_beta)
+			p_scores.append(precision)
+			r_scores.append(recall)
+			s_scores.append(support)
+
+		return f_scores, p_scores, r_scores, s_scores
 
 	def calculate_scores(self, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro') -> Tuple[List[float], List[float], List[float], List[float]]:
 		p_size = prediction.size()
@@ -468,7 +514,7 @@ class Trainer(object):
 
 				# beta = 1.0 means f1 score
 				precision, recall, f_beta, support = precision_recall_fscore_support(y_true, y_pred, beta=1.0,
-																					 average='micro')
+																					 average=f1_strategy)
 			except Exception as err:
 				self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(),
 																								  targets.size()))
@@ -641,6 +687,7 @@ class Trainer(object):
 
 		tr_loss, tr_f1, tr_accuracy, tr_c_matrices = self.evaluate(self.train_iterator, show_progress=True,
 																   progress_label="Evaluating TRAIN")
+		tr_f1 = np.mean(tr_f1)
 		self.pre_training.info('TRAIN loss:\t{}'.format(tr_loss))
 		self.pre_training.info('TRAIN f1-s:\t{}'.format(tr_f1))
 		self.pre_training.info('TRAIN accuracy:\t{}'.format(tr_accuracy))
@@ -656,6 +703,8 @@ class Trainer(object):
 		val_loss, val_f1, val_accuracy, val_c_matrices = self.evaluate(self.valid_iterator, show_progress=True,
 																	   progress_label="Evaluating VALIDATION",
 																	   show_c_matrix=True)
+		val_f1 = np.mean(val_f1)
+
 		self.pre_training.info('VALID loss:\t{}'.format(val_loss))
 		self.pre_training.info('VALID f1-s:\t{}'.format(val_f1))
 		self.pre_training.info('VALID accuracy:\t{}'.format(val_accuracy))
@@ -675,6 +724,7 @@ class Trainer(object):
 			te_loss, te_f1, te_accuracy, te_c_matrices = self.evaluate(self.test_iterator, show_progress=True,
 																	   progress_label="Evaluating TEST",
 																	   show_c_matrix=True)
+			te_f1 = np.mean(te_f1)
 			self.pre_training.info('TEST loss:\t{}'.format(te_loss))
 			self.pre_training.info('TEST f1-s:\t{}'.format(te_f1))
 			self.pre_training.info('TEST accuracy:\t{}'.format(te_accuracy))

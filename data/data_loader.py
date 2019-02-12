@@ -104,6 +104,7 @@ class Dataset(object):
 		self.train_iter, self.valid_iter, self.test_iter = self.dataset['iters']
 		self.fields = self.dataset['fields']
 		self.target = self.dataset['target']
+		self.target_names = [n for n, _ in self.target]
 		self.examples = self.dataset['examples']
 		self.embedding = self.dataset['embeddings']
 		self.dummy_input = self.dataset['dummy_input']

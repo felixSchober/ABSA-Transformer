@@ -41,7 +41,7 @@ hyperparameters.early_stopping = 5
 hyperparameters.use_cuda = torch.cuda.is_available
 hyperparameters.language = 'de'
 hyperparameters.num_epochs = 20
-hyperparameters.log_every_xth_iteration = 5
+hyperparameters.log_every_xth_iteration = 500
 hyperparameters.embedding_type = 'fasttext'
 
 
@@ -70,7 +70,7 @@ loss = LossCombiner(4, dataset.class_weights, NllLoss)
 transformer = TransformerEncoder(dataset.source_embedding,
 								 hyperparameters=hyperparameters)
 tagging_softmax = SoftmaxOutputLayerWithCommentWiseClass(hyperparameters.model_size, dataset.target_size)
-model = JointAspectTagger(transformer, hyperparameters.model_size, 4, 20)
+model = JointAspectTagger(transformer, hyperparameters.model_size, 4, 20, dataset.target_names)
 #model = TransformerTagger(transformer, tagging_softmax)
 
 optimizer = get_default_optimizer(model, hyperparameters)
