@@ -906,7 +906,7 @@ class Trainer(object):
 			self.logger.exception('Could not save model.')
 
 	def classify_sentence(self, sentence: str) -> str:
-		x = self.manual_process(sentence, self.dataset.source_reverser[1])
+		x = self.manual_process(sentence, self.dataset.source_reverser)
 		# if self.model.is_cuda:
 		x = x.cuda()
 		y_hat = self.model.predict(x)

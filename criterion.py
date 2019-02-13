@@ -71,8 +71,8 @@ class MultiHeadNllLoss(nn.Module):
 	def __init__(self, output_size: int, n_heads: int, weights:List[List[float]]=None, use_cuda=True):
 		super().__init__()
 		self.output_size = output_size
-		if weight is not None:
-			self.weight = torch.Tensor(weight)
+		if weights is not None:
+			self.weight = torch.Tensor(weights)
 
 			if use_cuda and torch.cuda.is_available():
 				self.weight = self.weight.cuda()
