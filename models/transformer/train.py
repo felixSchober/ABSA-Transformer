@@ -1,6 +1,7 @@
 import warnings
 warnings.filterwarnings('ignore')  # see
 								   # https://stackoverflow.com/questions/43162506/undefinedmetricwarning-f-score-is-ill-defined-and-being-set-to-0-0-in-labels-wi
+import math
 import os
 import logging
 import time
@@ -82,7 +83,8 @@ class Trainer(object):
 				 hyperparameters: RunConfiguration,
 				 dataset: Dataset,
 				 experiment_name: str,
-				 enable_tensorboard: bool=True):
+				 enable_tensorboard: bool=True,
+				 verbose=True):
 
 		assert hyperparameters.log_every_xth_iteration >= -1
 		assert model is not None
@@ -132,11 +134,17 @@ class Trainer(object):
 
 		# this logger will both print to the console as well as the file
 		self.logger_prediction = logging.getLogger('prediction')
-		self.pre_training = logging.getLogger('pre_training')
+
+		if verbose:
+			self.pre_training = logging.getLogger('pre_training')
+		else:
+			self.pre_training = logging.getLogger('pre_training_silent')
 
 		model_summary = torch_summarize(model)
 		self.pre_training.info(model_summary)
-		summary(self.model, input_size=(42,), dtype='long')
+
+		if verbose:
+			summary(self.model, input_size=(42,), dtype='long')
 		self.pre_training.info(model_summary)
 
 		self.num_labels = dataset.target_size
@@ -169,7 +177,8 @@ class Trainer(object):
 		run_dir = os.path.join(run_dir, str(self.num_epochs) + 'EP')
 		create_dir_if_necessary(run_dir)
 
-		self.experiment_number = sum(os.path.isdir(i) for i in os.listdir(run_dir))
+		self.experiment_number = sum(os.path.isdir(os.path.join(run_dir, i)) for i in os.listdir(run_dir))
+
 		run_dir = os.path.join(run_dir, str(self.experiment_number))
 		create_dir_if_necessary(run_dir)
 
@@ -473,8 +482,13 @@ class Trainer(object):
 					y_true = y_true.cpu()
 
 				# beta = 1.0 means f1 score
-				precision, recall, f_beta, support = precision_recall_fscore_support(y_true, y_pred, beta=1.0,
-																					 average=f1_strategy)
+				#precision, recall, f_beta, support = precision_recall_fscore_support(y_true, y_pred, beta=1.0,
+				#																	 average=f1_strategy)
+				f_beta = self.calculate_f1(y_true, y_pred)
+				precision = 0
+				recall = 0
+				support = 0
+
 			except Exception as err:
 				self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(),
 																								  targets.size()))
@@ -512,9 +526,10 @@ class Trainer(object):
 				if y_true.is_cuda:
 					y_true = y_true.cpu()
 
-				# beta = 1.0 means f1 score
+				 #beta = 1.0 means f1 score
 				precision, recall, f_beta, support = precision_recall_fscore_support(y_true, y_pred, beta=1.0,
 																					 average=f1_strategy)
+				
 			except Exception as err:
 				self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(),
 																								  targets.size()))
@@ -524,6 +539,25 @@ class Trainer(object):
 			s_scores.append(support)
 
 		return f_scores[0], p_scores, r_scores, s_scores
+
+	def calculate_f1(self, target, prediction):
+		s_f1 = 0.0
+		for i in range(4):
+			metrics = self.calculate_aspect_binary_classification_result(target, prediction, i)
+			f1 = self.calculate_binary_aspect_f1(metrics)
+			if math.isnan(f1):
+				f1 = 0.0
+			s_f1 += f1
+		return s_f1 / 4
+
+	def calculate_aspect_binary_classification_result(self, target, prediction, class_label):
+		mask_target = target == class_label
+		mark_prediction = prediction == class_label
+		c_matrix = confusion_matrix(mask_target, mark_prediction, labels=[1, 0])
+		return {'tp': c_matrix[0, 0], 'fp': c_matrix[0, 1], 'fn': c_matrix[1, 0], 'tn': c_matrix[1, 1]}
+
+	def calculate_binary_aspect_f1(self, metrics):
+		return (2*metrics['tp']) / (2*metrics['tp']+metrics['fn']+metrics['fp'])
 
 	def set_cuda(self, use_cuda: bool=False):
 		if use_cuda and torch.cuda.is_available():
@@ -679,18 +713,25 @@ class Trainer(object):
 		input_mask = (targets != padd_class).unsqueeze(-2)
 		return input_mask
 
-	def perform_final_evaluation(self, use_test_set: bool=True) -> Tuple[EvaluationResult, EvaluationResult, EvaluationResult]:
-		self.pre_training.info('Perform final model evaluation')
-		self.pre_training.debug('--- Train Scores ---')
+	def perform_final_evaluation(self, use_test_set: bool=True, verbose: bool=True) -> Tuple[EvaluationResult, EvaluationResult, EvaluationResult]:
+		
+		if verbose:
+			self.pre_training.info('Perform final model evaluation')
+			self.pre_training.debug('--- Train Scores ---')
 		self.train_iterator.train = False
 		self.valid_iterator.train = False
 
-		tr_loss, tr_f1, tr_accuracy, tr_c_matrices = self.evaluate(self.train_iterator, show_progress=True,
+		tr_loss, tr_f1, tr_accuracy, tr_c_matrices = self.evaluate(self.train_iterator, show_progress=verbose,
 																   progress_label="Evaluating TRAIN")
 		tr_f1 = np.mean(tr_f1)
-		self.pre_training.info('TRAIN loss:\t{}'.format(tr_loss))
-		self.pre_training.info('TRAIN f1-s:\t{}'.format(tr_f1))
-		self.pre_training.info('TRAIN accuracy:\t{}'.format(tr_accuracy))
+		if verbose:
+			self.pre_training.info('TRAIN loss:\t{}'.format(tr_loss))
+			self.pre_training.info('TRAIN f1-s:\t{}'.format(tr_f1))
+			self.pre_training.info('TRAIN accuracy:\t{}'.format(tr_accuracy))
+		else:
+			self.logger.info('TRAIN loss:\t{}'.format(tr_loss))
+			self.logger.info('TRAIN f1-s:\t{}'.format(tr_f1))
+			self.logger.info('TRAIN accuracy:\t{}'.format(tr_accuracy))
 
 		self._log_scalar(None, tr_loss, 'final', 'train/loss', 0)
 		self._log_scalar(None, tr_f1, 'final', 'train/f1', 0)
@@ -700,14 +741,19 @@ class Trainer(object):
 			plt.show()
 
 		self.pre_training.debug('--- Valid Scores ---')
-		val_loss, val_f1, val_accuracy, val_c_matrices = self.evaluate(self.valid_iterator, show_progress=True,
+		val_loss, val_f1, val_accuracy, val_c_matrices = self.evaluate(self.valid_iterator, show_progress=verbose,
 																	   progress_label="Evaluating VALIDATION",
-																	   show_c_matrix=True)
+																	   show_c_matrix=verbose)
 		val_f1 = np.mean(val_f1)
 
-		self.pre_training.info('VALID loss:\t{}'.format(val_loss))
-		self.pre_training.info('VALID f1-s:\t{}'.format(val_f1))
-		self.pre_training.info('VALID accuracy:\t{}'.format(val_accuracy))
+		if verbose:
+			self.pre_training.info('VALID loss:\t{}'.format(val_loss))
+			self.pre_training.info('VALID f1-s:\t{}'.format(val_f1))
+			self.pre_training.info('VALID accuracy:\t{}'.format(val_accuracy))
+		else:
+			self.logger.info('VALID loss:\t{}'.format(val_loss))
+			self.logger.info('VALID f1-s:\t{}'.format(val_f1))
+			self.logger.info('VALID accuracy:\t{}'.format(val_accuracy))
 
 		self._log_scalar(None, val_loss, 'final', 'train/loss', 0)
 		self._log_scalar(None, val_f1, 'final', 'train/f1', 0)
@@ -721,13 +767,18 @@ class Trainer(object):
 		if use_test_set:
 			self.test_iterator.train = False
 
-			te_loss, te_f1, te_accuracy, te_c_matrices = self.evaluate(self.test_iterator, show_progress=True,
+			te_loss, te_f1, te_accuracy, te_c_matrices = self.evaluate(self.test_iterator, show_progress=verbose,
 																	   progress_label="Evaluating TEST",
-																	   show_c_matrix=True)
+																	   show_c_matrix=verbose)
 			te_f1 = np.mean(te_f1)
-			self.pre_training.info('TEST loss:\t{}'.format(te_loss))
-			self.pre_training.info('TEST f1-s:\t{}'.format(te_f1))
-			self.pre_training.info('TEST accuracy:\t{}'.format(te_accuracy))
+			if verbose:
+				self.pre_training.info('TEST loss:\t{}'.format(te_loss))
+				self.pre_training.info('TEST f1-s:\t{}'.format(te_f1))
+				self.pre_training.info('TEST accuracy:\t{}'.format(te_accuracy))
+			else:
+				self.logger.info('TEST loss:\t{}'.format(te_loss))
+				self.logger.info('TEST f1-s:\t{}'.format(te_f1))
+				self.logger.info('TEST accuracy:\t{}'.format(te_accuracy))
 
 			self._log_scalar(None, te_loss, 'final', 'test/loss', 0)
 			self._log_scalar(None, te_f1, 'final', 'test/f1', 0)

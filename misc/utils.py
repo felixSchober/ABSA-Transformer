@@ -8,10 +8,10 @@ import errno
 import logging
 import sys
 from torch.nn.modules.module import _addindent
-import torch
 import random
 import locale
 from prettytable import PrettyTable
+import datetime
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -69,19 +69,37 @@ def check_if_file_exists(path):
 
 
 def create_loggers(log_path=None, experiment_name=None, log_file_name='run.log'):
+    #logging.shutdown()
+    #reload(logging)
 
     if log_path is None:
-        log_path = os.path.join(os.getcwd(), 'logs')
+        log_path_base = os.path.join(os.getcwd(), 'logs')
     
-    create_dir_if_necessary(log_path)
+    log_path = log_path_base
+    create_dir_if_necessary(log_path_base)
+    now = datetime.datetime.now()
 
     # if no experiment name specified - create unique name
     if experiment_name is None:
-        import datetime
-        now = datetime.datetime.now()
         experiment_name = '{0}_{1}'.format(now.strftime('%Y%m%d%H%M'), get_uuid())
+        log_path = os.path.join(log_path, experiment_name)
 
-    log_path = os.path.join(log_path, experiment_name)
+    elif experiment_name != 'test' and experiment_name != 'testing':
+        log_path = os.path.join(log_path, experiment_name)
+        create_dir_if_necessary(log_path)
+        date_identifier = now.strftime('%Y%m%d')
+        log_path = os.path.join(log_path, date_identifier)
+        create_dir_if_necessary(log_path)
+
+        experiment_name = os.path.join(experiment_name, date_identifier)
+    else:
+        log_path = os.path.join(log_path, experiment_name)
+        create_dir_if_necessary(log_path)
+
+    experiment_number = sum(os.path.isdir(os.path.join(log_path, i)) for i in os.listdir(log_path))
+    log_path = os.path.join(log_path, str(experiment_number))
+    experiment_name = os.path.join(experiment_name, str(experiment_number))
+
     create_dir_if_necessary(log_path)
     print('Log path is ', log_path)
 

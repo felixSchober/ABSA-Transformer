@@ -282,7 +282,7 @@ class CustomGermEval2017Dataset(Dataset):
 
 	@classmethod
 	def splits(cls, path=None, root='.data', train=None, validation=None,
-			   test=None, **kwargs) -> Tuple[Dataset]:
+			   test=None, clip_comments_to=100, **kwargs) -> Tuple[Dataset]:
 		"""Create Dataset objects for multiple splits of a dataset.
 		Arguments:
 			path (str): Common prefix of the splits' file paths, or None to use
@@ -304,20 +304,20 @@ class CustomGermEval2017Dataset(Dataset):
 			path = cls.download(root)
 
 		train_data = None if train is None else cls(
-			os.path.join(path, train), **kwargs)
+			os.path.join(path, train), clip_comments_to=clip_comments_to, **kwargs)
 		# make sure, we use exactly the same fields across all splits
 		train_aspects = train_data.aspects
 
 		val_data = None if validation is None else cls(
-			os.path.join(path, validation), a_sentiment=train_aspects, **kwargs)
+			os.path.join(path, validation), a_sentiment=train_aspects, clip_comments_to=clip_comments_to, **kwargs)
 
 		test_data = None if test is None else cls(
-			os.path.join(path, test), a_sentiment=train_aspects, **kwargs)
+			os.path.join(path, test), a_sentiment=train_aspects, clip_comments_to=clip_comments_to, **kwargs)
 
 		return tuple(d for d in (train_data, val_data, test_data)
 					 if d is not None)
 	
-	def __init__(self, path, fields, a_sentiment=[], separator='\t',  use_spellchecker=False, **kwargs):
+	def __init__(self, path, fields, a_sentiment=[], separator='\t',  use_spellchecker=False, clip_comments_to=100, **kwargs):
 
 		self.aspect_sentiment_fields = []
 		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
@@ -327,7 +327,7 @@ class CustomGermEval2017Dataset(Dataset):
 		examples, loaded_fields = self._try_load(filename.split(".")[0], fields)
 
 		if not examples:
-			examples, fields = self._load(path, filename, fields, a_sentiment, separator, use_spellchecker, **kwargs)
+			examples, fields = self._load(path, filename, fields, a_sentiment, separator, use_spellchecker, clip_comments_to=clip_comments_to, **kwargs)
 			self._save(filename.split(".")[0], examples)
 		else:
 			fields = loaded_fields
@@ -335,7 +335,7 @@ class CustomGermEval2017Dataset(Dataset):
 		super(CustomGermEval2017Dataset, self).__init__(examples, tuple(fields),
 													 **kwargs)    
 
-	def _load(self, path, filename, fields, a_sentiment=[], separator='\t',  use_spellchecker=False, **kwargs):
+	def _load(self, path, filename, fields, a_sentiment=[], separator='\t',  use_spellchecker=False, clip_comments_to=100, **kwargs):
 		examples = []
 		
 		# remove punctuation
@@ -374,13 +374,12 @@ class CustomGermEval2017Dataset(Dataset):
 		else:
 			spell = None
 
-
 		with open(path, encoding="utf8") as input_file:
 			aspect_sentiment_categories = set()
 			aspect_sentiments: List[Dict[str, str]] = []
 
 			raw_examples: List[List[Union[str, List[Dict[str, str]]]]] = []
-			for line in tqdm(input_file, desc=f'Load {filename[0:7]}'):
+			for line in tqdm(input_file, desc=f'Load {filename[0:7]}', leave=False):
 				columns = []
 				line = line.strip()
 				if line == '':
@@ -467,9 +466,9 @@ class CustomGermEval2017Dataset(Dataset):
 		# clip comments
 		for example in examples:
 			comment_length: int = len(example.comments)
-			if comment_length > 100:
-				example.comments = example.comments[0:100]
-				comment_length = 100
+			if comment_length > clip_comments_to:
+				example.comments = example.comments[0:clip_comments_to]
+				comment_length = clip_comments_to
 
 			example.padding = ['0'] * comment_length
 		return examples, fields
@@ -514,10 +513,10 @@ class CustomGermEval2017Dataset(Dataset):
 		samples_path = os.path.join(path, name + ".pkl")
 		aspects_path = os.path.join(path, name + "_aspects.pkl")
 
-		print(f'Trying to save loaded dataset to {samples_path}.')
+		# print(f'Trying to save loaded dataset to {samples_path}.')
 		with open(samples_path, 'wb') as f:
 			pickle.dump(samples, f)
-			print(f'Model {name} successfully saved.')
+			# print(f'Model {name} successfully saved.')
 
 		with open(aspects_path, "wb") as f:
 			pickle.dump(self.aspects, f)

@@ -56,6 +56,7 @@ class Dataset(object):
 		self.pretrained_word_embeddings_name = configuration.embedding_name
 		self.use_cuda = configuration.use_cuda
 		self.use_stop_words = configuration.use_stop_words
+		self.clip_comments_to = configuration.clip_comments_to
 		self.logger = logger
 		self.split_length = (0, 0, 0)
 		self.total_samples = -1
@@ -77,7 +78,8 @@ class Dataset(object):
 	
 	def load_data(self,
 				loader,                
-				custom_preprocessing: data.Pipeline=DEFAULT_DATA_PIPELINE):
+				custom_preprocessing: data.Pipeline=DEFAULT_DATA_PIPELINE,
+				verbose=True):
 
 		self.logger.info(f'Getting {self.pretrained_word_embeddings} with dimension {self.pretrained_word_embeddings_dim}')
 		word_vectors: vocab
@@ -96,7 +98,8 @@ class Dataset(object):
 			self.valid_file,
 			self.test_file,
 			self.use_cuda,
-			self.use_stop_words)
+			self.use_stop_words,
+			self.clip_comments_to)
 
 		self.vocabs = self.dataset['vocabs']
 		self.task = self.dataset['task']
@@ -121,7 +124,11 @@ class Dataset(object):
 		self.target_reverser = self.target[0]
 
 		self.log_parameters()
-		self.show_stats()
+
+		if verbose:
+			self.show_stats()
+		else:
+			self._calculate_dataset_stats()
 
 		self.logger.info('Dataset loaded. Ready for training')
 

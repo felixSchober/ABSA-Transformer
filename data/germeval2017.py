@@ -34,7 +34,8 @@ def germeval2017_dataset(
 					validation_file='dev_v1.4.tsv',
 					test_file=None,
 					use_cuda=False,
-					use_stop_words=True):
+					use_stop_words=True,
+					clip_comments_to=100):
 	if use_stop_words:
 		stop_words = get_stop_words('de')
 	else:
@@ -104,7 +105,8 @@ def germeval2017_dataset(
 							validation=validation_file,
 							test=test_file,
 							separator='\t',
-							fields=fields
+							fields=fields,
+							clip_comments_to=clip_comments_to
 	)
 
 	# use updated fields
