@@ -17,6 +17,8 @@ import datetime
 locale.setlocale(locale.LC_ALL, '')
 
 def set_seeds(seed: int) -> None:
+    if seed is None:
+        return
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
