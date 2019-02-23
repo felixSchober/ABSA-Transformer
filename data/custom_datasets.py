@@ -16,8 +16,8 @@ import torch.utils.data
 from torchtext.data.utils import RandomShuffler
 from torchtext.utils import download_from_url, unicode_csv_reader
 from data.custom_fields import ReversibleField
-from tqdm.autonotebook import tqdm
-#from tqdm import tqdm
+#from tqdm.autonotebook import tqdm
+from tqdm import tqdm
 import spacy
 spacy_nlp = spacy.load('de')
 from spellchecker import SpellChecker

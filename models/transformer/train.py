@@ -16,7 +16,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchtext
 from torch.autograd import *
-from tqdm.autonotebook import tqdm
+#from tqdm.autonotebook import tqdm
+from tqdm import tqdm
 from tensorboardX import SummaryWriter
 import matplotlib.pyplot as plt
 from colorama import Fore, Style
@@ -576,15 +577,13 @@ class Trainer(object):
 		self.pre_training.info('{} Iterations per epoch with batch size of {}'.format(self.iterations_per_epoch_train, self.batch_size))
 		self.pre_training.info(f'Total iterations: {self.iterations_per_epoch_train * self.num_epochs}')
 		self.pre_training.info('START training.')
-		print('\n\n')
 
 		iteration = 0
 		epoch_duration = 0
 		train_duration = 0
 		total_time_elapsed = 0
 		train_start = time.time()
-
-		with tqdm(total=iterations_per_epoch, position=0, leave=True) as progress_bar:
+		with tqdm(total=iterations_per_epoch, leave=True) as progress_bar:
 			self.progress_bar = progress_bar
 			for epoch in range(self.num_epochs):
 				progress_bar.n = 0
