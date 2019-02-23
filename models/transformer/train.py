@@ -584,7 +584,7 @@ class Trainer(object):
 		total_time_elapsed = 0
 		train_start = time.time()
 
-		with tqdm(total=iterations_per_epoch, position=0) as progress_bar:
+		with tqdm(total=iterations_per_epoch, position=0, leave=True) as progress_bar:
 			self.progress_bar = progress_bar
 			for epoch in range(self.num_epochs):
 				progress_bar.n = 0
@@ -607,7 +607,7 @@ class Trainer(object):
 
 					iteration += 1
 
-					self.logger.debug('Iteration ' + str(iteration))
+					# self.logger.debug('Iteration ' + str(iteration))
 					# Sets the module in training mode
 					self.model.train()
 
