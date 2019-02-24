@@ -145,7 +145,7 @@ class Trainer(object):
 		self.pre_training.info(model_summary)
 
 		if verbose:
-			summary(self.model, input_size=(42,), dtype='long')
+			summary(self.model, input_size=(self.hyperparameters.clip_comments_to,), dtype='long')
 		self.pre_training.info(model_summary)
 
 		self.num_labels = dataset.target_size

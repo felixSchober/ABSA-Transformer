@@ -14,6 +14,7 @@ from data.custom_fields import ReversibleField
 from data.custom_datasets import CustomGermEval2017Dataset
 from data.data_loader import get_embedding
 
+from misc.run_configuration import RunConfiguration
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ def preprocess_relevance_word(word: str) -> int:
 
 def germeval2017_dataset(
 					pretrained_vectors,
+					hyperparameters: RunConfiguration,
 					batch_size=80,
 					root='./germeval2017',
 					train_file='train_v1.4.tsv',
@@ -45,6 +47,7 @@ def germeval2017_dataset(
 	comment_field = ReversibleField(
 							batch_first=True,    # produce tensors with batch dimension first
 							lower=True,
+							fix_length=hyperparameters.clip_comments_to,
 							sequential=True,
 							use_vocab=True,
 							init_token=None,
@@ -83,6 +86,7 @@ def germeval2017_dataset(
 	padding_field = data.Field(
 							batch_first=True,
 							sequential=True,
+							fix_length=hyperparameters.clip_comments_to,
 							use_vocab=True,
 							init_token=None,
 							eos_token=None,

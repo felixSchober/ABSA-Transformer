@@ -55,21 +55,7 @@ class SoftmaxOutputLayerWithCommentWiseClass(nn.Module):
 
 		return probs
 
-class ConvSoftmaxOutputLayerWithCommentWiseClass(SoftmaxOutputLayerWithCommentWiseClass):
-
-	def __init__(self, hidden_size: int, output_size: int):
-		"""Projects the output of a model like the transformer encoder to a desired shape so that it is possible to perform classification.
-		This is done by projecting the output of the model (e.g. size 300 per word) down to the ammount of classes
-		
-		Arguments:
-			hidden_size {int} -- output of the transformer encoder (d_model)
-			output_size {int} -- number of classes
-		"""
-		super(ConvSoftmaxOutputLayerWithCommentWiseClass, self).__init__(hidden_size, output_size)
-		
-		self.comment_projection = nn.Conv1d()
-
-	def forward(self, x: torch.Tensor, mask: torch.Tensor =None, *args):
+	def predict(self, x: torch.Tensor, mask: torch.Tensor =None, *args):
 		logits = self.output_projection(x)
 
 		# apply mask so that the paddings don't contribute anything
@@ -82,8 +68,52 @@ class ConvSoftmaxOutputLayerWithCommentWiseClass(SoftmaxOutputLayerWithCommentWi
 			logits.masked_fill(transformed_mask == 0, 0)
 
 		logits = torch.sum(logits, dim=1)
-		probs = F.log_softmax(logits, dim=-1)
+		probs = F.softmax(logits, dim=-1)
 
+		return probs
+
+class ConvSoftmaxOutputLayerWithCommentWiseClass(nn.Module):
+
+	def __init__(self, model_size: int, kernel_size: int, stride: int, padding: str, num_filters: int, output_size: int, sentence_lenght: int, name: str = None):
+		"""Projects the output of a model like the transformer encoder to a desired shape so that it is possible to perform classification.
+		This is done by projecting the output of the model (e.g. size 300 per word) down to the ammount of classes
+		
+		Arguments:
+			hidden_size {int} -- output of the transformer encoder (d_model)
+			output_size {int} -- number of classes
+		"""
+		super(ConvSoftmaxOutputLayerWithCommentWiseClass, self).__init__()
+		self.name = name if name is not None else 'NotSet'
+		self.output_size = output_size
+
+		self.conv_out = ((sentence_lenght + 2 * padding - 1 * (kernel_size - 1) - 1) // stride) + 1
+		self.conv = nn.Sequential(
+			nn.Conv2d(1, num_filters, (kernel_size, model_size), stride, padding),
+			nn.ReLU()
+		)
+		self.pooling = nn.MaxPool2d((self.conv_out, 1), stride=stride)
+		self.output_projection = nn.Linear(num_filters, output_size)
+
+	def forward(self, x: torch.Tensor, mask: torch.Tensor =None, *args):
+		x = x.unsqueeze(1) 					# [batch_size, num_words, model_size] -> e.g. [12, 100, 300] -> [batch_size, 1, num_words, model_size]
+
+		x = self.conv(x)					# [batch_size, 1, num_words, model_size] -> [batch_size, num_filters, num_words - padding, 1] e.g. [12, 300, 96, 1]
+		x = self.pooling(x)					# [batch_size, num_filters, num_words - padding, 1] -> [batch_size, num_filters, 1, 1]
+		x = x.squeeze().squeeze()
+		logits = self.output_projection(x)	# [batch_size, num_filters] -> [batch_size, classes] e.g. [12, 4]
+
+		probs = F.log_softmax(logits, dim=-1)
+		return probs
+
+	def predict(self, x: torch.Tensor, mask: torch.Tensor=None, *args):
+		x = x.unsqueeze(1) 					# [batch_size, num_words, model_size] -> e.g. [12, 100, 300] -> [batch_size, 1, num_words, model_size]
+
+		x = self.conv(x)					# [batch_size, 1, num_words, model_size] -> [batch_size, num_filters, num_words - padding, 1] e.g. [12, 300, 96, 1]
+		x = self.pooling(x)					# [batch_size, num_filters, num_words - padding, 1] -> [batch_size, num_filters, 1, 1]
+		x = x.squeeze().squeeze()
+		logits = self.output_projection(x)	# [batch_size, num_filters] -> [batch_size, classes] e.g. [12, 4]
+
+		probs = F.softmax(logits, dim=-1)
 		return probs
 
 class OutputLayer(nn.Module):
