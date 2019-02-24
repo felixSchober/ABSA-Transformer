@@ -117,3 +117,4 @@ data/conll2003/
 desktop.ini
 data/germeval2017/
 /data/cache
+.vscode/settings.json
