@@ -3,8 +3,9 @@ from typing import Optional, List
 import torch
 import torch.nn as nn
 
+from misc.run_configuration import RunConfiguration
 from models.transformer.encoder import TransformerEncoder
-from models.softmax_output import SoftmaxOutputLayerWithCommentWiseClass
+from models.softmax_output import SoftmaxOutputLayerWithCommentWiseClass, ConvSoftmaxOutputLayerWithCommentWiseClass
 
 class JointAspectTagger(nn.Module):
 	"""description of class"""
@@ -15,18 +16,20 @@ class JointAspectTagger(nn.Module):
 	target_size: int
 	num_taggers: int
 	logger: logging.RootLogger
+	hyperparameters: RunConfiguration
 
-	def __init__(self, transformerEncoder: TransformerEncoder, model_size: int, target_size: int, num_taggers: int, names: List[str]=[]):
+	def __init__(self, transformerEncoder: TransformerEncoder, hyperparameters: RunConfiguration, target_size: int, num_taggers: int, names: List[str]=[]):
 		super(JointAspectTagger, self).__init__()
 
-		assert model_size > 0
+		assert hyperparameters.model_size > 0
 		assert target_size > 0
 		assert num_taggers > 0
 
+		self.hyperparameters = hyperparameters
 		self.encoder = transformerEncoder
 		self.logger = logging.getLogger('pre_training')
 
-		self.model_size = model_size
+		self.model_size = self.hyperparameters.model_size
 		self.target_size = target_size
 		self.num_taggers = num_taggers
 		self.names = names
@@ -43,9 +46,24 @@ class JointAspectTagger(nn.Module):
 
 	def initialize_aspect_taggers(self):
 		taggers = []
+		hp = self.hyperparameters
 		names = self.names if len(self.names) > 0 else range(self.num_taggers)
 		for n in names:
-			tagger = SoftmaxOutputLayerWithCommentWiseClass(self.model_size, self.target_size, 'Apsect ' + n)
+
+			if hp.output_layer_type == 'conv':
+				tagger = ConvSoftmaxOutputLayerWithCommentWiseClass(
+																	hp.model_size,
+																	hp.output_conv_kernel_size,
+																	hp.output_conv_stride,
+																	hp.output_conv_padding, 
+																	hp.output_conv_num_filters,
+																	self.target_size,
+																	hp.clip_comments_to,
+																	'Apsect ' + n
+																	)
+			else:
+				tagger = SoftmaxOutputLayerWithCommentWiseClass(self.model_size, self.target_size, 'Apsect ' + n)
+
 			taggers.append(tagger)
 		return nn.ModuleList(taggers)
 
@@ -74,7 +92,7 @@ class JointAspectTagger(nn.Module):
 
 		# provide the result to each aspect tagger
 		for _, aspect_tagger in enumerate(self.taggers):
-			tagging_result = aspect_tagger(result, *args)
+			tagging_result = aspect_tagger.predict(result, *args)
 			_, tagging_result = torch.max(tagging_result, dim=-1) 
 			if output is None:
 				output = tagging_result.unsqueeze(1)
