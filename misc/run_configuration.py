@@ -77,6 +77,26 @@ def randomize_params(config, param_dict_range) -> RunConfiguration:
                 ranges = param_dict_range['pointwise_layer_size']
                 config.pointwise_layer_size = random.randint(ranges[0], ranges[1])
 
+        if 'output_conv_num_filters' in param_dict_range:
+                ranges = param_dict_range['output_conv_num_filters']
+                config.output_conv_num_filters = random.randint(ranges[0], ranges[1])
+
+        if 'output_conv_kernel_size' in param_dict_range:
+                ranges = param_dict_range['output_conv_kernel_size']
+                config.output_conv_kernel_size = random.randint(ranges[0], ranges[1])
+
+        if 'output_conv_stride' in param_dict_range:
+                ranges = param_dict_range['output_conv_stride']
+                config.output_conv_stride = random.randint(ranges[0], ranges[1])
+
+        if 'output_conv_padding' in param_dict_range:
+                ranges = param_dict_range['output_conv_padding']
+                config.output_conv_padding = random.randint(ranges[0], ranges[1])
+
+        if 'output_layer_type' in param_dict_range:
+                types = param_dict_range['output_layer_type']
+                config.output_layer_type = random.choice(types)
+
         if 'clip_comments_to' in param_dict_range:
                 ranges = param_dict_range['clip_comments_to']
                 config.clip_comments_to = random.randint(ranges[0], ranges[1])
