@@ -145,7 +145,7 @@ class Trainer(object):
 		self.pre_training.info(model_summary)
 
 		if verbose:
-			summary(self.model, input_size=(42,), dtype='long')
+			summary(self.model, input_size=(self.hyperparameters.clip_comments_to,), dtype='long')
 		self.pre_training.info(model_summary)
 
 		self.num_labels = dataset.target_size
@@ -430,7 +430,7 @@ class Trainer(object):
 		self.logger.debug('Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(avg_loss, np.mean(f_scores), c_matrices))
 		return (avg_loss, f_scores, accuracy, c_matrices)
 
-	def _evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=True) -> Tuple[float, float, float, float]:
+	def _evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=False) -> Tuple[float, float, float, float]:
 		mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
 		self._log_scalar(None, mean_train_loss, 'loss', 'train/mean', iteration)
 

@@ -41,6 +41,13 @@ class RunConfiguration(object):
                 self.dropout_rate = kwargs['dropout_rate']
                 self.pointwise_layer_size = kwargs['pointwise_layer_size']
 
+                self.output_layer_type = kwargs['output_layer_type']
+
+                self.output_conv_num_filters = kwargs['output_conv_num_filters']
+                self.output_conv_kernel_size = kwargs['output_conv_kernel_size']
+                self.output_conv_stride = kwargs['output_conv_stride']
+                self.output_conv_padding = kwargs['output_conv_padding']
+
                 self.log_every_xth_iteration = kwargs['log_every_xth_iteration']
                 self.num_epochs = num_epochs
 
@@ -69,6 +76,26 @@ def randomize_params(config, param_dict_range) -> RunConfiguration:
         if 'pointwise_layer_size' in param_dict_range:
                 ranges = param_dict_range['pointwise_layer_size']
                 config.pointwise_layer_size = random.randint(ranges[0], ranges[1])
+
+        if 'output_conv_num_filters' in param_dict_range:
+                ranges = param_dict_range['output_conv_num_filters']
+                config.output_conv_num_filters = random.randint(ranges[0], ranges[1])
+
+        if 'output_conv_kernel_size' in param_dict_range:
+                ranges = param_dict_range['output_conv_kernel_size']
+                config.output_conv_kernel_size = random.randint(ranges[0], ranges[1])
+
+        if 'output_conv_stride' in param_dict_range:
+                ranges = param_dict_range['output_conv_stride']
+                config.output_conv_stride = random.randint(ranges[0], ranges[1])
+
+        if 'output_conv_padding' in param_dict_range:
+                ranges = param_dict_range['output_conv_padding']
+                config.output_conv_padding = random.randint(ranges[0], ranges[1])
+
+        if 'output_layer_type' in param_dict_range:
+                types = param_dict_range['output_layer_type']
+                config.output_layer_type = random.choice(types)
 
         if 'clip_comments_to' in param_dict_range:
                 ranges = param_dict_range['clip_comments_to']
@@ -139,6 +166,11 @@ def get_default_params(use_cuda: bool = False) -> RunConfiguration:
         language='de',
         use_stop_words=True,
         use_cuda=use_cuda,
-        clip_comments_to=100
+        clip_comments_to=100,
+        output_layer_type='conv',
+        output_conv_num_filters=300,
+        output_conv_kernel_size=5,
+        output_conv_stride=1,
+        output_conv_padding=0
     )
 
