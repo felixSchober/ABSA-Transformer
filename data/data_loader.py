@@ -42,6 +42,7 @@ class Dataset(object):
 		self.task = ''
 		self.examples = []
 
+		self.configuration = configuration
 		self.batch_size = configuration.batch_size
 		self.language = configuration.language
 		self.data_path = data_path
@@ -92,6 +93,7 @@ class Dataset(object):
 		self.logger.debug('Start loading dataset')
 		self.dataset = loader(
 			word_vectors,
+			self.configuration,
 			self.batch_size,
 			self.data_path,
 			self.train_file,
