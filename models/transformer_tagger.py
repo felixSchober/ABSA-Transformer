@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from models.transformer.encoder import TransformerEncoder
-from models.softmax_output import SoftmaxOutputLayer
+from models.output_layers import SoftmaxOutputLayer
 
 class TransformerTagger(nn.Module):
 

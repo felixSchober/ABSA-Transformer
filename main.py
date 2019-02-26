@@ -13,8 +13,8 @@ from optimizer import get_default_optimizer
 from criterion import NllLoss, LossCombiner
 
 from models.transformer.encoder import TransformerEncoder
-from models.softmax_output import SoftmaxOutputLayerWithCommentWiseClass
-from models.transformer_tagger import TransformerTagger
+from models.output_layers import CommentWiseSumLogSoftmax
+# from models.transformer_tagger import TransformerTagger
 from models.jointAspectTagger import JointAspectTagger
 from models.transformer.train import Trainer
 import pprint
@@ -69,7 +69,7 @@ utils.get_current_git_commit()
 logger.info('Current commit: ' + utils.get_current_git_commit())
 hp = get_default_params(use_cuda)
 hp.num_epochs = 15
-hp.log_every_xth_iteration = -1
+hp.log_every_xth_iteration = 20
 
 logger.info(hp)
 print(hp)
@@ -109,7 +109,7 @@ except Exception as err:
 #trainer.set_cuda(True)
 #result_labels = trainer.classify_sentence('Die Bahn preise sind sehr billig')
 
-result = trainer.train(use_cuda=hyperparameters.use_cuda, perform_evaluation=False)
+result = trainer.train(use_cuda=hp.use_cuda, perform_evaluation=False)
 #trainer.perform_final_evaluation(False)
 
 #evaluation_results = trainer.perform_final_evaluation()

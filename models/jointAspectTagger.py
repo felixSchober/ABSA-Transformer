@@ -5,7 +5,7 @@ import torch.nn as nn
 
 from misc.run_configuration import RunConfiguration
 from models.transformer.encoder import TransformerEncoder
-from models.softmax_output import SoftmaxOutputLayerWithCommentWiseClass, ConvSoftmaxOutputLayerWithCommentWiseClass
+from models.output_layers import CommentWiseConvLogSoftmax, CommentWiseSumLogSoftmax, CommentWiseConvLinearLogSoftmax
 
 class JointAspectTagger(nn.Module):
 	"""description of class"""
@@ -51,18 +51,30 @@ class JointAspectTagger(nn.Module):
 		for n in names:
 
 			if hp.output_layer_type == 'conv':
-				tagger = ConvSoftmaxOutputLayerWithCommentWiseClass(
-																	hp.model_size,
-																	hp.output_conv_kernel_size,
-																	hp.output_conv_stride,
-																	hp.output_conv_padding, 
-																	hp.output_conv_num_filters,
-																	self.target_size,
-																	hp.clip_comments_to,
-																	'Apsect ' + n
-																	)
+				tagger = CommentWiseConvLogSoftmax(
+												hp.model_size,
+												hp.output_conv_kernel_size,
+												hp.output_conv_stride,
+												hp.output_conv_padding, 
+												hp.output_conv_num_filters,
+												self.target_size,
+												hp.clip_comments_to,
+												'Apsect ' + n
+												)
+			elif hp.output_layer_type == 'convLinear':
+				tagger = CommentWiseConvLinearLogSoftmax(
+												hp.model_size,
+												hp.output_conv_kernel_size,
+												hp.output_conv_stride,
+												hp.output_conv_padding, 
+												hp.output_conv_num_filters,
+												self.target_size,
+												hp.clip_comments_to,
+												1024,
+												'Apsect ' + n
+												)
 			else:
-				tagger = SoftmaxOutputLayerWithCommentWiseClass(self.model_size, self.target_size, 'Apsect ' + n)
+				tagger = CommentWiseSumLogSoftmax(self.model_size, self.target_size, 'Apsect ' + n)
 
 			taggers.append(tagger)
 		return nn.ModuleList(taggers)
