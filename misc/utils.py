@@ -299,7 +299,10 @@ def get_class_variable_table(instance: object, title: str=None) -> str:
 
     t = PrettyTable(['Parameter', 'Value'])
     for var in variables:
-        var_value = str(instance.__dict__[var])
+        try:
+            var_value = str(instance.__dict__[var])
+        except:
+            var_value = '??'
         if len(var_value) > 40:
             var_value = var_value[:40] + '[...]' + var_value[-4:]
         t.add_row([var, str(var_value)])
