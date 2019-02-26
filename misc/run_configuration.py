@@ -1,12 +1,25 @@
 from misc.utils import get_class_variable_table
 import random
+from enum import Enum
+
+
+class OutputLayerType(Enum):
+        LinearSum = 1
+        Convolutions = 2
+
+class LearningSchedulerType(Enum):
+        Noam = 1
+        Adam = 2
+        Exponential = 3
+        Adadelta = 4
+
 
 class RunConfiguration(object):
 
         def __init__(self,
                 model_size: int,
                 batch_size: int,
-                learning_rate_type: str,
+                learning_rate_type: LearningSchedulerType,
                 learning_rate: float,
                 learning_rate_factor: float,
                 learning_rate_warmup: float,
@@ -17,12 +30,12 @@ class RunConfiguration(object):
                 **kwargs):
 
                 assert model_size > 0
-                assert learning_rate_type == 'noam' or learning_rate_type == 'exp'
                 assert batch_size > 0
                 assert early_stopping == -1 or early_stopping > 0
 
                 self.batch_size = batch_size
                 self.model_size = model_size
+
                 self.learning_rate_type = learning_rate_type
                 self.learning_rate = learning_rate
                 self.learning_rate_warmup = learning_rate_warmup
@@ -145,8 +158,8 @@ def get_default_params(use_cuda: bool = False) -> RunConfiguration:
     return RunConfiguration(
         batch_size=12,
         model_size=300,
-        learning_rate_type='noam',
-        learning_rate=0,
+        learning_rate_type=LearningSchedulerType.Adadelta,
+        learning_rate=1,
         learning_rate_factor=2,
         learning_rate_warmup=4800,
         optim_adam_beta1=0.9,
@@ -167,10 +180,9 @@ def get_default_params(use_cuda: bool = False) -> RunConfiguration:
         use_stop_words=True,
         use_cuda=use_cuda,
         clip_comments_to=100,
-        output_layer_type='conv',
+        output_layer_type=OutputLayerType.LinearSum,
         output_conv_num_filters=300,
         output_conv_kernel_size=5,
         output_conv_stride=1,
         output_conv_padding=0
     )
-

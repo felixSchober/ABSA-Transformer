@@ -259,14 +259,14 @@ class Trainer(object):
 		"""
 
 		# Clears the gradients of all optimized :class:`torch.Tensor` s
-		self.optimizer.optimizer.zero_grad()
+		self.optimizer.zero_grad()
 
 		# Compute loss and gradient
 		loss = self._get_loss(input, source_mask, target)
 
 		# preform training step
 		loss.backward()
-		self.optimizer.step()
+		self.optimizer.step(loss)
 
 		return loss.data
 

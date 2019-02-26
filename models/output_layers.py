@@ -163,10 +163,60 @@ class CommentWiseConvLinearLogSoftmax(CommentWiseConvLogSoftmax):
 			hidden_size {int} -- output of the transformer encoder (d_model)
 			output_size {int} -- number of classes
 		"""
-		super(CommentWiseConvLogSoftmax, self).__init__(model_size, kernel_size, stride, padding, num_filters, output_size, sentence_lenght, name)
+		super(CommentWiseConvLinearLogSoftmax, self).__init__(self, model_size, kernel_size, stride, padding, num_filters, output_size, sentence_lenght, name)
 		
 		self.hidden_size = hidden_size
 		self.output_projection = nn.ModuleList(
 			nn.Linear(num_filters, hidden_size),
 			nn.Linear(hidden_size, output_size)
 		)
+
+class CommentWiseLinearLogSoftmax(CommentWiseConvLogSoftmax):
+
+	def __init__(self, model_size: int, output_size: int, sentence_lenght: int, name: str = None):
+		"""Projects the output of a model like the transformer encoder to a desired shape so that it is possible to perform classification.
+		This is done by projecting the output of the model (e.g. size 300 per word) down to the ammount of classes.
+		This uses a linear operation to project a per word prediction down to a comment prediction
+		
+		Arguments:
+			hidden_size {int} -- output of the transformer encoder (d_model)
+			output_size {int} -- number of classes
+		"""
+		super(CommentWiseLinearLogSoftmax, self).__init__()
+		self.output_size = output_size
+		self.output_projection = nn.Linear(model_size, output_size)
+		self.name = name if name is not None else 'NotSet'
+
+	def forward(self, x: torch.Tensor, mask: torch.Tensor =None, *args):
+		logits = self.output_projection(x)
+
+		# apply mask so that the paddings don't contribute anything
+		if mask is not None:
+			# transform mask so that it can be applied to the logits.
+			# the logits will be in the form of [batch_size, num_words, num_classes] (e.g. 80, 679, 4)
+			# the mask will be in the form of   [batch_size, 1, num_words] (e.g. 80, 1, 679)
+			# First, transform the mask to [batch_size, num_words] and then to [batch_size, num_words, 1]
+			transformed_mask = mask.squeeze(1).unsqueeze(-1)
+			logits.masked_fill(transformed_mask == 0, 0)
+
+		logits = torch.sum(logits, dim=1)
+		probs = F.log_softmax(logits, dim=-1)
+
+		return probs
+
+	def predict(self, x: torch.Tensor, mask: torch.Tensor =None, *args):
+		logits = self.output_projection(x)
+
+		# apply mask so that the paddings don't contribute anything
+		if mask is not None:
+			# transform mask so that it can be applied to the logits.
+			# the logits will be in the form of [batch_size, num_words, num_classes] (e.g. 80, 679, 4)
+			# the mask will be in the form of   [batch_size, 1, num_words] (e.g. 80, 1, 679)
+			# First, transform the mask to [batch_size, num_words] and then to [batch_size, num_words, 1]
+			transformed_mask = mask.squeeze(1).unsqueeze(-1)
+			logits.masked_fill(transformed_mask == 0, 0)
+
+		logits = torch.sum(logits, dim=1)
+		probs = F.log_softmax(logits, dim=-1)
+
+		return probs
