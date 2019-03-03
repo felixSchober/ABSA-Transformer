@@ -124,7 +124,6 @@ class Dataset(object):
 
 		self.source_reverser = self.dataset['source_field']
 		self.target_reverser = self.target[0]
-
 		self.log_parameters()
 
 		if verbose:

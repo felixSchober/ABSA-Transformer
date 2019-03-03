@@ -343,7 +343,7 @@ class CustomGermEval2017Dataset(Dataset):
 
 		# In the end, those are the fields
 		# The file has the aspect sentiment at the first aspect sentiment position
-		# 0: link
+		# 0: link (id)
 		# 1: Comment
 		# 2: Is Relevant
 		# 3: General Sentiment

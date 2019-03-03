@@ -13,7 +13,7 @@ class ReversibleField(Field):
             kwargs['unk_token'] = ' UNK '
         super(ReversibleField, self).__init__(**kwargs)
 
-    def reverse(self, batch):
+    def reverse(self, batch, detokenize=True):
         if self.use_revtok:
             try:
                 import revtok
@@ -35,6 +35,9 @@ class ReversibleField(Field):
             return sentence
 
         batch = [trim(ex, self.eos_token) for ex in batch]  # trim past frst eos
+
+        if not detokenize:
+            return batch
 
         def filter_special(tok):
             return tok not in (self.init_token, self.pad_token)

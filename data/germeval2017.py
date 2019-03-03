@@ -63,6 +63,13 @@ def germeval2017_dataset(
 							use_vocab=False,
 							unk_token=None,
 							preprocessing=data.Pipeline(preprocess_relevance_word))
+	
+	id_field = ReversibleField(
+							batch_first=True,
+							is_target=False,
+							sequential=False,
+							use_vocab=True,
+							unk_token=None)
 
 	general_sentiment_field = ReversibleField(
 							batch_first=True,
@@ -73,7 +80,7 @@ def germeval2017_dataset(
 							unk_token=None,
 							use_vocab=True)
 
-	aspect_sentiment_field = data.Field(
+	aspect_sentiment_field = ReversibleField(
 							batch_first=True,
 							is_target=True,
 							sequential=True,
@@ -94,7 +101,7 @@ def germeval2017_dataset(
 							is_target=False)
 
 	fields = [
-		(None, None),                                       # link to comment eg: (http://twitter.com/lolloseb/statuses/718382187792478208)
+		('id', id_field),                                   # link to comment eg: (http://twitter.com/lolloseb/statuses/718382187792478208)
 		('comments', comment_field),                        # comment itself e.g. (@KuttnerSarah @DB_Bahn Hund = Fahrgast, Hund in Box = Gepäck.skurril, oder?)
 		('relevance', relevant_field),                      # is comment relevant true/false
 		('general_sentiments', general_sentiment_field),    # sentiment of comment (positive, negative, neutral)
@@ -119,6 +126,7 @@ def germeval2017_dataset(
 	general_sentiment_field.build_vocab(train.general_sentiments)
 	padding_field.build_vocab(train.padding, val.comments, test.comments)
 	aspect_sentiment_field.build_vocab(train.aspect_sentiments, val.aspect_sentiments, test.aspect_sentiments)
+	id_field.build_vocab(train.id, val.id, test.id)
 
 	# build aspect fields
 	aspect_sentiment_fields = []
@@ -144,6 +152,9 @@ def germeval2017_dataset(
 		'fields': fields,
 		'source_field_name': 'comments',
 		'source_field': comment_field,
+		'id_field': id_field,
+		'aspect_sentiment_field': aspect_sentiment_field,
+		'general_sentiment_field': general_sentiment_field,
 		'target_field_name': 'general_sentiments',
 		#'target': [('general_sentiments', general_sentiment_field), ('aspect_sentiments', aspect_sentiment_field)] + train.aspect_sentiment_fields,
 		'target': train.aspect_sentiment_fields,
