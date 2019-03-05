@@ -77,6 +77,20 @@ class RunConfiguration(object):
         def __str__(self):
                 return get_class_variable_table(self, 'Hyperparameters')
 
+        def __eq__(self, other):
+                return self.__dict__ == other.__dict__
+
+        def run_equals(self, other):
+                # those are the keys that are necessary to run a saved model
+                keys = ['model_size', 'use_cuda', 'n_enc_blocks', 'n_heads', 'd_k', 'd_v', 'dropout_rate',
+                'pointwise_layer_size', 'output_layer_type', 'output_conv_num_filters', 'output_conv_kernel_size', 
+                'output_conv_stride', 'output_conv_padding', 'embedding_dim', 'clip_comments_to']
+
+                for k in keys:
+                        if self.__dict__[k] != other.__dict__[k]:
+                                return False
+                return True
+
 def randomize_params(config, param_dict_range) -> RunConfiguration:
 
         if 'batch_size' in param_dict_range:

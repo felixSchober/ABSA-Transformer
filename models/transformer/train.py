@@ -931,7 +931,15 @@ class Trainer(object):
 			self.best_f1 = checkpoint['f1']
 			self.best_model_checkpoint = checkpoint
 			self.pre_training.info(f'Loaded model at epoch {self.epoch} with reported f1 of {self.best_f1}')
+			if checkpoint['hp']:
+				c_hp = checkpoint['hp']
+				self.pre_training.info(f'Model should be used with following hyper parameters: \n{c_hp}')
 
+				# check if compatible with model params
+				if not self.hyperparameters.run_equals(c_hp):
+					self.pre_training.warn(f'Checkpoint might be incompatible with model. See parameters for checkpoint model above. Current Hyperparameters are\n{self.hyperparameters}')
+				else:
+					self.pre_training.info('Hyperparameters are compatible!')
 			# move optimizer back to cuda 
 			# see https://github.com/pytorch/pytorch/issues/2830
 			if torch.cuda.is_available():
