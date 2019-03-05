@@ -895,10 +895,18 @@ class Trainer(object):
 					except Exception as err:
 						self.logger.exception(f'Could not delete checkpoint file {filename} at path {checkpoint_path}.')
 
-	def load_model(self, file_name=None):
+	def load_model(self, file_name=None, custom_path=None):
+
+		if custom_path is None:
+			cp_path = self.checkpoint_dir
+		else:
+			cp_path = custom_path
+
+		self.pre_training.info('Try to load model at ' + cp_path)
+
 		if file_name is None:
 			# search for checkpoint
-			directory = os.fsencode(self.checkpoint_dir)
+			directory = os.fsencode(cp_path)
 			for file in os.listdir(directory):
 				filename = os.fsdecode(file)
 				if filename.endswith('.data'):
@@ -906,10 +914,10 @@ class Trainer(object):
 					break
 		
 		if file_name is None:
-			self.logger.error(f'Could not find checkpoint file at path {self.checkpoint_dir}')
+			self.pre_training.error(f'Could not find checkpoint file at path {cp_path}')
 			return
 
-		path = os.path.join(self.checkpoint_dir, file_name)
+		path = os.path.join(cp_path, file_name)
 		if os.path.isfile(path):
 			self.pre_training.info(f'Load checkpoint at {path}')
 			if not torch.cuda.is_available():
@@ -944,7 +952,8 @@ class Trainer(object):
 			'state_dict': self.model.state_dict(),
 			'optimizer': self.optimizer.optimizer.state_dict(),
 			'epoch': self.epoch,
-			'f1': self.best_f1
+			'f1': self.best_f1,
+			'hp': self.hyperparameters
 		}
 
 		filename = 'checkpoint_{}.data'.format(iteration)
