@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from misc.run_configuration import RunConfiguration
+
 class LogSoftmaxOutputLayer(nn.Module):
 
 	def __init__(self, hidden_size: int, output_size: int):
@@ -55,7 +57,7 @@ class SoftmaxOutputLayer(nn.Module):
 
 class CommentWiseSumLogSoftmax(nn.Module):
 
-	def __init__(self, hidden_size: int, output_size: int, name: str = None):
+	def __init__(self, hp: RunConfiguration, hidden_size: int, output_size: int, name: str = None):
 		"""Projects the output of a model like the transformer encoder to a desired shape so that it is possible to perform classification.
 		This is done by projecting the output of the model (e.g. size 300 per word) down to the ammount of classes.
 		This uses the sum operation to predict on comment level.
@@ -66,11 +68,14 @@ class CommentWiseSumLogSoftmax(nn.Module):
 		"""
 		super(CommentWiseSumLogSoftmax, self).__init__()
 		self.output_size = output_size
+		
 		self.output_projection = nn.Linear(hidden_size, output_size)
+		self.dropout = nn.Dropout(hp.last_layer_dropout)
 		self.name = name if name is not None else 'NotSet'
 
 	def forward(self, x: torch.Tensor, mask: torch.Tensor =None, *args):
 		logits = self.output_projection(x)
+		logits = self.dropout(logits)
 
 		# apply mask so that the paddings don't contribute anything
 		if mask is not None:
@@ -164,7 +169,7 @@ class CommentWiseConvLinearLogSoftmax(CommentWiseConvLogSoftmax):
 			output_size {int} -- number of classes
 		"""
 		super(CommentWiseConvLinearLogSoftmax, self).__init__(self, model_size, kernel_size, stride, padding, num_filters, output_size, sentence_lenght, name)
-		
+
 		self.hidden_size = hidden_size
 		self.output_projection = nn.ModuleList(
 			nn.Linear(num_filters, hidden_size),

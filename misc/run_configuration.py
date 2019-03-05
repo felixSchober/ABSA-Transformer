@@ -57,10 +57,14 @@ class RunConfiguration(object):
 
                 self.output_layer_type = kwargs['output_layer_type']
 
+                # if layer type is conv
                 self.output_conv_num_filters = kwargs['output_conv_num_filters']
                 self.output_conv_kernel_size = kwargs['output_conv_kernel_size']
                 self.output_conv_stride = kwargs['output_conv_stride']
                 self.output_conv_padding = kwargs['output_conv_padding']
+
+                # last layer
+                self.last_layer_dropout = kwargs['last_layers_dropout_rate']
 
                 self.log_every_xth_iteration = kwargs['log_every_xth_iteration']
                 self.num_epochs = num_epochs
@@ -153,6 +157,10 @@ def randomize_params(config, param_dict_range) -> RunConfiguration:
                 ranges = param_dict_range['dropout_rate']
                 config.dropout_rate = random.uniform(ranges[0], ranges[1])
 
+        if 'last_layers_dropout_rate' in param_dict_range:
+                ranges = param_dict_range['last_layers_dropout_rate']
+                config.last_layers_dropout_rate = random.uniform(ranges[0], ranges[1])
+
         if 'transformer_config' in param_dict_range:
                 transformer_config = param_dict_range['transformer_config']
 
@@ -199,5 +207,6 @@ def get_default_params(use_cuda: bool = False) -> RunConfiguration:
         output_conv_num_filters=300,
         output_conv_kernel_size=5,
         output_conv_stride=1,
-        output_conv_padding=0
+        output_conv_padding=0,
+        last_layers_dropout_rate=0.2
     )

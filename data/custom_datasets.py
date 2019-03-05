@@ -417,7 +417,7 @@ class CustomGermEval2017Dataset(Dataset):
 							sentiment = kv[1]
 
 						sentiment_dict[category] = sentiment
-					
+					 
 					# add all new potential keys to set
 					for s_category in sentiment_dict.keys():
 						aspect_sentiment_categories.add(s_category)
@@ -426,6 +426,7 @@ class CustomGermEval2017Dataset(Dataset):
 				# remove punctuation and clean text
 				comment = columns[1]
 				comment = harmonize_bahn_names(comment.split(' '))
+				#comment = remove_websites(comment)
 				comment = ' '.join(comment)
 				#comment = text_cleaner(comment, 'de', spell)
 				comment = comment.translate(punctuation_remover)
@@ -685,4 +686,13 @@ def harmonize_bahn_names(text_tokens: List[str]) -> List[str]:
 			result.append('db')
 		else:
 			result.append(token)
+	return result
+
+def remove_websites(text_tokens: List[str]) -> List[str]:
+	result = []
+	for i in range(len(text_tokens)):
+
+		if text_tokens[i].lower().startswith('http'):
+			text_tokens[i] = 'web'
+
 	return result

@@ -74,7 +74,7 @@ class JointAspectTagger(nn.Module):
 												'Apsect ' + n
 												)
 			else:
-				tagger = CommentWiseSumLogSoftmax(self.model_size, self.target_size, 'Apsect ' + n)
+				tagger = CommentWiseSumLogSoftmax(hp, self.model_size, self.target_size, 'Apsect ' + n)
 
 			taggers.append(tagger)
 		return nn.ModuleList(taggers)

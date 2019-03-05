@@ -76,6 +76,7 @@ class Trainer(object):
 	train_acc_history : List[float]
 	val_acc_history : List[float]
 	val_loss_history : List[float]
+	model_in_train: bool
 
 	def __init__(self,
 				 model: nn.Module,
@@ -124,6 +125,7 @@ class Trainer(object):
 		self.log_imgage_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'images')
 
 		self.git_commit = get_current_git_commit()
+		self.model_in_train = None
 
 		self._reset()
 		self.seed = hyperparameters.seed
@@ -245,6 +247,17 @@ class Trainer(object):
 		self.progress_bar.write(summary)
 		self.logger.info(summary)
 		
+	def change_train_mode(self, train_mode):
+		# if same mode, don't change
+		if self.model_in_train == train_mode:
+			return
+
+		if train_mode:
+			self.model.train(mode=True)
+		else:
+			self.model.eval()
+
+		self.model_in_train = train_mode
 
 	def _step(self, input: torch.Tensor, target: torch.Tensor, source_mask: torch.Tensor) -> torch.Tensor:
 		"""Make a single gradient update. This is called by train() and should not
@@ -344,6 +357,10 @@ class Trainer(object):
 	def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False,
 				 progress_label: str="Evaluation", f1_strategy: str='micro') -> Tuple[float, float, float, np.array]:
 		self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(iterator.epoch, len(iterator)))
+
+		# set model into evaluation mode to disable dropout
+		self.change_train_mode(False)
+
 		with torch.no_grad():
 
 			iterator.init_epoch()
@@ -427,6 +444,10 @@ class Trainer(object):
 			else:
 				c_matrices = None			
 
+		# reset model into training mode
+		self.change_train_mode(True)
+
+		
 		self.logger.debug('Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(avg_loss, np.mean(f_scores), c_matrices))
 		return (avg_loss, f_scores, accuracy, c_matrices)
 
@@ -436,8 +457,12 @@ class Trainer(object):
 
 		# perform validation loss
 		self.logger.debug('Start Evaluation')
-		mean_valid_loss, f_scores, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=show_c_matrix,
+
+		try:
+			mean_valid_loss, f_scores, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=show_c_matrix,
 																			 show_progress=show_progress)
+		finally:
+			self.change_train_mode(True)		
 
 		self.logger.debug('Evaluation Complete')
 		# log results
@@ -570,6 +595,7 @@ class Trainer(object):
 	def train(self, use_cuda: bool=False, perform_evaluation: bool=True) -> TrainResult:
 
 		self.set_cuda(use_cuda)
+		self.change_train_mode(True )
 		set_seeds(self.seed)
 		continue_training = True
 		iterations_per_epoch = self.iterations_per_epoch_train
@@ -720,8 +746,13 @@ class Trainer(object):
 		self.train_iterator.train = False
 		self.valid_iterator.train = False
 
-		tr_loss, tr_f1, tr_accuracy, tr_c_matrices = self.evaluate(self.train_iterator, show_progress=verbose,
+		try:
+			tr_loss, tr_f1, tr_accuracy, tr_c_matrices = self.evaluate(self.train_iterator, show_progress=verbose,
 																   progress_label="Evaluating TRAIN")
+		finally:
+			self.change_train_mode(True)		
+
+		
 		tr_f1 = np.mean(tr_f1)
 		if verbose:
 			self.pre_training.info('TRAIN loss:\t{}'.format(tr_loss))
@@ -740,9 +771,14 @@ class Trainer(object):
 			plt.show()
 
 		self.pre_training.debug('--- Valid Scores ---')
-		val_loss, val_f1, val_accuracy, val_c_matrices = self.evaluate(self.valid_iterator, show_progress=verbose,
+
+		try:
+			val_loss, val_f1, val_accuracy, val_c_matrices = self.evaluate(self.valid_iterator, show_progress=verbose,
 																	   progress_label="Evaluating VALIDATION",
 																	   show_c_matrix=verbose)
+		finally:
+			self.change_train_mode(True)		
+		
 		val_f1 = np.mean(val_f1)
 
 		if verbose:
