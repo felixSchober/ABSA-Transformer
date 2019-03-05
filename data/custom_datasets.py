@@ -434,6 +434,7 @@ class CustomGermEval2017Dataset(Dataset):
 				# comment is not relevant
 				if columns[2] == 'false':
 					# skip for now
+					# pass
 					continue
 				# add aspect sentiment field
 				columns.append('')

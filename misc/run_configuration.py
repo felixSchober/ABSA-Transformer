@@ -12,6 +12,7 @@ class LearningSchedulerType(Enum):
         Adam = 2
         Exponential = 3
         Adadelta = 4
+        AdaBound = 5
 
 
 class RunConfiguration(object):
@@ -158,7 +159,7 @@ def get_default_params(use_cuda: bool = False) -> RunConfiguration:
     return RunConfiguration(
         batch_size=12,
         model_size=300,
-        learning_rate_type=LearningSchedulerType.Adadelta,
+        learning_rate_type=LearningSchedulerType.Noam,
         learning_rate=1,
         learning_rate_factor=2,
         learning_rate_warmup=4800,

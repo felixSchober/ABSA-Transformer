@@ -70,3 +70,9 @@ def get_default_optimizer(model, hyperparameters: RunConfiguration) -> torch.opt
         adadelta = torch.optim.Adadelta(model.parameters(), 
         lr=hyperparameters.learning_rate)
         return OptimizerWrapper(adadelta)
+
+    elif hyperparameters.learning_rate_type == LearningSchedulerType.AdaBound:
+        from adabound import AdaBound
+        adabound = AdaBound(model.parameters(), lr=1e-5, final_lr=0.01)
+        return OptimizerWrapper(adabound)
+
