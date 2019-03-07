@@ -19,16 +19,25 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include=".vector_cache\charNgram.txt" />
-    <Content Include=".vector_cache\glove.6B.100d.txt" />
-    <Content Include=".vector_cache\glove.6B.200d.txt" />
-    <Content Include=".vector_cache\glove.6B.300d.txt" />
-    <Content Include=".vector_cache\glove.6B.50d.txt" />
-    <Content Include=".vector_cache\word.txt" />
+    <Content Include=".gitignore" />
+    <Content Include="01_NER-Notebook.ipynb" />
+    <Content Include="02_GeneralSentiment-Notebook.ipynb" />
+    <Content Include="03_AspectSentiment-Notebook - AdaBound.ipynb" />
+    <Content Include="03_AspectSentiment-Notebook.ipynb" />
+    <Content Include="03_HyperParameterSearch.ipynb" />
+    <Content Include="04_HyperParameterSearch.ipynb" />
+    <Content Include="05_Evaluator.ipynb" />
+    <Content Include="06_ModelEvaluator.ipynb" />
     <Content Include="data\conll2003\eng.testa.txt" />
     <Content Include="data\conll2003\eng.testb.txt" />
     <Content Include="data\conll2003\eng.train.txt" />
     <Content Include="data\germeval2017\dev_v1.4.tsv" />
+    <Content Include="data\germeval2017\evaluation\00_EvaluateRelevance.bat" />
+    <Content Include="data\germeval2017\evaluation\EvaluationScript.jar" />
+    <Content Include="data\germeval2017\evaluation\evaluation_output.xml" />
+    <Content Include="data\germeval2017\evaluation\prediction.xml" />
+    <Content Include="data\germeval2017\evaluation\test_TIMESTAMP1.xml" />
+    <Content Include="data\germeval2017\evaluation\test_TIMESTAMP2.xml" />
     <Content Include="data\germeval2017\test_TIMESTAMP1.tsv" />
     <Content Include="data\germeval2017\test_TIMESTAMP2.tsv" />
     <Content Include="data\germeval2017\train_v1.4.tsv" />
@@ -378,10 +387,13 @@
     <Content Include="logs\TransformerModel\images\c_7105.png" />
     <Content Include="logs\TransformerModel\images\c_8526.png" />
     <Content Include="logs\TransformerModel\images\c_9947.png" />
+    <Content Include="README.md" />
     <Content Include="requirements.txt" />
+    <Content Include="trainer\__pycache__\train.cpython-36.pyc" />
+    <Content Include="trainer\__pycache__\utils.cpython-36.pyc" />
+    <Content Include="trainer\__pycache__\__init__.cpython-36.pyc" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include=".vscode\.ropeproject\config.py" />
     <Compile Include="criterion.py" />
     <Compile Include="data\conll.py" />
     <Compile Include="data\custom_datasets.py" />
@@ -389,6 +401,7 @@
     <Compile Include="data\data_loader.py" />
     <Compile Include="data\germeval2017.py" />
     <Compile Include="data\__init__.py" />
+    <Compile Include="evaluator.py" />
     <Compile Include="main.py" />
     <Compile Include="misc\preferences.py" />
     <Compile Include="misc\run_configuration.py" />
@@ -399,6 +412,7 @@
     <Compile Include="models\jointAspectTagger.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="models\output_layers.py" />
     <Compile Include="models\softmax_output.py" />
     <Compile Include="models\transformer\constants.py" />
     <Compile Include="models\transformer\decoder.py" />
@@ -412,14 +426,17 @@
     <Compile Include="models\__init__.py" />
     <Compile Include="naming.py" />
     <Compile Include="optimizer.py" />
+    <Compile Include="trainer\train.py" />
+    <Compile Include="trainer\train_evaluator.py" />
+    <Compile Include="trainer\train_logger.py" />
+    <Compile Include="trainer\utils.py" />
+    <Compile Include="trainer\__init__.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include=".vector_cache" />
-    <Folder Include=".vscode\" />
-    <Folder Include=".vscode\.ropeproject" />
     <Folder Include="data" />
     <Folder Include="data\conll2003" />
     <Folder Include="data\germeval2017\" />
+    <Folder Include="data\germeval2017\evaluation\" />
     <Folder Include="logs\" />
     <Folder Include="logs\05generalSentimentStdModeUnkToken20Ep\" />
     <Folder Include="logs\05generalSentimentStdModeUnkToken20Ep\images" />
@@ -444,6 +461,8 @@
     <Folder Include="misc" />
     <Folder Include="models" />
     <Folder Include="models\transformer" />
+    <Folder Include="trainer\" />
+    <Folder Include="trainer\__pycache__\" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="test\">
