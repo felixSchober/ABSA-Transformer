@@ -18,6 +18,7 @@ from tqdm import tqdm
 from trainer.utils import *
 from trainer.train_logger import TrainLogger
 from trainer.train_evaluator import TrainEvaluator
+from trainer.early_stopping import EarlyStopping
 
 from misc.utils import *
 from misc.run_configuration import RunConfiguration
@@ -44,7 +45,7 @@ class Trainer(object):
 	dataset : Dataset
 	experiment_name : str
 	experiment_number : int
-	early_stopping : int
+	early_stopping : EarlyStopping
 	checkpoint_dir : str
 	log_imgage_dir : str
 	seed : int
@@ -57,7 +58,6 @@ class Trainer(object):
 	iterations_per_epoch_train : int
 	batch_size : int
 	best_model_checkpoint : ModelCheckpoint
-	early_stopping_counter : int
 	model_in_train: bool
 
 	def __init__(self,
@@ -93,7 +93,6 @@ class Trainer(object):
 		self.num_epochs = hyperparameters.num_epochs
 		self.iterations_per_epoch_train = len(self.train_iterator)
 		self.batch_size = self.train_iterator.batch_size
-		self.early_stopping = hyperparameters.early_stopping
 
 		self.checkpoint_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
 		self.log_imgage_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'images')
@@ -124,8 +123,7 @@ class Trainer(object):
 			self.pre_training,
 			dataset)
 
-		self.early_stopping_counter = self.early_stopping
-
+		self.early_stopping = EarlyStopping(self.optimizer, self.model, hyperparameters, self.evaluator, self.checkpoint_dir)
 
 		self.train_logger.log_hyperparameters(self)
 		self.train_logger.log_hyperparameters(self.train_logger, 'Logger', log_hp=False)
@@ -297,7 +295,7 @@ class Trainer(object):
 							isBestResult = self.evaluator.perform_iteration_evaluation(iteration, epoch_duration, time.time() - train_start,
 															train_duration)
 							if isBestResult:
-								self._reset_early_stopping(iteration, self.evaluator.best_f1)
+								self.early_stopping.reset_early_stopping(iteration, self.evaluator.best_f1)
 
 						except Exception as err:
 							self.logger.exception("Could not complete iteration evaluation")
@@ -320,15 +318,8 @@ class Trainer(object):
 				except Exception as err:
 					self.logger.exception("Could not complete end of epoch {} evaluation")
 
-				# early stopping if no improvement of val_acc during the last
-				# self.early_stopping epochs
-				# https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
-				if mean_valid_f1 > self.evaluator.best_f1 or self.early_stopping <= 0:
-					self.logger.info(f'Current f1 score of {mean_valid_f1} (acc of {mean_valid_accuracy} is better than last f1 score of {self.evaluator.best_f1}.')
-					self._reset_early_stopping(iteration, mean_valid_f1)
-				else:
-					should_stop = self._perform_early_stopping()
-					if should_stop:
+				should_stop = self.early_stopping(mean_valid_f1, mean_valid_accuracy, iteration)
+				if should_stop:
 						continue_training = False
 						break
 
@@ -369,53 +360,7 @@ class Trainer(object):
 			'result_test': test_results
 		}
 
-	def _reset_early_stopping(self, iteration: int, mean_valid_f1: float) -> None:
-		self.logger.info('Epoch f1 score ({}) better than last f1 score ({}). Save checkpoint'.format(mean_valid_f1, self.evaluator.best_f1))
-		self.evaluator.best_f1 = mean_valid_f1
-
-		# Save best model
-		self.best_model_checkpoint = {
-			'iteration': iteration,
-			'epoch': self.evaluator.epoch,
-			'state_dict': self.model.state_dict(),
-			'val_acc': mean_valid_f1,
-			'optimizer': self.optimizer.optimizer.state_dict(),
-			'f1': self.evaluator.best_f1,
-			'hp': self.hyperparameters
-		}
-
-		self._save_checkpoint(iteration)
-
-		# restore early stopping counter
-		self.early_stopping_counter = self.early_stopping
-
-	def _perform_early_stopping(self) -> bool:
-		self.early_stopping_counter -= 1
-
-		# if early_stopping_counter is 0 restore best weights and stop training
-		if self.early_stopping > -1 and self.early_stopping_counter <= 0:
-			self.logger.info('> Early Stopping after {} epochs of no improvements.'.format(self.early_stopping))
-			self.logger.info('> Restoring params of best model with validation accuracy of: {}'.format(self.evaluator.best_f1))
-
-			# Restore best model
-			self._restore_best_model()
-			return True
-		else:
-			return False
-
-	def _restore_best_model(self) -> None:
-		try:
-			self.model.load_state_dict(self.best_model_checkpoint['state_dict'])
-		except Exception as err:
-			self.logger.exception('Could not restore best model ')
-
-		try:
-			self.optimizer.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
-		except Exception as err:
-			self.logger.exception('Could not restore best model ')
-
-		self.logger.info('Best model parameters were at \nEpoch {}\nValidation f1 score {}'
-						 .format(self.best_model_checkpoint['epoch'], self.best_model_checkpoint['val_acc']))
+	
 
 	def _checkpoint_cleanup(self):
 		path = self.checkpoint_dir
@@ -446,24 +391,6 @@ class Trainer(object):
 					except Exception as err:
 						self.logger.exception(f'Could not delete checkpoint file {filename} at path {checkpoint_path}.')
 	
-	def _save_checkpoint(self, iteration: int) -> None:
-		self.logger.debug('Saving model... ' + self.checkpoint_dir)
-
-		checkpoint = {
-			'iteration': iteration,
-			'state_dict': self.model.state_dict(),
-			'optimizer': self.optimizer.optimizer.state_dict(),
-			'epoch': self.evaluator.epoch,
-			'f1': self.evaluator.best_f1,
-			'hp': self.hyperparameters
-		}
-
-		filename = 'checkpoint_{}.data'.format(iteration)
-		try:
-			torch.save(checkpoint, os.path.join(self.checkpoint_dir, filename))
-		except Exception as err:
-			self.logger.exception('Could not save model.')
-
 	def perform_final_evaluation(self, use_test_set: bool=True, verbose: bool=True):
 		self.evaluator.perform_final_evaluation(use_test_set, verbose)
 	
