@@ -3,7 +3,7 @@ from typing import Optional, List
 import torch
 import torch.nn as nn
 
-from misc.run_configuration import RunConfiguration
+from misc.run_configuration import RunConfiguration, OutputLayerType
 from models.transformer.encoder import TransformerEncoder
 from models.output_layers import CommentWiseConvLogSoftmax, CommentWiseSumLogSoftmax, CommentWiseConvLinearLogSoftmax
 
@@ -27,7 +27,7 @@ class JointAspectTagger(nn.Module):
 
 		self.hyperparameters = hyperparameters
 		self.encoder = transformerEncoder
-		self.logger = logging.getLogger('pre_training')
+		self.logger = logging.getLogger(__name__)
 
 		self.model_size = self.hyperparameters.model_size
 		self.target_size = target_size
@@ -50,30 +50,16 @@ class JointAspectTagger(nn.Module):
 		names = self.names if len(self.names) > 0 else range(self.num_taggers)
 		for n in names:
 
-			if hp.output_layer_type == 'conv':
+			if hp.output_layer_type == OutputLayerType.Convolutions:
+				# hp: RunConfiguration, output_size: int, name: str = None
 				tagger = CommentWiseConvLogSoftmax(
-												hp.model_size,
-												hp.output_conv_kernel_size,
-												hp.output_conv_stride,
-												hp.output_conv_padding, 
-												hp.output_conv_num_filters,
+												hp,
 												self.target_size,
-												hp.clip_comments_to,
 												'Apsect ' + n
 												)
-			elif hp.output_layer_type == 'convLinear':
-				tagger = CommentWiseConvLinearLogSoftmax(
-												hp.model_size,
-												hp.output_conv_kernel_size,
-												hp.output_conv_stride,
-												hp.output_conv_padding, 
-												hp.output_conv_num_filters,
-												self.target_size,
-												hp.clip_comments_to,
-												1024,
-												'Apsect ' + n
-												)
-			else:
+												
+			elif hp.output_layer_type == OutputLayerType.LinearSum:
+				# hp: RunConfiguration, hidden_size: int, output_size: int, name: str = None
 				tagger = CommentWiseSumLogSoftmax(hp, self.model_size, self.target_size, 'Apsect ' + n)
 
 			taggers.append(tagger)

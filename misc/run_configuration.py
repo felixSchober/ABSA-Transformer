@@ -1,99 +1,173 @@
 from misc.utils import get_class_variable_table
 import random
 from enum import Enum
-
+from typing import Dict
 
 class OutputLayerType(Enum):
         LinearSum = 1
         Convolutions = 2
 
 class LearningSchedulerType(Enum):
-        Noam = 1
-        Adam = 2
-        Exponential = 3
-        Adadelta = 4
-        AdaBound = 5
+		Noam = 1
+		Exponential = 2
+		NoSchedule = 3
+
+class OptimizerType(Enum):
+		Adam = 1
+		SGD = 2
+		RMS_PROP = 3
+		AdaBound = 4
+
+
 
 
 class RunConfiguration(object):
 
-        def __init__(self,
-                model_size: int,
-                batch_size: int,
-                learning_rate_type: LearningSchedulerType,
-                learning_rate: float,
-                learning_rate_factor: float,
-                learning_rate_warmup: float,
-                optim_adam_beta1: float,
-                optim_adam_beta2: float,
-                early_stopping: int,
-                num_epochs:int,
-                **kwargs):
+		def __init__(self,
+				use_cuda: bool,
+				model_size: int,
+				early_stopping: int,
+				num_epochs:int,
+				log_every_xth_iteration: int,
+				output_layer_type: OutputLayerType,
+				learning_rate_scheduler_type: LearningSchedulerType,
+				optimizer_type: LearningSchedulerType,
+				language: str,
+				**kwargs):
+			self.kwargs = kwargs
+			assert model_size > 0
+			assert kwargs['batch_size'] > 0
+			assert early_stopping == -1 or early_stopping > 0
 
-                assert model_size > 0
-                assert batch_size > 0
-                assert early_stopping == -1 or early_stopping > 0
+			self.model_size = model_size
+			self.early_stopping = early_stopping
+			self.use_cuda = use_cuda
 
-                self.batch_size = batch_size
-                self.model_size = model_size
+			self.batch_size = self._get_default('batch_size', cast_int=True)
 
-                self.learning_rate_type = learning_rate_type
-                self.learning_rate = learning_rate
-                self.learning_rate_warmup = learning_rate_warmup
-                self.learning_rate_factor = learning_rate_factor
-                self.optim_adam_beta1 = optim_adam_beta1
-                self.optim_adam_beta2 = optim_adam_beta2
+			# types
+			self.learning_rate_scheduler_type = learning_rate_scheduler_type
+			self.output_layer_type = output_layer_type
+			self.optimizer_type = optimizer_type
+			self.embedding_type = kwargs['embedding_type']
 
-                self.early_stopping = early_stopping
+			# LEARNING RATE SCHEDULER
+			self.learning_rate = kwargs['optimizer']['learning_rate']
 
-                self.use_cuda = kwargs['use_cuda']
 
-                self.n_enc_blocks = kwargs['num_encoder_blocks']
-                self.n_heads = kwargs['num_heads']
-                self.d_k = kwargs['att_d_k']
-                self.d_v = kwargs['att_d_v']
-                self.dropout_rate = kwargs['dropout_rate']
-                self.pointwise_layer_size = kwargs['pointwise_layer_size']
+			# - NOAM
+			if learning_rate_scheduler_type == LearningSchedulerType.Noam:
+				p = kwargs['learning_rate_scheduler']		
+				
+				self.noam_learning_rate_warmup = self._get_default('noam_learning_rate_warmup', section=p, cast_int=True)
+				self.noam_learning_rate_factor = p['noam_learning_rate_factor']
 
-                self.output_layer_type = kwargs['output_layer_type']
+			# - Exponential
+			elif learning_rate_scheduler_type == LearningSchedulerType.Exponential:
+				p = kwargs['learning_rate_scheduler']	
+				self.exponentiallr_gamma = self._get_default('exponentiallr_gamma', 0.9, section=p)
 
-                # if layer type is conv
-                self.output_conv_num_filters = kwargs['output_conv_num_filters']
-                self.output_conv_kernel_size = kwargs['output_conv_kernel_size']
-                self.output_conv_stride = kwargs['output_conv_stride']
-                self.output_conv_padding = kwargs['output_conv_padding']
 
-                # last layer
-                self.last_layer_dropout = kwargs['last_layers_dropout_rate']
+			# OPTIMIZER
+			# - ADAM
+			if optimizer_type == OptimizerType.Adam:
+				p = kwargs['optimizer']		
 
-                self.log_every_xth_iteration = kwargs['log_every_xth_iteration']
-                self.num_epochs = num_epochs
+				self.adam_beta1 = p['adam_beta1']
+				self.adam_beta2 = p['adam_beta2']
+				self.adam_eps = p['adam_eps']
+				self.adam_weight_decay = self._get_default('adam_weight_decay', 0, section=p)
+				self.adam_amsgrad = self._get_default('adam_amsgrad', False, section=p)
 
-                self.embedding_type = kwargs['embedding_type']
-                self.embedding_name = kwargs['embedding_name']
-                self.embedding_dim = kwargs['embedding_dim']
-                self.clip_comments_to = kwargs['clip_comments_to']
+			# - SGD
+			elif optimizer_type == OptimizerType.SGD:
+				p = kwargs['optimizer']		
 
-                self.language = kwargs['language']
-                self.use_stop_words = kwargs['use_stop_words']
-                self.seed = 42
+				self.sgd_momentum = p['sgd_momentum']
+				self.sgd_weight_decay = p['sgd_weight_decay']
+				self.sgd_dampening = self._get_default('sgd_dampening', 0, section=p)
+				self.sgd_nesterov = p['sgd_nesterov']
 
-        def __str__(self):
-                return get_class_variable_table(self, 'Hyperparameters')
+			# - AdaBound
+			elif optimizer_type == OptimizerType.AdaBound:
+				p = kwargs['optimizer']		
 
-        def __eq__(self, other):
-                return self.__dict__ == other.__dict__
+				self.adabound_finallr = self._get_default('adabound_finallr', 0.1, section=p)
 
-        def run_equals(self, other):
-                # those are the keys that are necessary to run a saved model
-                keys = ['model_size', 'use_cuda', 'n_enc_blocks', 'n_heads', 'd_k', 'd_v', 'dropout_rate',
-                'pointwise_layer_size', 'output_layer_type', 'output_conv_num_filters', 'output_conv_kernel_size', 
-                'output_conv_stride', 'output_conv_padding', 'embedding_dim', 'clip_comments_to']
+			# - RMSprop
+			elif optimizer_type == OptimizerType.RMS_PROP:
+				p = kwargs['optimizer']		
 
-                for k in keys:
-                        if self.__dict__[k] != other.__dict__[k]:
-                                return False
-                return True
+				self.rmsprop_momentum = self._get_default('rmsprop_momentum', 0, section=p)
+				self.rmsprop_alpha = self._get_default('rmsprop_alpha', 0.99, section=p)
+				self.rmsprop_eps = self._get_default('rmsprop_eps', 1e-8, section=p)
+				self.rmsprop_centered = self._get_default('rmsprop_centered', False, section=p)
+				self.rmsprop_weight_decay = self._get_default('rmsprop_weight_decay', 0, section=p)
+
+			# Transformer
+
+			self.n_enc_blocks = self._get_default('num_encoder_blocks', cast_int=True)
+			self.n_heads = self._get_default('num_heads', cast_int=True)
+			self.d_k = self.model_size // self.n_heads
+			self.d_v = self.model_size // self.n_heads
+			self.dropout_rate = kwargs['dropout_rate']
+			self.pointwise_layer_size = self._get_default('pointwise_layer_size', cast_int=True)
+
+			# Output Layer
+			self.last_layer_dropout = kwargs['output_dropout_rate']
+
+			# - Convolutions:	
+			if output_layer_type == OutputLayerType.Convolutions:
+				p = kwargs['output_layer']		
+				self.output_conv_num_filters = self._get_default('output_conv_num_filters', section=p, cast_int=True)
+				self.output_conv_kernel_size = self._get_default('output_conv_kernel_size', section=p, cast_int=True)
+				self.output_conv_stride = self._get_default('output_conv_stride', section=p, cast_int=True)
+				self.output_conv_padding = self._get_default('output_conv_padding', section=p, cast_int=True)
+
+			self.log_every_xth_iteration = log_every_xth_iteration
+			self.num_epochs = num_epochs
+
+			self.embedding_name = kwargs['embedding_name']
+			self.embedding_dim = kwargs['embedding_dim']
+			self.clip_comments_to = self._get_default('clip_comments_to', cast_int=True)
+
+			self.language = language
+
+			# data loading
+			self.use_stop_words = self._get_default('use_stop_words', False)
+			self.use_stemming = self._get_default('use_stemming', False)
+			self.harmonize_bahn = self._get_default('harmonize_bahn', False)
+			self.use_spell_checkers = self._get_default('use_spell_checkers', False)
+			self.replace_url_tokens = self._get_default('replace_url_tokens', False)
+			
+			self.seed = 42
+
+		def _get_default(self, key: str, default=None, section: Dict = None, cast_int: bool=False):
+			if section is None:
+				section = self.kwargs
+			if key in section:
+				v = section[key]
+				if cast_int:
+					v = int(v)
+				return v
+			return default
+
+		def __str__(self):
+			return get_class_variable_table(self, 'Hyperparameters')
+
+		def __eq__(self, other):
+			return self.__dict__ == other.__dict__
+
+		def run_equals(self, other):
+			# those are the keys that are necessary to run a saved model
+			keys = ['model_size', 'use_cuda', 'n_enc_blocks', 'n_heads', 'd_k', 'd_v', 'dropout_rate',
+			'pointwise_layer_size', 'output_layer_type', 'output_conv_num_filters', 'output_conv_kernel_size', 
+			'output_conv_stride', 'output_conv_padding', 'embedding_dim', 'clip_comments_to']
+
+			for k in keys:
+				if self.__dict__[k] != other.__dict__[k]:
+					return False
+			return True
 
 def randomize_params(config, param_dict_range) -> RunConfiguration:
 
@@ -176,37 +250,58 @@ def randomize_params(config, param_dict_range) -> RunConfiguration:
 
         return config
 
+def from_hyperopt(hyperopt_params,
+				use_cuda: bool,
+				model_size: int,
+				early_stopping: int,
+				num_epochs:int,
+				log_every_xth_iteration: int,
+				language: str) -> RunConfiguration:
+	rc = RunConfiguration(
+		use_cuda,
+		model_size,
+		early_stopping,
+		num_epochs,
+		log_every_xth_iteration,
+		hyperopt_params['output_layer']['type'],
+		hyperopt_params['learning_rate_scheduler']['type'],
+		hyperopt_params['optimizer']['type'],
+		language,
+		**hyperopt_params)
+	return rc
+	
 
 def get_default_params(use_cuda: bool = False) -> RunConfiguration:
-    return RunConfiguration(
-        batch_size=12,
-        model_size=300,
-        learning_rate_type=LearningSchedulerType.Noam,
-        learning_rate=1,
-        learning_rate_factor=2,
-        learning_rate_warmup=4800,
-        optim_adam_beta1=0.9,
-        optim_adam_beta2=0.98,
-        early_stopping=5,
-        num_epochs=1,
-        num_encoder_blocks=3,
-        num_heads=6,
-        att_d_k=50,
-        att_d_v=50,
-        dropout_rate=0.1,
-        pointwise_layer_size=2048,
-        log_every_xth_iteration=-1,
-        embedding_type='fasttext',
-        embedding_dim=300,
-        embedding_name='6B',
-        language='de',
-        use_stop_words=True,
-        use_cuda=use_cuda,
-        clip_comments_to=100,
-        output_layer_type=OutputLayerType.LinearSum,
-        output_conv_num_filters=300,
-        output_conv_kernel_size=5,
-        output_conv_stride=1,
-        output_conv_padding=0,
-        last_layers_dropout_rate=0.2
-    )
+	return None
+	# return RunConfiguration(
+	#     batch_size=12,
+	#     model_size=300,
+	#     learning_rate_type=LearningSchedulerType.Noam,
+	#     learning_rate=1,
+	#     learning_rate_factor=2,
+	#     learning_rate_warmup=4800,
+	#     optim_adam_beta1=0.9,
+	#     optim_adam_beta2=0.98,
+	#     early_stopping=5,
+	#     num_epochs=1,
+	#     num_encoder_blocks=3,
+	#     num_heads=6,
+	#     att_d_k=50,
+	#     att_d_v=50,
+	#     dropout_rate=0.1,
+	#     pointwise_layer_size=2048,
+	#     log_every_xth_iteration=-1,
+	#     embedding_type='fasttext',
+	#     embedding_dim=300,
+	#     embedding_name='6B',
+	#     language='de',
+	#     use_stop_words=True,
+	#     use_cuda=use_cuda,
+	#     clip_comments_to=100,
+	#     output_layer_type=OutputLayerType.LinearSum,
+	#     output_conv_num_filters=300,
+	#     output_conv_kernel_size=5,
+	#     output_conv_stride=1,
+	#     output_conv_padding=0,
+	#     last_layers_dropout_rate=0.2
+	# )
