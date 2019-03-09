@@ -12,8 +12,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchtext
 from torch.autograd import *
-#from tqdm.autonotebook import tqdm
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
+#from tqdm import tqdm
 
 from trainer.utils import *
 from trainer.train_logger import TrainLogger
