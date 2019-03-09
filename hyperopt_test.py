@@ -86,7 +86,7 @@ search_space = {
             'type': OutputLayerType.Convolutions,
             'output_conv_num_filters': hp.quniform('output_conv_num_filters', 1, 400, 1),
             'output_conv_kernel_size': hp.quniform('output_conv_kernel_size', 1, 10, 1),
-            'output_conv_stride': hp.quniform('output_conv_stride', 0, 10, 1),
+            'output_conv_stride': hp.quniform('output_conv_stride', 1, 10, 1),
             'output_conv_padding': hp.quniform('output_conv_padding', 0, 5, 1),
         },
         {
@@ -123,48 +123,71 @@ search_space = {
 trials = Trials()
 
 def objective(parameters):
-    run_time = time.time()
-    
-    # generate hp's from parameters
-    rc = from_hyperopt(parameters, use_cuda, 300, 4, 35, 5, 'de')
-    logger.info('New Params:')
-    logger.info(rc)
-    
-    logger.debug('Load dataset')
-    dataset = load_dataset(rc, dataset_logger)
-    logger.debug('dataset loaded')
-    logger.debug('Load model')
-    trainer = load_model(dataset, rc, experiment_name)
-    logger.debug('model loaded')
-    
-    logger.debug('Begin training')
-    model = None
-    try:
-        result = trainer.train(use_cuda=rc.use_cuda, perform_evaluation=False)
-        model = result['model']
-    except Exception as err:
-        logger.exception("Could not complete iteration")
-        return {
-            'status': STATUS_FAIL,
-            'eval_time': time.time() - run_time,
-            'best_loss': trainer.get_best_loss(),
-            'best_f1': trainer.get_best_f1()
-        }
+	run_time = time.time()
+
+	# generate hp's from parameters
+	try:
+		rc = from_hyperopt(parameters, use_cuda, 300, 4, 35, 5, 'de')
+	except Exception as err:
+		logger.exception("Could not load parameters from hyperopt configuration: " + parameters)
+		return {
+			'status': STATUS_FAIL,
+			'eval_time': time.time() - run_time
+		}
+	logger.info('New Params:')
+	logger.info(rc)
+
+	logger.debug('Load dataset')
+	try:
+		dataset = load_dataset(rc, dataset_logger)
+	except Exception as err:
+		logger.exception("Could not load dataset")
+		return {
+			'status': STATUS_FAIL,
+			'eval_time': time.time() - run_time
+		}
+	logger.debug('dataset loaded')
+	logger.debug('Load model')
+
+	try:	
+		trainer = load_model(dataset, rc, experiment_name)
+	except Exception as err:
+		logger.exception("Could not load model")
+		return {
+			'status': STATUS_FAIL,
+			'eval_time': time.time() - run_time
+		}
+
+	logger.debug('model loaded')
+
+	logger.debug('Begin training')
+	model = None
+	try:
+		result = trainer.train(use_cuda=rc.use_cuda, perform_evaluation=False)
+		model = result['model']
+	except Exception as err:
+		logger.exception("Could not complete iteration")
+		return {
+			'status': STATUS_FAIL,
+			'eval_time': time.time() - run_time,
+			'best_loss': trainer.get_best_loss(),
+			'best_f1': trainer.get_best_f1()
+		}
         
     # perform evaluation and log results
-    result = None
-    try:
-        result = trainer.perform_final_evaluation(use_test_set=True, verbose=False)
-    except Exception as err:
-        logger.exception("Could not complete iteration evaluation.")
-        return {
-            'status': STATUS_FAIL,
-            'eval_time': time.time() - run_time,
-            'best_loss': trainer.get_best_loss(),
-            'best_f1': trainer.get_best_f1()
-        }
+	result = None
+	try:
+		result = trainer.perform_final_evaluation(use_test_set=True, verbose=False)
+	except Exception as err:
+		logger.exception("Could not complete iteration evaluation.")
+		return {
+			'status': STATUS_FAIL,
+			'eval_time': time.time() - run_time,
+			'best_loss': trainer.get_best_loss(),
+			'best_f1': trainer.get_best_f1()
+		}
     
-    return {
+	return {
             'loss': result[1][0],
             'status': STATUS_OK,
             'eval_time': time.time() - run_time,
