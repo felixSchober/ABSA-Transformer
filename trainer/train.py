@@ -301,8 +301,8 @@ class Trainer(object):
 							self.logger.exception("Could not complete iteration evaluation")
 
 						# ############# REMOVE ##############
-						continue_training = False
-						break
+						# continue_training = False
+						# break
 						
 					progress_bar.update(1)
 					progress_bar.refresh()
