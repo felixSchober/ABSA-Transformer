@@ -7,26 +7,23 @@ from trainer.train_evaluator import TrainEvaluator
 
 class EarlyStopping(object):
 
-    def __init__(self, optimizer: torch.nn.Module, model: torch.nn.Module, hp: RunConfiguration, evaluator: TrainEvaluator, checkpoint_dir: str):
-        self.early_stopping = hp.early_stopping
-        self early_stopping_counter = wait_for_x_epochs
-        self.checkpoint_dir = checkpoint_dir
-        self.best_model_checkpoint = None
-        
-        self.evaluator = evaluator
-        self.optimizer = optimizer
-        self.model = model
-        self.hp = hp
+	def __init__(self, optimizer: torch.nn.Module, model: torch.nn.Module, hp: RunConfiguration, evaluator: TrainEvaluator, checkpoint_dir: str):
+		self.early_stopping = hp.early_stopping
+		self.early_stopping_counter = hp.early_stopping
+		self.checkpoint_dir = checkpoint_dir
+		self.best_model_checkpoint = None
 
-        self.should_stop = False
+		self.evaluator = evaluator
+		self.optimizer = optimizer
+		self.model = model
+		self.hp = hp
 
-        # this logger will not print to the console.  Only to the file.
+		self.should_stop = False
+
+		# this logger will not print to the console.  Only to the file.
 		self.logger = logging.getLogger(__name__)
 
-    def should_stop() -> bool:
-        return self.early_stopping_counter >= 0
-
-    def reset_early_stopping(self, iteration: int, mean_valid_f1: float):
+	def reset_early_stopping(self, iteration: int, mean_valid_f1: float):
 		self.logger.info('Epoch f1 score ({}) better than last f1 score ({}). Save checkpoint'.format(mean_valid_f1, self.evaluator.best_f1))
 		self.evaluator.best_f1 = mean_valid_f1
 
@@ -40,7 +37,7 @@ class EarlyStopping(object):
 			'f1': self.evaluator.best_f1,
 			'hp': self.hp
 		}
-        self.best_model_checkpoint = best_model_checkpoint
+		self.best_model_checkpoint = best_model_checkpoint
 		self._save_checkpoint(iteration)
 
 		# restore early stopping counter
@@ -60,7 +57,7 @@ class EarlyStopping(object):
 		else:
 			return False
 
-    def _save_checkpoint(self, iteration: int) -> None:
+	def _save_checkpoint(self, iteration: int) -> None:
 		self.logger.debug('Saving model... ' + self.checkpoint_dir)
 
 		checkpoint = {
@@ -69,7 +66,7 @@ class EarlyStopping(object):
 			'optimizer': self.optimizer.optimizer.state_dict(),
 			'epoch': self.evaluator.epoch,
 			'f1': self.evaluator.best_f1,
-			'hp': self.hyperparameters
+			'hp': self.hp
 		}
 
 		filename = 'checkpoint_{}.data'.format(iteration)
@@ -78,7 +75,7 @@ class EarlyStopping(object):
 		except Exception as err:
 			self.logger.exception('Could not save model.')
 
-    def restore_best_model(self) -> None:
+	def restore_best_model(self) -> None:
 		try:
 			self.model.load_state_dict(self.best_model_checkpoint['state_dict'])
 		except Exception as err:
@@ -92,13 +89,13 @@ class EarlyStopping(object):
 		self.logger.info('Best model parameters were at \nEpoch {}\nValidation f1 score {}'
 						 .format(self.best_model_checkpoint['epoch'], self.best_model_checkpoint['val_acc']))
 
-    def __call__(self, f1: float, accuracy: float, iteration: int) -> bool:
+	def __call__(self, f1: float, accuracy: float, iteration: int) -> bool:
         # early stopping if no improvement of val_acc during the last
         # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
-        if f1 > self.evaluator.best_f1 or self.early_stopping <= 0:
-            self.logger.info(f'Current f1 score of {f1} (acc of {accuracy} is better than last f1 score of {self.evaluator.best_f1}.')
-            self.reset_early_stopping(iteration, f1)
-        else:
-            self.should_stop = self.perform_early_stopping()
+		if f1 > self.evaluator.best_f1 or self.early_stopping <= 0:
+			self.logger.info(f'Current f1 score of {f1} (acc of {accuracy} is better than last f1 score of {self.evaluator.best_f1}.')
+			self.reset_early_stopping(iteration, f1)
+		else:
+			self.should_stop = self.perform_early_stopping()
             
-        return self.should_stop
+		return self.should_stop

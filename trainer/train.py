@@ -38,7 +38,7 @@ class Trainer(object):
 	model : nn.Module
 	loss : nn.Module
 	optimizer : torch.optim.Optimizer
-	parameters : RunConfiguration
+	hyperparameters : RunConfiguration
 	train_iterator : torchtext.data.Iterator
 	valid_iterator : torchtext.data.Iterator
 	test_iterator : torchtext.data.Iterator
@@ -248,8 +248,8 @@ class Trainer(object):
 		train_duration = 0
 		total_time_elapsed = 0
 		train_start = time.time()
-		with tqdm(total=iterations_per_epoch, leave=True) as progress_bar:
-			self.progress_bar = progress_bar
+		with tqdm(total=iterations_per_epoch, leave=True, position=1) as progress_bar:
+			self.train_logger.progress_bar = progress_bar
 			for epoch in range(self.num_epochs):
 				progress_bar.n = 0
 				progress_bar.set_description(f'Epoch {epoch + 1}')
@@ -299,6 +299,11 @@ class Trainer(object):
 
 						except Exception as err:
 							self.logger.exception("Could not complete iteration evaluation")
+
+						# ############# REMOVE ##############
+						continue_training = False
+						break
+						
 					progress_bar.update(1)
 					progress_bar.refresh()
 				# ----------- End of epoch loop -----------
@@ -319,7 +324,7 @@ class Trainer(object):
 					self.logger.exception("Could not complete end of epoch {} evaluation")
 
 				should_stop = self.early_stopping(mean_valid_f1, mean_valid_accuracy, iteration)
-				if should_stop:
+				if should_stop or not continue_training:
 						continue_training = False
 						break
 
@@ -330,7 +335,7 @@ class Trainer(object):
 		# At the end of training swap the best params into the model
 		# Restore best model
 		try:
-			self._restore_best_model()
+			self.early_stopping.restore_best_model()
 		except Exception as err:
 			self.logger.exception("Could not restore best model")
 
@@ -391,8 +396,18 @@ class Trainer(object):
 					except Exception as err:
 						self.logger.exception(f'Could not delete checkpoint file {filename} at path {checkpoint_path}.')
 	
+	def get_best_loss(self):
+		if self.evaluator.best_loss:
+			return self.evaluator.best_loss
+		return 100000
+
+	def get_best_f1(self):
+		if self.evaluator.best_f1:
+			return self.evaluator.best_f1
+		return 0.0
+
 	def perform_final_evaluation(self, use_test_set: bool=True, verbose: bool=True):
-		self.evaluator.perform_final_evaluation(use_test_set, verbose)
+		return self.evaluator.perform_final_evaluation(use_test_set, verbose)
 	
 	def classify_sentence(self, sentence: str) -> str:
 		x = self.manual_process(sentence, self.dataset.source_reverser)
