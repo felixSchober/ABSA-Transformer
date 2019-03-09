@@ -100,8 +100,7 @@ class Dataset(object):
 			self.valid_file,
 			self.test_file,
 			self.use_cuda,
-			self.use_stop_words,
-			self.clip_comments_to)
+			verbose)
 
 		self.vocabs = self.dataset['vocabs']
 		self.task = self.dataset['task']

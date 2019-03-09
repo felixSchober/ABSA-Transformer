@@ -36,9 +36,8 @@ def germeval2017_dataset(
 					validation_file='dev_v1.4.tsv',
 					test_file=None,
 					use_cuda=False,
-					use_stop_words=True,
-					clip_comments_to=100):
-	if use_stop_words:
+					verbose=True):
+	if hyperparameters.use_stop_words:
 		stop_words = get_stop_words('de')
 	else:
 		stop_words = []
@@ -112,13 +111,14 @@ def germeval2017_dataset(
 
 	train, val, test = CustomGermEval2017Dataset.splits(
 							path=root,
+							root='.data',
 							train=train_file,
 							validation=validation_file,
 							test=test_file,
 							separator='\t',
 							fields=fields,
-							clip_comments_to=clip_comments_to
-	)
+							verbose=verbose,
+							hp=hyperparameters)
 
 	# use updated fields
 	fields = train.fields
