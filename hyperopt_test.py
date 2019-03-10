@@ -59,7 +59,7 @@ PREFERENCES.defaults(
     data_test='test_TIMESTAMP1.tsv',
     early_stopping='highest_5_F1'
 )
-experiment_name = 'HyperParameterTest'
+experiment_name = 'HyperOpt'
 use_cuda = True
 
 # get general logger just for search
