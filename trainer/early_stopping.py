@@ -108,7 +108,7 @@ class EarlyStopping(object):
 		#	2: current f1 should be better than prev. best
 		#	3: current loss should be better than prev. best
 		#	4: early stopping is enabled
-		if not isLossNaN and ((f1 > self.evaluator.best_f1 or loss < self.evaluator.best_loss) or not self.isEnabled()):
+		if not isLossNaN and ((f1 > self.evaluator.best_f1) or not self.isEnabled()):
 			self.logger.info(f'Current f1 score of {f1} (acc of {accuracy} is better than last f1 score of {self.evaluator.best_f1}.')
 			self.reset_early_stopping(iteration, f1)
 		else:
