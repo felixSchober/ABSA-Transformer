@@ -1,5 +1,6 @@
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials
 import numpy as np
+import math
 import time
 import logging
 from data.data_loader import Dataset
@@ -51,7 +52,6 @@ def load_dataset(rc, logger):
     )
     dataset.load_data(germeval2017_dataset, verbose=False)
     return dataset
-
 PREFERENCES.defaults(
     data_root='./data/germeval2017',
     data_train='train_v1.4.tsv',    
@@ -71,16 +71,20 @@ logger.info('Run hyper parameter random grid search for experiment with name ' +
 num_optim_iterations = 100
 logger.info('num_optim_iterations: ' + str(num_optim_iterations))
 
+utils.get_current_git_commit()
+logger.info('Current commit: ' + utils.get_current_git_commit())
+print('Current commit: ' + utils.get_current_git_commit())
+
+#search_space = hp
 #search_space = hp
 search_space = {
-    'x': hp.uniform('x', -10, 10),
-    'batch_size': hp.quniform('batch_size', 1, 500, 1),
+    'batch_size': hp.quniform('batch_size', 10, 150, 1),
     'num_encoder_blocks': hp.quniform('num_encoder_blocks', 1, 8, 1),
     'pointwise_layer_size': hp.quniform('pointwise_layer_size', 64, 2048, 1),
-    'clip_comments_to': hp.quniform('clip_comments_to', 10, 400, 1),
+    'clip_comments_to': hp.quniform('clip_comments_to', 10, 250, 1),
     'dropout_rate': hp.uniform('dropout_rate', 0.0, 0.8),
     'output_dropout_rate': hp.uniform('last_layer_dropout', 0.0, 0.8),
-    'num_heads': hp.choice('num_heads', [1, 2, 3, 4, 5, 6, 10, 12, 15, 20]),
+    'num_heads': hp.choice('num_heads', [1, 2, 3, 4, 5, 6, 10]),
     'output_layer': hp.choice('output_layer', [
         {
             'type': OutputLayerType.Convolutions,
@@ -108,86 +112,101 @@ search_space = {
             'adam_eps': hp.loguniform('adam_eps', np.log(1e-7), np.log(1)),
             'learning_rate': hp.lognormal('adam_learning_rate', np.log(0.01), np.log(10))
         },
-        {
-            'type': OptimizerType.SGD,
-            'sgd_momentum': hp.uniform('sgd_momentum', 0.4, 1),
-            'sgd_weight_decay': hp.loguniform('sgd_weight_decay', np.log(1e-4), np.log(1)),
-            'sgd_nesterov': hp_bool('sgd_nesterov'),
-            'learning_rate': hp.lognormal('sgd_learning_rate', np.log(0.01), np.log(10))
-        }
+        #{
+        #    'type': OptimizerType.SGD,
+        #    'sgd_momentum': hp.uniform('sgd_momentum', 0.4, 1),
+        #    'sgd_weight_decay': hp.loguniform('sgd_weight_decay', np.log(1e-4), np.log(1)),
+        #    'sgd_nesterov': hp_bool('sgd_nesterov'),
+        #    'learning_rate': hp.lognormal('sgd_learning_rate', np.log(0.01), np.log(10))
     ]),
+    'replace_url_tokens': hp_bool('replace_url_tokens'),
+    'harmonize_bahn': hp_bool('harmonize_bahn'),
     'embedding_type': hp.choice('embedding_type', ['fasttext', 'glove']),
     'embedding_name': hp.choice('embedding_name', ['6B']),
     'embedding_dim': hp.choice('embedding_dim', [300])
 }
-trials = Trials()
 
 def objective(parameters):
-	run_time = time.time()
+    run_time = time.time()
 
-	# generate hp's from parameters
-	try:
-		rc = from_hyperopt(parameters, use_cuda, 300, 4, 35, 5, 'de')
-	except Exception as err:
-		logger.exception("Could not load parameters from hyperopt configuration: " + parameters)
-		return {
-			'status': STATUS_FAIL,
-			'eval_time': time.time() - run_time
-		}
-	logger.info('New Params:')
-	logger.info(rc)
+    # generate hp's from parameters
+    try:
+        rc = from_hyperopt(parameters, use_cuda, 300, 4, 35, -1, 'de')
+    except Exception as err:
+        print('Could not convert params: ' + str(err))
+        logger.exception("Could not load parameters from hyperopt configuration: " + parameters)
+        return {
+            'status': STATUS_FAIL,
+            'eval_time': time.time() - run_time
+        }
+    logger.info('New Params:')
+    logger.info(rc)
+    print(rc)
 
-	logger.debug('Load dataset')
-	try:
-		dataset = load_dataset(rc, dataset_logger)
-	except Exception as err:
-		logger.exception("Could not load dataset")
-		return {
-			'status': STATUS_FAIL,
-			'eval_time': time.time() - run_time
-		}
-	logger.debug('dataset loaded')
-	logger.debug('Load model')
+    logger.debug('Load dataset')
+    try:
+        dataset = load_dataset(rc, dataset_logger)
+    except Exception as err:
+        print('Could load dataset: ' + str(err))
+        logger.exception("Could not load dataset")
+        return {
+            'status': STATUS_FAIL,
+            'eval_time': time.time() - run_time
+        }
+    logger.debug('dataset loaded')
+    logger.debug('Load model')
 
-	try:	
-		trainer = load_model(dataset, rc, experiment_name)
-	except Exception as err:
-		logger.exception("Could not load model")
-		return {
-			'status': STATUS_FAIL,
-			'eval_time': time.time() - run_time
-		}
+    try:
+        trainer = load_model(dataset, rc, experiment_name)
+    except Exception as err:
+        print('Could load model: ' + str(err))
+        logger.exception("Could not load model")
+        return {
+            'status': STATUS_FAIL,
+            'eval_time': time.time() - run_time
+        }
 
-	logger.debug('model loaded')
+    logger.debug('model loaded')
 
-	logger.debug('Begin training')
-	model = None
-	try:
-		result = trainer.train(use_cuda=rc.use_cuda, perform_evaluation=False)
-		model = result['model']
-	except Exception as err:
-		logger.exception("Could not complete iteration")
-		return {
-			'status': STATUS_FAIL,
-			'eval_time': time.time() - run_time,
-			'best_loss': trainer.get_best_loss(),
-			'best_f1': trainer.get_best_f1()
-		}
-        
+    logger.debug('Begin training')
+    model = None
+    try:
+        result = trainer.train(use_cuda=rc.use_cuda, perform_evaluation=False)
+        model = result['model']
+    except Exception as err:
+        print('EException while training: ' + str(err))
+        logger.exception("Could not complete iteration")
+        return {
+            'status': STATUS_FAIL,
+            'eval_time': time.time() - run_time,
+            'best_loss': trainer.get_best_loss(),
+            'best_f1': trainer.get_best_f1()
+        }
+
+    if math.isnan(trainer.get_best_loss()):
+        print('Loss is nan')
+        return {
+            'status': STATUS_FAIL,
+            'eval_time': time.time() - run_time,
+            'best_loss': trainer.get_best_loss(),
+            'best_f1': trainer.get_best_f1()
+        }
+
     # perform evaluation and log results
-	result = None
-	try:
-		result = trainer.perform_final_evaluation(use_test_set=True, verbose=False)
-	except Exception as err:
-		logger.exception("Could not complete iteration evaluation.")
-		return {
-			'status': STATUS_FAIL,
-			'eval_time': time.time() - run_time,
-			'best_loss': trainer.get_best_loss(),
-			'best_f1': trainer.get_best_f1()
-		}
-    
-	return {
+    result = None
+    try:
+        result = trainer.perform_final_evaluation(use_test_set=True, verbose=False)
+    except Exception as err:
+        logger.exception("Could not complete iteration evaluation.")
+        print('Could not complete iteration evaluation: ' + str(err))
+        return {
+            'status': STATUS_FAIL,
+            'eval_time': time.time() - run_time,
+            'best_loss': trainer.get_best_loss(),
+            'best_f1': trainer.get_best_f1()
+        }
+    print(f'Best f1 {trainer.get_best_f1()}')
+    return {
             'loss': result[1][0],
             'status': STATUS_OK,
             'eval_time': time.time() - run_time,
@@ -208,6 +227,8 @@ def objective(parameters):
                 }
             }
         }
+
+trials = Trials()
 
 best = fmin(objective,
     space=search_space,
