@@ -104,8 +104,8 @@ class TrainLogger(object):
 	def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float,
 							valid_accuracy: float, epoch_duration: float, duration: float, total_time: float, best_loss: float, best_f1: float):
 
-		color_modifier_loss = Fore.WHITE if valid_loss >= best_loss else Fore.GREEN
-		color_modifier_f1 = Fore.WHITE if valid_f1 <= best_f1 else Fore.GREEN
+		color_modifier_loss = Fore.WHITE if valid_loss > best_loss else Fore.GREEN
+		color_modifier_f1 = Fore.WHITE if valid_f1 < best_f1 else Fore.GREEN
 
 		summary = '{0}\t{1}\t{2:.2f}\t\t{3}{4:.2f}\t\t{5}{6:.3f}{7}\t\t{8:.3f}\t\t{9:.2f}m - {10:.1f}m / {11:.1f}m'.format(
 			epoch + 1,
