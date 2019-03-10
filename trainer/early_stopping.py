@@ -1,4 +1,5 @@
 import os
+import math
 import logging
 import torch
 from misc.run_configuration import RunConfiguration
@@ -43,8 +44,11 @@ class EarlyStopping(object):
 		# restore early stopping counter
 		self.early_stopping_counter = self.early_stopping
 
-	def perform_early_stopping(self) -> bool:
+	def perform_early_stopping(self, isNan:bool=False) -> bool:
 		self.early_stopping_counter -= 1
+
+		if isNan:
+			self.early_stopping_counter -= 2
 
 		# if early_stopping_counter is 0 restore best weights and stop training
 		if self.early_stopping > -1 and self.early_stopping_counter <= 0:
@@ -89,13 +93,29 @@ class EarlyStopping(object):
 		self.logger.info('Best model parameters were at \nEpoch {}\nValidation f1 score {}'
 						 .format(self.best_model_checkpoint['epoch'], self.best_model_checkpoint['val_acc']))
 
-	def __call__(self, f1: float, accuracy: float, iteration: int) -> bool:
+	def __call__(self, loss: float, f1: float, accuracy: float, iteration: int) -> bool:
+
+		# if the loss is not a number we don't want to continue to long
+		isLossNaN = math.isnan(loss)
+		if isLossNaN:
+			self.logger.info(f'Loss is NaN. > Reduce early stopping counter by 3')
+
         # early stopping if no improvement of val_acc during the last
         # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
-		if f1 > self.evaluator.best_f1 or self.early_stopping <= 0:
+
+		# to reset early stopping we need to fulfill the following conditions:
+		# 	1: Loss should be a number
+		#	2: current f1 should be better than prev. best
+		#	3: current loss should be better than prev. best
+		#	4: early stopping is enabled
+		if not isLossNaN and ((f1 > self.evaluator.best_f1 or loss < self.evaluator.best_loss) or not self.isEnabled):
 			self.logger.info(f'Current f1 score of {f1} (acc of {accuracy} is better than last f1 score of {self.evaluator.best_f1}.')
 			self.reset_early_stopping(iteration, f1)
 		else:
 			self.should_stop = self.perform_early_stopping()
             
 		return self.should_stop
+
+	@getattr
+	def isEnabled(self):
+		return self.early_stopping > 0

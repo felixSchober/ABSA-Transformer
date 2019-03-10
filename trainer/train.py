@@ -323,7 +323,7 @@ class Trainer(object):
 				except Exception as err:
 					self.logger.exception("Could not complete end of epoch {} evaluation")
 
-				should_stop = self.early_stopping(mean_valid_f1, mean_valid_accuracy, iteration)
+				should_stop = self.early_stopping(mean_valid_loss, mean_valid_f1, mean_valid_accuracy, iteration)
 				if should_stop or not continue_training:
 						continue_training = False
 						break
