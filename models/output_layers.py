@@ -142,7 +142,7 @@ class CommentWiseConvLogSoftmax(nn.Module):
 		x = self.conv(x)					# [batch_size, 1, num_words, model_size] -> [batch_size, num_filters, num_words - padding, 1] e.g. [12, 300, 96, 1]
 		x = F.relu(x)
 		x = self.dropout(x)
-		x = self.pooling(x),
+		x = self.pooling(x)
 
 		# x = self.pooling(x)					# [batch_size, num_filters, num_words - padding, 1] -> [batch_size, num_filters, 1, 1]
 		x = x.squeeze().squeeze()
@@ -155,6 +155,12 @@ class CommentWiseConvLogSoftmax(nn.Module):
 		x = x.unsqueeze(1) 					# [batch_size, num_words, model_size] -> e.g. [12, 100, 300] -> [batch_size, 1, num_words, model_size]
 
 		x = self.conv(x)					# [batch_size, 1, num_words, model_size] -> [batch_size, num_filters, num_words - padding, 1] e.g. [12, 300, 96, 1]
+		x = F.relu(x)
+		x = self.dropout(x)
+		x = self.pooling(x)
+
+
+		# x = self.conv(x)					# [batch_size, 1, num_words, model_size] -> [batch_size, num_filters, num_words - padding, 1] e.g. [12, 300, 96, 1]
 		# x = self.pooling(x)					# [batch_size, num_filters, num_words - padding, 1] -> [batch_size, num_filters, 1, 1]
 		x = x.squeeze().squeeze()
 		# x = self.linear(x)
