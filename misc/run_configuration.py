@@ -23,8 +23,8 @@ default_params = {
 	'batch_size': 12,
 	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
 	'learning_rate_scheduler': {
-		'noam_learning_rate_warmup': 4800,
-		'noam_learning_rate_factor': 2
+		'noam_learning_rate_warmup': 8000,
+		'noam_learning_rate_factor': 0.8
 	},
 	'optimizer_type':  OptimizerType.Adam,
 	'optimizer':  {
@@ -35,12 +35,12 @@ default_params = {
 	},
 	'early_stopping': 5,
 	'num_epochs': 25,
-	'num_encoder_blocks': 3,
+	'num_encoder_blocks': 2,
 	'num_heads': 6,
 	'att_d_k': 50,
 	'att_d_v': 50,
 	'dropout_rate': 0.1,
-	'pointwise_layer_size': 2048,
+	'pointwise_layer_size': 128,
 	'log_every_xth_iteration': -1,
 	'embedding_type': 'fasttext',
 	'embedding_dim': 300,
