@@ -66,7 +66,7 @@ class TransformerEncoder(nn.Module):
             self.d_k = hyperparameters.d_k
             self.d_v = hyperparameters.d_v
 
-        self.positional_encoding = PositionalEncoding2(self.d_model)
+        self.positional_encoding = PositionalEncoding2(self.d_model, hyperparameters.clip_comments_to, dropout=hyperparameters.dropout_rate)
 
 
         self.encoder_blocks = self._initialize_encoder_blocks()
