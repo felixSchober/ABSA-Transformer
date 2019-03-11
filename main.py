@@ -6,10 +6,10 @@ from data.data_loader import Dataset
 from data.germeval2017 import germeval2017_dataset
 
 from misc.preferences import PREFERENCES
-from misc.run_configuration import get_default_params, randomize_params
+from misc.run_configuration import get_default_params, randomize_params, OutputLayerType
 from misc import utils
 
-from optimizer import get_default_optimizer
+from optimizer import get_optimizer
 from criterion import NllLoss, LossCombiner
 
 from models.transformer.encoder import TransformerEncoder
@@ -47,7 +47,7 @@ def load_model(dataset, hp, experiment_name):
     transformer = TransformerEncoder(dataset.source_embedding,
                                      hyperparameters=hp)
     model = JointAspectTagger(transformer, hp, 4, 20, dataset.target_names)
-    optimizer = get_default_optimizer(model, hp)
+    optimizer = get_optimizer(model, hp)
     trainer = Trainer(
                         model,
                         loss,
@@ -64,9 +64,9 @@ use_cuda = True
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
 logger = logging.getLogger(__name__)
 logger.info('Current commit: ' + utils.get_current_git_commit())
-hp = get_default_params(use_cuda)
+hp = get_default_params(use_cuda, {'output_layer_type': OutputLayerType.Convolutions})
 hp.num_epochs = 1
-hp.log_every_xth_iteration = -1
+hp.log_every_xth_iteration = 5
 
 logger.info(hp)
 print(hp)

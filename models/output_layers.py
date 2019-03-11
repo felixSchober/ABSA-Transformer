@@ -141,8 +141,8 @@ class CommentWiseConvLogSoftmax(nn.Module):
 		x = x.squeeze().squeeze()
 		logits = self.output_projection(x)	# [batch_size, num_filters] -> [batch_size, classes] e.g. [12, 4]
 
-		probs = F.log_softmax(logits, dim=-1)
-		return probs
+		#probs = F.log_softmax(logits, dim=-1)
+		return logits
 
 	def predict(self, x: torch.Tensor, mask: torch.Tensor=None, *args):
 		x = x.unsqueeze(1) 					# [batch_size, num_words, model_size] -> e.g. [12, 100, 300] -> [batch_size, 1, num_words, model_size]
@@ -153,7 +153,7 @@ class CommentWiseConvLogSoftmax(nn.Module):
 		# x = self.linear(x)
 		logits = self.output_projection(x)	# [batch_size, num_filters] -> [batch_size, classes] e.g. [12, 4]
 
-		probs = F.log_softmax(logits, dim=-1)
+		probs = F.softmax(logits, dim=-1)
 		return probs
 
 

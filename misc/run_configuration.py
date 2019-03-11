@@ -18,7 +18,45 @@ class OptimizerType(Enum):
 		RMS_PROP = 3
 		AdaBound = 4
 
-
+default_params = {
+	'model_size': 300,
+	'batch_size': 12,
+	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
+	'learning_rate_scheduler': {
+		'noam_learning_rate_warmup': 4800,
+		'noam_learning_rate_factor': 2
+	},
+	'optimizer_type':  OptimizerType.Adam,
+	'optimizer':  {
+		'learning_rate': 1e-5,
+		'adam_beta1': 0.9,
+		'adam_beta2': 0.98,
+		'adam_eps': 1e-9
+	},
+	'early_stopping': 5,
+	'num_epochs': 25,
+	'num_encoder_blocks': 3,
+	'num_heads': 6,
+	'att_d_k': 50,
+	'att_d_v': 50,
+	'dropout_rate': 0.1,
+	'pointwise_layer_size': 2048,
+	'log_every_xth_iteration': -1,
+	'embedding_type': 'fasttext',
+	'embedding_dim': 300,
+	'embedding_name': '6B',
+	'language': 'de',
+	'use_stop_words': True,
+	'clip_comments_to': 100,
+	'output_layer_type': OutputLayerType.LinearSum,
+	'output_layer':  {
+		'output_conv_num_filters': 300,
+		'output_conv_kernel_size': 5,
+		'output_conv_stride': 1,
+		'output_conv_padding': 0
+	},
+	'output_dropout_rate': 0.2
+}
 
 
 class RunConfiguration(object):
@@ -243,7 +281,7 @@ def randomize_params(config, param_dict_range) -> RunConfiguration:
 
                         # based on num_heads choose the d_v, d_k, d_q sizes
                         # make sure that it will be a valid size
-                        assert(config.model_size % config.n_heads == 0, f"number of heads {config.n_heads} is not a valid number of heads for model size {config.model_size}.")
+                        assert(config.model_size % config.n_heads == 0, f'number of heads {config.n_heads} is not a valid number of heads for model size {config.model_size}.')
 
                         config.d_k = config.model_size // config.n_heads
                         config.d_v = config.model_size // config.n_heads
@@ -271,37 +309,12 @@ def from_hyperopt(hyperopt_params,
 	return rc
 	
 
-def get_default_params(use_cuda: bool = False) -> RunConfiguration:
-	return None
-	# return RunConfiguration(
-	#     batch_size=12,
-	#     model_size=300,
-	#     learning_rate_type=LearningSchedulerType.Noam,
-	#     learning_rate=1,
-	#     learning_rate_factor=2,
-	#     learning_rate_warmup=4800,
-	#     optim_adam_beta1=0.9,
-	#     optim_adam_beta2=0.98,
-	#     early_stopping=5,
-	#     num_epochs=1,
-	#     num_encoder_blocks=3,
-	#     num_heads=6,
-	#     att_d_k=50,
-	#     att_d_v=50,
-	#     dropout_rate=0.1,
-	#     pointwise_layer_size=2048,
-	#     log_every_xth_iteration=-1,
-	#     embedding_type='fasttext',
-	#     embedding_dim=300,
-	#     embedding_name='6B',
-	#     language='de',
-	#     use_stop_words=True,
-	#     use_cuda=use_cuda,
-	#     clip_comments_to=100,
-	#     output_layer_type=OutputLayerType.LinearSum,
-	#     output_conv_num_filters=300,
-	#     output_conv_kernel_size=5,
-	#     output_conv_stride=1,
-	#     output_conv_padding=0,
-	#     last_layers_dropout_rate=0.2
-	# )
+def get_default_params(use_cuda: bool = False, overwrite: Dict = None) -> RunConfiguration:
+	params = default_params
+	if overwrite:
+		params = {**default_params, **overwrite}
+
+	return RunConfiguration(
+		use_cuda,
+		**params
+	)

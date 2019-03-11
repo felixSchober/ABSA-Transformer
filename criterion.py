@@ -38,7 +38,7 @@ class NllLoss(nn.Module):
 	def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
 		logits = self._transform_logits(logits)
 		targets = targets.view(-1)
-		return F.nll_loss(logits, targets, weight=self.weight)
+		return F.cross_entropy(logits, targets, weight=self.weight)
 
 
 class LossCombiner(nn.Module):
