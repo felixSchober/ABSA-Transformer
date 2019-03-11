@@ -125,18 +125,25 @@ class CommentWiseConvLogSoftmax(nn.Module):
 		self.output_size = output_size
 
 		self.conv_out = ((hp.clip_comments_to + 2 * hp.output_conv_padding - 1 * (hp.output_conv_kernel_size - 1) - 1) // hp.output_conv_stride) + 1
-		self.conv = nn.Sequential(
-			nn.Conv2d(1, hp.output_conv_num_filters, (hp.output_conv_kernel_size, hp.model_size), hp.output_conv_stride, hp.output_conv_padding),
-			nn.ReLU(),
-			nn.Dropout(hp.last_layer_dropout),
-			nn.MaxPool2d((self.conv_out, 1), stride=hp.output_conv_stride)
-		)
+		# self.conv = nn.Sequential(
+		# 	nn.Conv2d(1, hp.output_conv_num_filters, (hp.output_conv_kernel_size, hp.model_size), hp.output_conv_stride, hp.output_conv_padding),
+		# 	nn.ReLU(inplace=True),
+		# 	nn.Dropout(hp.last_layer_dropout),
+		# 	nn.MaxPool2d((self.conv_out, 1), stride=hp.output_conv_stride)
+		# )
+		self.conv = nn.Conv2d(1, hp.output_conv_num_filters, (hp.output_conv_kernel_size, hp.model_size), hp.output_conv_stride, hp.output_conv_padding)
+		self.dropout = nn.Dropout(hp.last_layer_dropout)
+		self.pooling = nn.MaxPool2d((self.conv_out, 1), stride=hp.output_conv_stride)
 		self.output_projection = nn.Linear(hp.output_conv_num_filters, output_size)
 
 	def forward(self, x: torch.Tensor, mask: torch.Tensor =None, *args):
 		x = x.unsqueeze(1) 					# [batch_size, num_words, model_size] -> e.g. [12, 100, 300] -> [batch_size, 1, num_words, model_size]
 
 		x = self.conv(x)					# [batch_size, 1, num_words, model_size] -> [batch_size, num_filters, num_words - padding, 1] e.g. [12, 300, 96, 1]
+		x = F.relu(x)
+		x = self.dropout(x)
+		x = self.pooling(x),
+
 		# x = self.pooling(x)					# [batch_size, num_filters, num_words - padding, 1] -> [batch_size, num_filters, 1, 1]
 		x = x.squeeze().squeeze()
 		logits = self.output_projection(x)	# [batch_size, num_filters] -> [batch_size, classes] e.g. [12, 4]
