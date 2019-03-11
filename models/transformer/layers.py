@@ -17,9 +17,9 @@ def clone_layer(layer: nn.Module, N: int):
 class PointWiseFCLayer(nn.Module):
 
     def __init__(self,
-                d_input=constants.DEFAULT_DIMENSION_OF_MODEL,
-                d_layer=constants.DEFAULT_DIMENSION_OF_PWFC_HIDDEN_LAYER,
-                dropout=constants.DEFAULT_MODEL_DROPOUT,
+                d_input,
+                d_layer,
+                dropout,
                 use_conv = False) -> None:
         super(PointWiseFCLayer, self).__init__()
 
@@ -60,9 +60,9 @@ class PointWiseFCLayer(nn.Module):
 class ScaledDotProductAttentionLayer(nn.Module):
 
     def __init__(self,
-                d_k=constants.DEFAULT_DIMENSION_OF_KEYQUERY_WEIGHTS,
-                d_v=constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS,
-                dropout=constants.DEFAULT_MODEL_DROPOUT) -> None:
+                d_k,
+                d_v,
+                dropout) -> None:
         """
         d_k: dimensionality of the query and key vectors    (default 64)
         d_v: dimensionality of the value vector             (default 64)
@@ -174,7 +174,7 @@ class ScaledDotProductAttentionLayer(nn.Module):
 
         # Step 4:   Create softmax of scores
         # TODO: check dimension
-        attention = F.softmax(scores, dim=-1)  # [num_words, num_words, n_head]     
+        attention = F.softmax(scores, dim=1)  # [num_words, num_words, n_head]     
         
         if dropout is not None:
             attention = dropout(attention)
@@ -202,11 +202,11 @@ class ScaledDotProductAttentionLayer(nn.Module):
 class MultiHeadedSelfAttentionLayer(nn.Module):
 
     def __init__(self,
-                d_k=constants.DEFAULT_DIMENSION_OF_KEYQUERY_WEIGHTS,
-                d_v=constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS,
-                d_model=constants.DEFAULT_DIMENSION_OF_MODEL,
-                n_head=constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS,
-                dropout_rate=constants.DEFAULT_MODEL_DROPOUT,
+                d_k,
+                d_v,
+                d_model,
+                n_head,
+                dropout_rate,
                 use_linear=True) -> None:
         """
         d_k: dimensionality of the query and key vectors
@@ -235,7 +235,7 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
 
         # one 'attention_layer' is sufficient even if the model uses multiple heads since the layer
         # only performs a forward pass without any learned parameters
-        self.attention_layer = ScaledDotProductAttentionLayer()
+        self.attention_layer = ScaledDotProductAttentionLayer(d_k, d_v, dropout_rate)
 
         self.layer_norm = LayerNorm(self.d_model)
 
@@ -353,7 +353,7 @@ class LayerNorm(nn.Module):
         return self.__class__.__name__
 
 class PositionalEncoding2(nn.Module):
-    def __init__(self, d_model, max_seq_len = 100, dropout = 0.1):
+    def __init__(self, d_model, max_seq_len, dropout):
         super().__init__()
         self.d_model = d_model
         self.dropout = nn.Dropout(dropout)

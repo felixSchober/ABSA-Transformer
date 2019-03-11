@@ -13,15 +13,8 @@ class TransformerEncoder(nn.Module):
 
     def __init__(self,
                 src_embeddings: nn.Embedding,
-                d_vocab: int = None,
-                hyperparameters: RunConfiguration=None,
-                n_enc_blocks=constants.DEFAULT_ENCODER_BLOCKS,
-                n_head=constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS,
-                d_model=constants.DEFAULT_LAYER_SIZE,
-                dropout_rate=constants.DEFAULT_MODEL_DROPOUT,
-                pointwise_layer_size=constants.DEFAULT_DIMENSION_OF_PWFC_HIDDEN_LAYER,
-                d_k=constants.DEFAULT_DIMENSION_OF_KEYQUERY_WEIGHTS,
-                d_v=constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS):
+                hyperparameters: RunConfiguration,
+                d_vocab: int = None):
         """Constructor for the tranformer encoder
         
         Arguments:
@@ -47,24 +40,13 @@ class TransformerEncoder(nn.Module):
             self.src_embeddings = src_embeddings
             #self.src_embeddings.weight.requires_grad = False
 
-        
-
-        if hyperparameters is None:
-            self.n_head = n_head
-            self.n_enc_blocks = n_enc_blocks
-            self.d_model = d_model
-            self.dropout_rate = dropout_rate
-            self.pointwise_layer_size = pointwise_layer_size
-            self.d_k = d_k
-            self.d_v = d_v
-        else:
-            self.n_head = hyperparameters.n_heads
-            self.n_enc_blocks = hyperparameters.n_enc_blocks
-            self.d_model = hyperparameters.model_size
-            self.dropout_rate = hyperparameters.dropout_rate
-            self.pointwise_layer_size = hyperparameters.pointwise_layer_size
-            self.d_k = hyperparameters.d_k
-            self.d_v = hyperparameters.d_v
+        self.n_head = hyperparameters.n_heads
+        self.n_enc_blocks = hyperparameters.n_enc_blocks
+        self.d_model = hyperparameters.model_size
+        self.dropout_rate = hyperparameters.dropout_rate
+        self.pointwise_layer_size = hyperparameters.pointwise_layer_size
+        self.d_k = hyperparameters.d_k
+        self.d_v = hyperparameters.d_v
 
         self.positional_encoding = PositionalEncoding2(self.d_model, hyperparameters.clip_comments_to, dropout=hyperparameters.dropout_rate)
 
