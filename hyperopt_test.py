@@ -78,13 +78,14 @@ print('Current commit: ' + utils.get_current_git_commit())
 #search_space = hp
 #search_space = hp
 search_space = {
-    'batch_size': hp.quniform('batch_size', 10, 150, 1),
+    'batch_size': hp.quniform('batch_size', 10, 100, 1),
     'num_encoder_blocks': hp.quniform('num_encoder_blocks', 1, 8, 1),
-    'pointwise_layer_size': hp.quniform('pointwise_layer_size', 64, 2048, 1),
+    'pointwise_layer_size': hp.quniform('pointwise_layer_size', 32, 512, 1),
     'clip_comments_to': hp.quniform('clip_comments_to', 10, 250, 1),
     'dropout_rate': hp.uniform('dropout_rate', 0.0, 0.8),
     'output_dropout_rate': hp.uniform('last_layer_dropout', 0.0, 0.8),
     'num_heads': hp.choice('num_heads', [1, 2, 3, 4, 5, 6, 10]),
+	'transformer_use_bias': hp_bool('transformer_use_bias'),
     'output_layer': hp.choice('output_layer', [
         {
             'type': OutputLayerType.Convolutions,
