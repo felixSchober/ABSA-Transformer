@@ -87,9 +87,9 @@ class CommentWiseSumLogSoftmax(nn.Module):
 			logits.masked_fill(transformed_mask == 0, 0)
 
 		logits = torch.sum(logits, dim=1)
-		probs = F.log_softmax(logits, dim=-1)
+		# probs = F.log_softmax(logits, dim=-1)
 
-		return probs
+		return logits
 
 	def predict(self, x: torch.Tensor, mask: torch.Tensor =None, *args):
 		logits = self.output_projection(x)
@@ -104,7 +104,8 @@ class CommentWiseSumLogSoftmax(nn.Module):
 			logits.masked_fill(transformed_mask == 0, 0)
 
 		logits = torch.sum(logits, dim=1)
-		probs = F.log_softmax(logits, dim=-1)
+		# probs = F.log_softmax(logits, dim=-1)
+		probs = F.softmax(logits, dim=-1)
 
 		return probs
 
@@ -156,7 +157,7 @@ class CommentWiseConvLogSoftmax(nn.Module):
 
 		x = self.conv(x)					# [batch_size, 1, num_words, model_size] -> [batch_size, num_filters, num_words - padding, 1] e.g. [12, 300, 96, 1]
 		x = F.relu(x)
-		x = self.dropout(x)
+		# x = self.dropout(x)
 		x = self.pooling(x)
 
 
