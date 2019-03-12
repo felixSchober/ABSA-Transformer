@@ -144,6 +144,7 @@ class RunConfiguration(object):
 
 			# Transformer
 
+			self.use_bias = self._get_default('transformer_use_bias', False)
 			self.n_enc_blocks = self._get_default('num_encoder_blocks', cast_int=True)
 			self.n_heads = self._get_default('num_heads', cast_int=True)
 			self.d_k = self.model_size // self.n_heads
