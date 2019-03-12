@@ -20,7 +20,8 @@ class PointWiseFCLayer(nn.Module):
                 d_input,
                 d_layer,
                 dropout,
-                use_conv = False) -> None:
+                use_conv = False,
+				use_bias=False) -> None:
         super(PointWiseFCLayer, self).__init__()
 
         self.d_input = d_input
@@ -32,8 +33,8 @@ class PointWiseFCLayer(nn.Module):
             self.w_1 = nn.Conv1d(d_input, d_layer, 1) 
             self.w_2 = nn.Conv1d(d_layer, d_input, 1)      # output dimension = input dimension 
         else:
-            self.w_1 = nn.Linear(self.d_input, self.d_layer)
-            self.w_2 = nn.Linear(self.d_layer, self.d_input)
+            self.w_1 = nn.Linear(self.d_input, self.d_layer, bias=use_bias)
+            self.w_2 = nn.Linear(self.d_layer, self.d_input, bias=use_bias)
         self.dropout = nn.Dropout(self.p_dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

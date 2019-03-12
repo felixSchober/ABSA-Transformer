@@ -11,7 +11,7 @@ from misc.run_configuration import RunConfiguration
 
 class TransformerEncoder(nn.Module):
 
-    def __init__(self,
+	def __init__(self,
                 src_embeddings: nn.Embedding,
                 hyperparameters: RunConfiguration,
                 d_vocab: int = None):
@@ -31,22 +31,23 @@ class TransformerEncoder(nn.Module):
             d_v {int} -- size of value vector needeed for attention (default: {constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS})
         """
 
-        super(TransformerEncoder, self).__init__()
+		super(TransformerEncoder, self).__init__()
 
-        if src_embeddings is None:
-            assert d_vocab is not None
-            self.src_embeddings = Embeddings(hyperparameters.model_size, d_vocab)
-        else:
-            self.src_embeddings = src_embeddings
-            #self.src_embeddings.weight.requires_grad = False
+		if src_embeddings is None:
+			assert d_vocab is not None
+			self.src_embeddings = Embeddings(hyperparameters.model_size, d_vocab)
+		else:
+			self.src_embeddings = src_embeddings
+			#self.src_embeddings.weight.requires_grad = False
 
-        self.n_head = hyperparameters.n_heads
-        self.n_enc_blocks = hyperparameters.n_enc_blocks
-        self.d_model = hyperparameters.model_size
-        self.dropout_rate = hyperparameters.dropout_rate
-        self.pointwise_layer_size = hyperparameters.pointwise_layer_size
-        self.d_k = hyperparameters.d_k
-        self.d_v = hyperparameters.d_v
+		self.n_head = hyperparameters.n_heads
+		self.n_enc_blocks = hyperparameters.n_enc_blocks
+		self.d_model = hyperparameters.model_size
+		self.dropout_rate = hyperparameters.dropout_rate
+		self.pointwise_layer_size = hyperparameters.pointwise_layer_size
+		self.d_k = hyperparameters.d_k
+		self.d_v = hyperparameters.d_v
+		self.bias = hyperparameters.use_bias
 
         self.positional_encoding = PositionalEncoding2(self.d_model, hyperparameters.clip_comments_to, dropout=hyperparameters.dropout_rate)
 
@@ -97,7 +98,8 @@ class EncoderBlock(nn.Module):
                 d_model,
                 d_k,
                 d_v,
-                num_heads):
+                num_heads,
+				use_bias):
         """
         """
         super(EncoderBlock, self).__init__()
@@ -108,8 +110,9 @@ class EncoderBlock(nn.Module):
         self.d_k = d_k
         self.d_v = d_v
         self.num_heads = num_heads
+		self.use_bias = use_bias
         self.self_attention_layer = MultiHeadedSelfAttentionLayer(d_k, d_v, d_model, num_heads, dropout_rate)
-        self.feed_forward_layer = PointWiseFCLayer(d_model, pointwise_layer_size, dropout=self.dropout_rate)
+        self.feed_forward_layer = PointWiseFCLayer(d_model, pointwise_layer_size, dropout=self.dropout_rate, use_bias)
         self.layer_norm = LayerNorm(d_model)
 
     def forward(self, x, mask=None):
