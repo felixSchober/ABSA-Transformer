@@ -37,7 +37,7 @@ class JointAspectTagger(nn.Module):
 		self.taggers = self.initialize_aspect_taggers()
 		self.logger.debug(f"{self.num_taggers} initialized")
 		
-		self.logger.debug(f"Initilize parameters with nn.init.xavier_uniform_")
+		self.logger.debug(f"Initialize parameters with nn.init.xavier_uniform_")
 		for p in self.parameters():
 			if p.dim() > 1:
 				nn.init.xavier_uniform_(p)

@@ -110,7 +110,7 @@ search_space = {
             'type': OptimizerType.Adam,
             'adam_beta1': hp.uniform('adam_beta1', 0.7, 0.999),
             'adam_beta2': hp.uniform('adam_beta2', 0.7, 0.999),
-            'adam_eps': hp.loguniform('adam_eps', np.log(1e-7), np.log(1)),
+            'adam_eps': hp.loguniform('adam_eps', np.log(1e-10), np.log(1)),
             'learning_rate': hp.lognormal('adam_learning_rate', np.log(0.01), np.log(10))
         },
         #{

@@ -174,8 +174,8 @@ class ScaledDotProductAttentionLayer(nn.Module):
             scores = scores.masked_fill(mask == 0, eps)
 
         # Step 4:   Create softmax of scores
-        # TODO: check dimension
-        attention = F.softmax(scores, dim=1)  # [num_words, num_words, n_head]     
+        # TODO: check dimension (checked)
+        attention = F.softmax(scores, dim=-1)  # [num_words, num_words, n_head]     
         
         if dropout is not None:
             attention = dropout(attention)

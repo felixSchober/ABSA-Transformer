@@ -38,7 +38,8 @@ class NllLoss(nn.Module):
 	def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
 		logits = self._transform_logits(logits)
 		targets = targets.view(-1)
-		return F.cross_entropy(logits, targets, weight=self.weight)
+		#return F.cross_entropy(logits, targets, weight=self.weight)
+		return F.nll_loss(logits, targets, weight=self.weight)
 
 
 class LossCombiner(nn.Module):
@@ -51,8 +52,8 @@ class LossCombiner(nn.Module):
 
 	def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
 		# chunk the logits to the different loss functions
-		logits = torch.chunk(logits, self.num_losses, dim=1)
-		targets = torch.chunk(targets, self.num_losses, dim=1)
+		logits = torch.chunk(logits, self.num_losses, dim=1) # tuple with len 20 - each element is a [batch_size, 1, 4] tensor -> for each aspect, one prediction with 4 output values
+		targets = torch.chunk(targets, self.num_losses, dim=1) # tuple with len 20 - each element is a [batch_size, 1] tensor -> for each aspect the correct prediction
 
 		# apply losses
 		loss: Optional[torch.Tensor] = None
