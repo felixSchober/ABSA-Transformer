@@ -3,7 +3,6 @@ import copy
 import logging
 
 from data.data_loader import Dataset
-from data.germeval2017 import germeval2017_dataset
 
 from misc.preferences import PREFERENCES
 from misc.run_configuration import get_default_params, randomize_params, OutputLayerType
@@ -17,16 +16,28 @@ from models.jointAspectTagger import JointAspectTagger
 from trainer.train import Trainer
 import pprint
 
+# PREFERENCES.defaults(
+#     data_root='./data/germeval2017',
+#     data_train='train_v1.4.tsv',    
+#     data_validation='dev_v1.4.tsv',
+#     data_test='test_TIMESTAMP1.tsv',
+#     early_stopping='highest_5_F1'
+# )
+# from data.germeval2017 import germeval2017_dataset
+
+
+from data.bio import bio_dataset
 PREFERENCES.defaults(
-    data_root='./data/germeval2017',
-    data_train='train_v1.4.tsv',    
-    data_validation='dev_v1.4.tsv',
-    data_test='test_TIMESTAMP1.tsv',
+    data_root='./data/bio',
+    data_train='train.csv',    
+    data_validation='validation.csv',
+    data_test='test.csv',
     early_stopping='highest_5_F1'
 )
+
 def load(hp, logger):
     dataset = Dataset(
-        'germeval',
+        'bio2019',
         logger,
         hp,
         source_index=0,
@@ -35,11 +46,11 @@ def load(hp, logger):
         train_file=PREFERENCES.data_train,
         valid_file=PREFERENCES.data_validation,
         test_file=PREFERENCES.data_test,
-        file_format='.tsv',
+        file_format='.csv',
         init_token=None,
         eos_token=None
     )
-    dataset.load_data(germeval2017_dataset, verbose=True)
+    dataset.load_data(bio_dataset, verbose=True)
     return dataset
 
 def load_model(dataset, hp, experiment_name):
@@ -64,9 +75,9 @@ use_cuda = True
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
 logger = logging.getLogger(__name__)
 logger.info('Current commit: ' + utils.get_current_git_commit())
-hp = get_default_params(use_cuda, {'output_layer_type': OutputLayerType.Convolutions})
+hp = get_default_params(use_cuda, {'output_layer_type': OutputLayerType.LinearSum})
 hp.num_epochs = 1
-hp.log_every_xth_iteration = 5
+hp.log_every_xth_iteration = -1
 
 logger.info(hp)
 print(hp)

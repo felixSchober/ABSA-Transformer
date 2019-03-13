@@ -8,12 +8,10 @@ from torchtext import data
 from stop_words import get_stop_words
 
 from data.custom_fields import ReversibleField
-from data.custom_datasets import CustomGermEval2017Dataset
+from data.custom_datasets import CustomBioDataset
 from data.data_loader import get_embedding
 
 from misc.run_configuration import RunConfiguration
-
-logger = logging.getLogger(__name__)
 
 def preprocess_word(word: str) -> str:
 	# TODO: Actual processing
@@ -24,50 +22,50 @@ def preprocess_relevance_word(word: str) -> int:
 		return 0
 	return 1
 
-def germeval2017_dataset(
-					pretrained_vectors,
-					hyperparameters: RunConfiguration,
-					batch_size=80,
-					root='./germeval2017',
-					train_file='train_v1.4.tsv',
-					validation_file='dev_v1.4.tsv',
-					test_file=None,
-					use_cuda=False,
-					verbose=True):
+def bio_dataset(
+				pretrained_vectors,
+				hyperparameters: RunConfiguration,
+				batch_size=80,
+				root='./bio',
+				train_file='train.csv',
+				validation_file='validation.csv',
+				test_file='test.csv',
+				use_cuda=False,
+				verbose=True):
+
 	if hyperparameters.use_stop_words:
 		stop_words = get_stop_words('de')
 	else:
 		stop_words = []
 
-	# contains the sentences                
-	comment_field = ReversibleField(
-							batch_first=True,    # produce tensors with batch dimension first
-							lower=True,
-							fix_length=hyperparameters.clip_comments_to,
-							sequential=True,
-							use_vocab=True,
-							init_token=None,
-							eos_token=None,
-							is_target=False,
-							stop_words=stop_words,
-							preprocessing=data.Pipeline(preprocess_word))
+	# Sequence number
+	# Index
+	# Author_Id
+	# Comment number
+	# Sentence number
+	# Domain Relevance
+	# Sentiment
+	# Entity
+	# Attribute
+	# Sentence
+	# Source File
+	# Aspect
 
-	relevant_field = data.Field(
-							batch_first=True,
-							is_target=True,
-							sequential=False,
-							use_vocab=False,
-							unk_token=None,
-							preprocessing=data.Pipeline(preprocess_relevance_word))
-	
-	id_field = ReversibleField(
+	sq_num_field =  ReversibleField(
 							batch_first=True,
 							is_target=False,
 							sequential=False,
 							use_vocab=True,
 							unk_token=None)
 
-	general_sentiment_field = ReversibleField(
+	idx_field = ReversibleField(
+							batch_first=True,
+							is_target=False,
+							sequential=False,
+							use_vocab=True,
+							unk_token=None)
+
+	sentiment_field = ReversibleField(
 							batch_first=True,
 							is_target=True,
 							sequential=False,
@@ -96,23 +94,39 @@ def germeval2017_dataset(
 							unk_token=None,
 							is_target=False)
 
-	fields = [
-		('id', id_field),                                   # link to comment eg: (http://twitter.com/lolloseb/statuses/718382187792478208)
-		('comments', comment_field),                        # comment itself e.g. (@KuttnerSarah @DB_Bahn Hund = Fahrgast, Hund in Box = Gepäck.skurril, oder?)
-		('relevance', relevant_field),                      # is comment relevant true/false
-		('general_sentiments', general_sentiment_field),    # sentiment of comment (positive, negative, neutral)
-		(None, None),                                       # apsect based sentiment e.g (Allgemein#Haupt:negative Sonstige_Unregelmässigkeiten#Haupt:negative Sonstige_Unregelmässigkeiten#Haupt:negative)
-		('aspect_sentiments', aspect_sentiment_field),		# apsect sentiment field List of 20 aspects with positive, negative, neutral, n/a
-		('padding', padding_field)                          # artificial field that we append to fill it with the padding information later to create the masks
-			]
+	comment_field = ReversibleField(
+							batch_first=True,    # produce tensors with batch dimension first
+							lower=True,
+							fix_length=hyperparameters.clip_comments_to,
+							sequential=True,
+							use_vocab=True,
+							init_token=None,
+							eos_token=None,
+							is_target=False,
+							stop_words=stop_words,
+							preprocessing=data.Pipeline(preprocess_word))
 
-	train, val, test = CustomGermEval2017Dataset.splits(
+	fields = [
+		(None, None), 										# sq_number
+		(None, None),
+		(None, None),
+		(None, None),
+		(None, None),
+		(None, None),
+		('aspect_sentiments', aspect_sentiment_field),		# aspect sentiment field List of 20 aspects with positive, negative, neutral, n/a
+		('comments', comment_field),                        # comment itself e.g. (@KuttnerSarah @DB_Bahn Hund = Fahrgast, Hund in Box = Gepäck.skurril, oder?)
+		(None, None), 										# source file
+		('padding', padding_field)                          # artificial field that we append to fill it with the padding information later to create the masks
+
+	]
+
+	train, val, test = CustomBioDataset.splits(
 							path=root,
 							root='.data',
 							train=train_file,
 							validation=validation_file,
 							test=test_file,
-							separator='\t',
+							separator='|',
 							fields=fields,
 							verbose=verbose,
 							hp=hyperparameters)
@@ -120,10 +134,9 @@ def germeval2017_dataset(
 	# use updated fields
 	fields = train.fields
 	comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[pretrained_vectors])
-	general_sentiment_field.build_vocab(train.general_sentiments)
 	padding_field.build_vocab(train.padding, val.comments, test.comments)
 	aspect_sentiment_field.build_vocab(train.aspect_sentiments, val.aspect_sentiments, test.aspect_sentiments)
-	id_field.build_vocab(train.id, val.id, test.id)
+	# id_field.build_vocab(train.id, val.id, test.id)
 
 	# build aspect fields
 	aspect_sentiment_fields = []
@@ -142,17 +155,15 @@ def germeval2017_dataset(
 	examples = train.examples[0:3] + val.examples[0:3] + test.examples[0:3]
 
 	return {
-		'task': 'germeval2017',
+		'task': 'bio2019',
 		'split_length': (len(train), len(val), len(test)),
 		'iters': (train_iter, val_iter, test_iter), 
-		'vocabs': (comment_field.vocab, general_sentiment_field.vocab, aspect_sentiment_field.vocab),
+		'vocabs': (comment_field.vocab, aspect_sentiment_field.vocab),
 		'fields': fields,
 		'source_field_name': 'comments',
 		'source_field': comment_field,
-		'id_field': id_field,
 		'aspect_sentiment_field': aspect_sentiment_field,
-		'general_sentiment_field': general_sentiment_field,
-		'target_field_name': 'general_sentiments',
+		'target_field_name': 'aspect_sentiments',
 		#'target': [('general_sentiments', general_sentiment_field), ('aspect_sentiments', aspect_sentiment_field)] + train.aspect_sentiment_fields,
 		'target': train.aspect_sentiment_fields,
 		'padding_field_name': 'padding',
