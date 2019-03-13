@@ -103,8 +103,6 @@ class CommentWiseSumLogSoftmax(nn.Module):
 			transformed_mask = mask.squeeze(1).unsqueeze(-1)
 			logits.masked_fill(transformed_mask == 0, 0)
 
-		logits = torch.sum(logits, dim=1)
-
 		# divide by the logits dimension to calculate mean and keep loss values similar
 		logits = torch.sum(logits, dim=1) / logits.shape[1]
 
