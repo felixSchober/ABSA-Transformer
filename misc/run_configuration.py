@@ -63,7 +63,7 @@ hyperOpt_goodParams = {
 	'embedding_type': 'glove',
 	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
 	'learning_rate_scheduler': {
-		'noam_learning_rate_warmup': 6263,
+		'noam_learning_rate_warmup': 8000,
 		'noam_learning_rate_factor': 1.418
 	},
 	'optimizer_type':  OptimizerType.Adam,
