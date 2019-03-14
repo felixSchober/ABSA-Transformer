@@ -107,7 +107,7 @@ class CommentWiseSumLogSoftmax(nn.Module):
 		logits = torch.sum(logits, dim=1) / logits.shape[1]
 
 		# probs = F.log_softmax(logits, dim=-1)
-		probs = F.softmax(logits, dim=-1)
+		probs = F.log_softmax(logits, dim=-1)
 
 		return probs
 
