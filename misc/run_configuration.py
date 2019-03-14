@@ -58,6 +58,31 @@ default_params = {
 	'output_dropout_rate': 0.2
 }
 
+hyperOpt_goodParams = {
+	'output_layer_type': OutputLayerType.LinearSum,
+	'embedding_type': 'glove',
+	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
+	'learning_rate_scheduler': {
+		'noam_learning_rate_warmup': 6263,
+		'noam_learning_rate_factor': 1.418
+	},
+	'optimizer_type':  OptimizerType.Adam,
+	'optimizer':  {
+		'learning_rate': 7.2e-5,
+		'adam_beta1': 0.81,
+		'adam_beta2': 0.7173,
+		'adam_eps': 0.0008140
+	},
+	'num_encoder_blocks': 2,
+	'num_heads': 1,
+	'att_d_k': 300,
+	'att_d_v': 300,
+	'dropout_rate': 0.302424,
+	'pointwise_layer_size': 405,
+	'output_dropout_rate': 0.79602089766246,
+	'clip_comments_to': 113,
+	'harmonize_bahn': True
+}
 
 class RunConfiguration(object):
 
