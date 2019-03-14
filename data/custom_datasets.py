@@ -666,8 +666,8 @@ class CustomBioDataset(Dataset):
 					columns.append(dict())
 					last_sample = columns
 				else:
-					aspect_category = columns[-1]
-					aspect_sentiment = columns[-6]
+					aspect_category = columns[-1].strip()
+					aspect_sentiment = columns[7].strip()
 
 					
 
