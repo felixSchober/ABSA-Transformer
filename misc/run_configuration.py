@@ -1,4 +1,4 @@
-from misc.utils import get_class_variable_table
+from misc.utils import get_class_variable_table, set_seeds
 import random
 from enum import Enum
 from typing import Dict
@@ -23,7 +23,7 @@ default_params = {
 	'batch_size': 12,
 	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
 	'learning_rate_scheduler': {
-		'noam_learning_rate_warmup': 8000,
+		'noam_learning_rate_warmup': 6000,
 		'noam_learning_rate_factor': 0.8
 	},
 	'optimizer_type':  OptimizerType.Adam,
@@ -60,7 +60,7 @@ default_params = {
 
 hyperOpt_goodParams = {
 	'output_layer_type': OutputLayerType.LinearSum,
-	'embedding_type': 'glove',
+	'embedding_type': 'fasttext',
 	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
 	'learning_rate_scheduler': {
 		'noam_learning_rate_warmup': 8000,
@@ -204,7 +204,8 @@ class RunConfiguration(object):
 			self.use_spell_checkers = self._get_default('use_spell_checkers', False)
 			self.replace_url_tokens = self._get_default('replace_url_tokens', False)
 			
-			self.seed = 42
+			self.seed = 42			
+			set_seeds(self.seed)
 
 		def _get_default(self, key: str, default=None, section: Dict = None, cast_int: bool=False):
 			if section is None:
@@ -226,9 +227,16 @@ class RunConfiguration(object):
 			# those are the keys that are necessary to run a saved model
 			keys = ['model_size', 'use_cuda', 'n_enc_blocks', 'n_heads', 'd_k', 'd_v', 'dropout_rate',
 			'pointwise_layer_size', 'output_layer_type', 'output_conv_num_filters', 'output_conv_kernel_size', 
-			'output_conv_stride', 'output_conv_padding', 'embedding_dim', 'clip_comments_to']
+			'output_conv_stride', 'output_conv_padding', 'embedding_dim', 'clip_comments_to', 'optimizer_type', 
+			'embedding_type', 'output_layer_type', 'transformer_use_bias', 'output_dropout_rate']
 
 			for k in keys:
+				if not k in self.__dict__ and not k in other.__dict__:
+					continue
+
+				if not k in self.__dict__ or not k in self.__dict__:
+					return False
+
 				if self.__dict__[k] != other.__dict__[k]:
 					return False
 			return True

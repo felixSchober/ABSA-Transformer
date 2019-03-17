@@ -235,7 +235,6 @@ class Trainer(object):
 
 		self.set_cuda(use_cuda)
 		self.evaluator.change_train_mode(True)
-		set_seeds(self.seed)
 		continue_training = True
 		iterations_per_epoch = self.iterations_per_epoch_train
 
