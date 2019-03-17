@@ -3,6 +3,9 @@ import math
 import logging
 import torch
 from misc.run_configuration import RunConfiguration
+from collections import defaultdict
+from copy import deepcopy
+
 
 from trainer.train_evaluator import TrainEvaluator
 
@@ -38,7 +41,7 @@ class EarlyStopping(object):
 			'f1': self.evaluator.best_f1,
 			'hp': self.hp
 		}
-		self.best_model_checkpoint = best_model_checkpoint
+		self.best_model_checkpoint = deepcopy(best_model_checkpoint)
 		self._save_checkpoint(iteration)
 
 		# restore early stopping counter
@@ -87,6 +90,7 @@ class EarlyStopping(object):
 
 		try:
 			self.optimizer.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
+			self.optimizer.optimizer.state = defaultdict(dict, self.optimizer.optimizer.stat)
 		except Exception as err:
 			self.logger.exception('Could not restore best model ')
 
