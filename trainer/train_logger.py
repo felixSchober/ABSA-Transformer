@@ -45,6 +45,7 @@ class TrainLogger(object):
 		self.git_commit = get_current_git_commit()
 		self._initialize(dummy_input)
 		self.show_summary = True
+		self.last_reported_valid_loss = 10000
 
 	def _initialize(self, dummy_input: torch.Tensor):
 		model_summary = torch_summarize(self.model)
@@ -104,18 +105,29 @@ class TrainLogger(object):
 	def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float,
 							valid_accuracy: float, epoch_duration: float, duration: float, total_time: float, best_loss: float, best_f1: float):
 
-		color_modifier_loss = Fore.WHITE if valid_loss > best_loss else Fore.GREEN
-		color_modifier_f1 = Fore.WHITE if valid_f1 < best_f1 else Fore.GREEN
+		color_modifier_loss = ''
+		color_modifier_f1 = ''
+		style_reset = ''
+		if not isnotebook():
+			color_modifier_loss = Fore.WHITE
+			if valid_loss < best_loss:
+				# better than last loss
+				color_modifier_loss = Fore.GREEN
+			elif valid_loss > self.last_reported_valid_loss:
+				# potential overfit
+				color_modifier_loss = Fore.YELLOW
+			color_modifier_f1 = Fore.WHITE if valid_f1 < best_f1 else Fore.GREEN
+			style_reset = Style.RESET_ALL
 
-		summary = '{0}\t{1}\t{2:.2f}\t\t{3}{4:.2f}\t\t{5}{6:.3f}{7}\t\t{8:.3f}\t\t{9:.2f}m - {10:.1f}m / {11:.1f}m'.format(
+		summary = '{0}\t{1:.0f}k\t{2:.2f}\t\t{3}{4:.2f}\t\t{5}{6:.3f}{7}\t\t{8:.3f}\t\t{9:.2f}m - {10:.1f}m / {11:.1f}m'.format(
 			epoch + 1,
-			iteration,
+			iteration/1000,
 			train_loss,
 			color_modifier_loss,
 			valid_loss,
 			color_modifier_f1,
 			valid_f1,
-			Style.RESET_ALL,
+			style_reset,
 			valid_accuracy,
 			epoch_duration / 60,
 			duration / 60,
@@ -129,6 +141,7 @@ class TrainLogger(object):
 
 		self.progress_bar.write(summary)
 		self.logger.info(summary)
+		self.last_reported_valid_loss = valid_loss
 
 	def log_scalar(self, history: List[float], scalar_value: float, scalar_type: str, scalar_name: str,
 					iteration: int) -> None:
