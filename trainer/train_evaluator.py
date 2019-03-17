@@ -374,6 +374,7 @@ class TrainEvaluator(object):
 		self.train_logger.log_scalar(None, tr_f1, 'final', 'train/f1', 0)
 
 		if tr_c_matrices is not None:
+			from misc.visualizer import plot_confusion_matrix
 			fig = plot_confusion_matrix(tr_c_matrices, self.dataset.class_labels)
 			plt.show()
 
@@ -400,6 +401,7 @@ class TrainEvaluator(object):
 		self.train_logger.log_scalar(None, val_loss, 'final', 'train/loss', 0)
 		self.train_logger.log_scalar(None, val_f1, 'final', 'train/f1', 0)
 		if val_c_matrices is not None:
+			from misc.visualizer import plot_confusion_matrix
 			fig = plot_confusion_matrix(val_c_matrices, self.dataset.class_labels)
 			plt.show()
 
@@ -425,6 +427,7 @@ class TrainEvaluator(object):
 			self.train_logger.log_scalar(None, te_loss, 'final', 'test/loss', 0)
 			self.train_logger.log_scalar(None, te_f1, 'final', 'test/f1', 0)
 			if te_c_matrices is not None:
+				from misc.visualizer import plot_confusion_matrix
 				fig = plot_confusion_matrix(te_c_matrices, self.dataset.class_labels)
 				plt.show()
 
