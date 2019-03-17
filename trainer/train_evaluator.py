@@ -88,6 +88,7 @@ class TrainEvaluator(object):
 		return self.loss(output, target)
 
 	def _get_mean_loss(self, history: List[float], iteration: int) -> float:
+		iteration = iteration // self.train_iterator.batch_size
 		is_end_of_epoch = iteration % self.iterations_per_epoch_train == 0 or self.log_every_xth_iteration == -1
 		losses: np.array
 		if is_end_of_epoch:
