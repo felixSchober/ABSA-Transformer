@@ -52,8 +52,9 @@ class TrainLogger(object):
 		self.pre_training.info(model_summary)
 
 		if self.verbose:
-			summary(self.model, input_size=(
-				self.hyperparameters.clip_comments_to,), dtype='long')
+			dtype = 'float' if self.hyperparameters.embedding_type == 'elmo' else 'long'
+			# summary(self.model, input_size=(
+			# 	self.hyperparameters.clip_comments_to,), dtype=dtype)
 
 		if self.enable_tensorboard:
 			self._setup_tensorboard(dummy_input, model_summary)

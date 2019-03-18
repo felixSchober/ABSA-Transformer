@@ -18,7 +18,7 @@ class TransformerEncoder(nn.Module):
 		"""Constructor for the tranformer encoder
         
         Arguments:
-            src_embeddings {nn.Embedding} -- Embedding for the input. If None an untrained embedding will be generated
+            src_embeddings {nn.Embedding} -- Embedding for the input. If None an untrained embedding will be generated or elmo is used
         
         Keyword Arguments:
             d_vocab {int} -- Size of source vocabulary. Not needed if src_embeddings is set. (default: {None})
@@ -34,8 +34,11 @@ class TransformerEncoder(nn.Module):
 		super(TransformerEncoder, self).__init__()
 
 		if src_embeddings is None:
-			assert d_vocab is not None
-			self.src_embeddings = Embeddings(hyperparameters.model_size, d_vocab)
+			if hyperparameters.embedding_type == 'elmo':
+				self.src_embeddings = None
+			else:
+				assert d_vocab is not None
+				self.src_embeddings = Embeddings(hyperparameters.model_size, d_vocab)
 		else:
 			self.src_embeddings = src_embeddings
 			#self.src_embeddings.weight.requires_grad = False
@@ -64,7 +67,8 @@ class TransformerEncoder(nn.Module):
 
 	def forward(self, x: torch.Tensor, mask: torch.Tensor=None) -> torch.Tensor:
 
-		x = self.src_embeddings(x)
+		if not self.src_embeddings is None:
+			x = self.src_embeddings(x)
 
 		# create position embedding
 		encoder_output = self.positional_encoding(x)

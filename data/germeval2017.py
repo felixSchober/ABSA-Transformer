@@ -7,9 +7,9 @@ import torchtext
 from torchtext import data
 from stop_words import get_stop_words
 
-from data.custom_fields import ReversibleField
+from data.custom_fields import ReversibleField, ElmoField
 from data.custom_datasets import CustomGermEval2017Dataset
-from data.data_loader import get_embedding
+from data.data_loader import get_embedding, get_embedding_size
 
 from misc.run_configuration import RunConfiguration
 
@@ -39,8 +39,12 @@ def germeval2017_dataset(
 	else:
 		stop_words = []
 
-	# contains the sentences                
-	comment_field = ReversibleField(
+	# create an elmo field if we use elmo
+	if hyperparameters.embedding_type == 'elmo':
+		# contains the sentences               
+		comment_field = ElmoField(
+							hyperparameters.language,
+							hyperparameters,
 							batch_first=True,    # produce tensors with batch dimension first
 							lower=True,
 							fix_length=hyperparameters.clip_comments_to,
@@ -51,6 +55,18 @@ def germeval2017_dataset(
 							is_target=False,
 							stop_words=stop_words,
 							preprocessing=data.Pipeline(preprocess_word))
+	else:
+		comment_field = ReversibleField(
+								batch_first=True,    # produce tensors with batch dimension first
+								lower=True,
+								fix_length=hyperparameters.clip_comments_to,
+								sequential=True,
+								use_vocab=True,
+								init_token=None,
+								eos_token=None,
+								is_target=False,
+								stop_words=stop_words,
+								preprocessing=data.Pipeline(preprocess_word))
 
 	relevant_field = data.Field(
 							batch_first=True,
@@ -119,7 +135,13 @@ def germeval2017_dataset(
 
 	# use updated fields
 	fields = train.fields
-	comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[pretrained_vectors])
+
+	# build vocabularies
+	if hyperparameters.embedding_type != 'elmo':
+		comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[pretrained_vectors])
+	else:
+		comment_field.build_vocab(train.comments, val.comments, test.comments)
+
 	general_sentiment_field.build_vocab(train.general_sentiments)
 	padding_field.build_vocab(train.padding, val.comments, test.comments)
 	aspect_sentiment_field.build_vocab(train.aspect_sentiments, val.aspect_sentiments, test.aspect_sentiments)
@@ -136,8 +158,8 @@ def germeval2017_dataset(
 		(train, val, test), batch_size=batch_size, device=train_device)
 
 	# add embeddings
-	embedding_size = comment_field.vocab.vectors.shape[1]
-	source_embedding = get_embedding(comment_field.vocab, embedding_size)
+	embedding_size = get_embedding_size(comment_field, hyperparameters.embedding_type)
+	source_embedding = get_embedding(comment_field.vocab, embedding_size, hyperparameters.embedding_type)
 
 	examples = train.examples[0:3] + val.examples[0:3] + test.examples[0:3]
 

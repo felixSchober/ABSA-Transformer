@@ -19,7 +19,6 @@ from data.custom_fields import ReversibleField
 #from tqdm.autonotebook import tqdm
 from tqdm import tqdm
 import spacy
-spacy_nlp = spacy.load('de')
 from spellchecker import SpellChecker
 from misc.utils import create_dir_if_necessary, check_if_file_exists
 
@@ -897,7 +896,7 @@ def text_cleaner(text: str, language: str, spellChecker):
 
 	if language == 'en':
 		text = en_contraction_removal(text)
-
+	spacy_nlp = spacy.load('de')
 	parsed = spacy_nlp(text)
 	final_tokens = []
 	for t in parsed:
