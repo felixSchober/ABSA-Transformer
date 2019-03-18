@@ -124,14 +124,14 @@ class EncoderBlock(nn.Module):
 
 		The output dimension is d_model = 512
 		"""
-		# residual = x
+		residual = x
 		attentionResult = self.self_attention_layer(x, x, x, mask)
-		# attentionResult = self.layer_norm.forward(attentionResult + residual)
+		attentionResult = self.layer_norm.forward(attentionResult + residual)
 
-		# residual = attentionResult
+		residual = attentionResult
 
 		fcResult = self.feed_forward_layer.forward(attentionResult)
-		# fcResult = self.layer_norm.forward(fcResult + residual)
+		fcResult = self.layer_norm.forward(fcResult + residual)
 
 		return fcResult
         
