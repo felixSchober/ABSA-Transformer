@@ -322,12 +322,12 @@ class Trainer(object):
 					epoch_duration = time.time() - epoch_start
 					self.train_logger.print_epoch_summary(epoch, self.current_sample_iteration, mean_train_loss, mean_valid_loss, mean_valid_f1,
 											mean_valid_accuracy, epoch_duration, time.time() - train_start, train_duration, self.evaluator.best_loss, self.evaluator.best_f1)
-					self.evaluator.upadate_val_scores(mean_valid_f1, mean_valid_loss)
-
 				except Exception as err:
 					self.logger.exception("Could not complete end of epoch {} evaluation")
 
 				should_stop = self.early_stopping(mean_valid_loss, mean_valid_f1, mean_valid_accuracy, self.current_sample_iteration)
+				self.evaluator.upadate_val_scores(mean_valid_f1, mean_valid_loss)
+
 				if should_stop or not continue_training:
 						continue_training = False
 						break
