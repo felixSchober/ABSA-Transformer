@@ -449,11 +449,14 @@ class TrainEvaluator(object):
 		self.train_logger.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1,
 								 mean_valid_accuracy, epoch_duration, time_elapsed, total_time, self.best_loss, self.best_f1)
 
+		return self.upadate_val_scores(mean_valid_f1, mean_valid_loss)
+
+	def upadate_val_scores(self, f1, loss) -> bool:
 		best_result = False
-		if mean_valid_f1 > self.best_f1:
-			self.logger.info(f'Current f1 score of {mean_valid_f1} is better than last f1 score of {self.best_f1}.')
-			self.best_f1 = mean_valid_f1
+		if f1 > self.best_f1:
+			self.logger.info(f'Current f1 score of {f1} is better than last f1 score of {self.best_f1}.')
+			self.best_f1 = f1
 			best_result = True
-		if mean_valid_loss < self.best_loss:
-			self.best_loss = mean_valid_loss
+		if loss < self.best_loss:
+			self.best_loss = loss
 		return best_result
