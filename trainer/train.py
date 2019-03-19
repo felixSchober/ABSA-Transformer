@@ -303,7 +303,7 @@ class Trainer(object):
 						except Exception as err:
 							self.logger.exception("Could not complete iteration evaluation")
 
-						# ############# REMOVE ##############
+						# ############# UNCOMMENT THIS CODE TO GRACEFULLY STOP AFTER 1st ITERATION EVALUATION ##############
 						# continue_training = False
 						# break
 						
@@ -320,7 +320,7 @@ class Trainer(object):
 				try:
 					mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self.evaluator.evaluate_and_log_train(self.current_sample_iteration, show_progress=False)
 					epoch_duration = time.time() - epoch_start
-					self.train_logger.print_epoch_summary(epoch, self.current_sample_iteration, mean_train_loss, mean_valid_loss, mean_valid_f1,
+					self.train_logger.complete_iteration(epoch, self.current_sample_iteration, mean_train_loss, mean_valid_loss, mean_valid_f1,
 											mean_valid_accuracy, epoch_duration, time.time() - train_start, train_duration, self.evaluator.best_loss, self.evaluator.best_f1)
 				except Exception as err:
 					self.logger.exception("Could not complete end of epoch {} evaluation")

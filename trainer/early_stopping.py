@@ -90,7 +90,7 @@ class EarlyStopping(object):
 
 		try:
 			self.optimizer.optimizer.load_state_dict(self.best_model_checkpoint['optimizer'])
-			self.optimizer.optimizer.state = defaultdict(dict, self.optimizer.optimizer.stat)
+			self.optimizer.optimizer.state = defaultdict(dict, self.optimizer.optimizer.state)
 		except Exception as err:
 			self.logger.exception('Could not restore best model ')
 
