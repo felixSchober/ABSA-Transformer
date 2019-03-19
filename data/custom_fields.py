@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torchtext.data.field import Field
+from torchtext.data.dataset import Dataset
 import os
 
 class ReversibleField(Field):
@@ -65,26 +66,40 @@ class ElmoField(Field):
 		path = os.path.join(os.getcwd(), '.vector_cache', 'elmo', self.language + '.model')
 		return Embedder(path, self.hp.batch_size)
 
-	def build_vocab(self, *args, **kwargs):
-		sources = []
-		for arg in args:
-			if isinstance(arg, Dataset):
-				sources += [getattr(arg, name) for name, field in
-							arg.fields.items() if field is self]
-			else:
-				sources.append(arg)
-		for data in sources:
-			for x in data:
-				if not self.sequential:
-					x = [x]
-				self.cache[x]
+	# def build_vocab(self, *args, **kwargs):
+	# 	sources = []
+	# 	for arg in args:
+	# 		if isinstance(arg, Dataset):
+	# 			sources += [getattr(arg, name) for name, field in
+	# 						arg.fields.items() if field is self]
+	# 		else:
+	# 			sources.append(arg)
+	# 	for data in sources:
+	# 		if kwargs.get('verbose') is None or kwargs.get('verbose') == False:
+	# 			iterator = data
+	# 		else:
+	# 			from tqdm.autonotebook import tqdm
+	# 			data_list = [s for s in data]
+	# 			iterator = tqdm(data_list)
+
+
+	# 		for x in iterator:
+	# 			if not self.sequential:
+	# 				x = [x]
+	# 			self._get_elmo([x])
 				
 	def _get_elmo(self, x):
-		if x in self.cache:
-			return self.cache[x]
-		arr = np.array(self.embeddder.sents2elmo(x))
-		self.cache[x] = arr
-		return arr
+		result = []
+		for s in x:
+			sentence = ' '.join(s)
+			if sentence in self.cache:
+				result.append(self.cache[sentence])
+				continue
+			arr = self.embeddder.sents2elmo([s])
+			arr = arr[0]
+			self.cache[sentence] = arr
+			result.append(arr)
+		return result
 
 	def numericalize(self, arr, device=None):
 		if self.include_lengths and not isinstance(arr, tuple):
