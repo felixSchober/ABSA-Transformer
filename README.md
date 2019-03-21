@@ -27,6 +27,8 @@ docker run -rm -it --init \
 	jorba/absa-transformer:latest
 ```
 
+Use this one-liner for easy copy and pasting: `docker run -it --init -p 8888:8888 --runtime=nvidia --volume=$(pwd):/app jorba/absa-transformer:latest`
+
 #### Build with Dockerfile
 
 To build the docker image, navigate to the repository folder which contains the `Dockerfile`.
