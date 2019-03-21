@@ -27,7 +27,7 @@ class EarlyStopping(object):
 		# this logger will not print to the console.  Only to the file.
 		self.logger = logging.getLogger(__name__)
 
-	def reset_early_stopping(self, iteration: int, mean_valid_f1: float):
+	def reset_early_stopping(self, iteration: int, mean_valid_f1: float, df=None):
 		self.logger.info('Epoch f1 score ({}) better than last f1 score ({}). Save checkpoint'.format(mean_valid_f1, self.evaluator.best_f1))
 		self.evaluator.best_f1 = mean_valid_f1
 
@@ -39,7 +39,8 @@ class EarlyStopping(object):
 			'val_acc': mean_valid_f1,
 			'optimizer': self.optimizer.optimizer.state_dict(),
 			'f1': self.evaluator.best_f1,
-			'hp': self.hp
+			'hp': self.hp,
+			'df': df
 		}
 		self.best_model_checkpoint = deepcopy(best_model_checkpoint)
 		self._save_checkpoint(iteration)
@@ -73,7 +74,8 @@ class EarlyStopping(object):
 			'optimizer': self.optimizer.optimizer.state_dict(),
 			'epoch': self.evaluator.epoch,
 			'f1': self.evaluator.best_f1,
-			'hp': self.hp
+			'hp': self.hp,
+			'df': self.best_model_checkpoint['df']
 		}
 
 		filename = 'checkpoint_{}.data'.format(iteration)

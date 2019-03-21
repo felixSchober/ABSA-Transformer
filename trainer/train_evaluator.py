@@ -437,7 +437,6 @@ class TrainEvaluator(object):
 				plt.show()
 
 		self.train_logger.complete_iteration(-1, -1, -1, -1,  -1, -1, -1, -1, -1, -1, -1, True)
-		self.train_logger.export_df()
 		return ((tr_loss, tr_f1, tr_c_matrices), (val_loss, val_f1, val_c_matrices), (te_loss, te_f1, te_c_matrices))
 
 	def perform_iteration_evaluation(self, iteration: int, epoch_duration: float, time_elapsed: float,

@@ -246,10 +246,21 @@ class TrainLogger(object):
 		self.data_frame = self.data_frame.append(self.current_iteration_df_row, ignore_index=True)
 		self.current_iteration_df_row = {}
 
-	def export_df(self):
-		path = os.path.join(self.log_imgage_dir, '..', 'df')
-		self.data_frame.to_csv(path + '.csv')
-		#self.data_frame.to_excel(path + '.xlsx', sheet_name=self.experiment_name)
+	def export_df(self, path):
+		try:
+			self.data_frame.to_csv(path + '.csv')
+		except Exception as err:
+			self.logger.exception('Could not export dataframe to csv')
+
+		try:
+			self.data_frame.to_pickle(path + '.pkl')
+		except Exception as err:
+			self.logger.exception('Could not pickle dataframe')
+
+		try:
+			self.data_frame.to_excel(path + '.xlsx', sheet_name=self.experiment_name)
+		except Exception as err:
+			self.logger.exception('Could not export dataframe to excel sheet')
 
 	def calculate_train_duration(self, num_epochs: int, current_epoch: int, time_elapsed: float,
 								 epoch_duration: float) -> float:

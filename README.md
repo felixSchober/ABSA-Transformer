@@ -23,7 +23,7 @@ This repository can also be obtained prebuild from the DockerHub. For now the re
 docker run -rm -it --init \
 	-p 8888:8888 \
 	--runtime=nvidia \
-	--volume=$(pwd):/app
+	--volume=$(pwd):/app \
 	jorba/absa-transformer:latest
 ```
 
@@ -49,7 +49,7 @@ It will create a container and start the jupyter notebook server which you can a
 docker run -rm -it --init \
 	-p 8888:8888 \
 	--runtime=nvidia \
-	--volume=$(pwd):/app
+	--volume=$(pwd):/app \
 	image:version
 ```
 
@@ -59,6 +59,6 @@ For the windows command line (not powershell), use `%cd%` instead to mount the c
 docker run -rm -it --init \
 	-p 8888:8888 \
 	--runtime=nvidia \
-	--volume=%cd%:/app
+	--volume=%cd%:/app \
 	image:version
 ```

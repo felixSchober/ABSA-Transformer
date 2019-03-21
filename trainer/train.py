@@ -47,6 +47,7 @@ class Trainer(object):
 	experiment_number : int
 	early_stopping : EarlyStopping
 	checkpoint_dir : str
+	log_dir: str
 	log_imgage_dir : str
 	seed : int
 	enable_tensorboard : bool
@@ -95,6 +96,7 @@ class Trainer(object):
 		self.iterations_per_epoch_train = len(self.train_iterator)
 		self.batch_size = self.train_iterator.batch_size
 
+		self.log_dir = os.path.join(os.getcwd(), 'logs', experiment_name)
 		self.checkpoint_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
 		self.log_imgage_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'images')
 		self.seed = hyperparameters.seed
@@ -198,12 +200,7 @@ class Trainer(object):
 			else:
 				checkpoint = torch.load(path)
 
-			self.evaluator.epoch = checkpoint['epoch']
-			self.model.load_state_dict(checkpoint['state_dict'])
-			self.optimizer.optimizer.load_state_dict(checkpoint['optimizer'])
-			self.evaluator.best_f1 = checkpoint['f1']
-			self.best_model_checkpoint = checkpoint
-			self.pre_training.info(f'Loaded model at epoch {self.evaluator.epoch} with reported f1 of {self.evaluator.best_f1}')
+			# hyper parameter compatebility check
 			if checkpoint['hp']:
 				c_hp = checkpoint['hp']
 				self.pre_training.info(f'Model should be used with following hyper parameters: \n{c_hp}')
@@ -213,14 +210,33 @@ class Trainer(object):
 					self.pre_training.warn(f'Checkpoint might be incompatible with model. See parameters for checkpoint model above. Current Hyperparameters are\n{self.hyperparameters}')
 				else:
 					self.pre_training.info('Hyperparameters are compatible!')
+
+			self.evaluator.epoch = checkpoint['epoch']
+			self.model.load_state_dict(checkpoint['state_dict'])
+			self.optimizer.optimizer.load_state_dict(checkpoint['optimizer'])
+			self.evaluator.best_f1 = checkpoint['f1']
+			self.best_model_checkpoint = checkpoint
+			self.pre_training.info(f'Loaded model at epoch {self.evaluator.epoch} with reported f1 of {self.evaluator.best_f1}')
+
+			if checkpoint['df']:
+				self.pre_training.info('Dataframe was restored from model checkpoint. Displaying last 3 entries')
+				self.train_logger.data_frame = checkpoint['df']
+				#self.pre_training.info(self.train_logger.data_frame.tail(3))
+			else:
+				self.pre_training.info('Cannot load dataframe from checkpoint')
+
 			# move optimizer back to cuda 
 			# see https://github.com/pytorch/pytorch/issues/2830
 			if torch.cuda.is_available():
-				for state in self.optimizer.optimizer.state.values():
-					for k, v in state.items():
-						if isinstance(v, torch.Tensor):
-							state[k] = v.cuda()
-
+				self.pre_training.info('Move optimizer to cuda')
+				try:
+					for state in self.optimizer.optimizer.state.values():
+						for k, v in state.items():
+							if isinstance(v, torch.Tensor):
+								state[k] = v.cuda()
+				except Exception as err:
+					self.pre_training.exception("Could not move the optimizer state to cuda.")
+				
 		else:
 			self.pre_training.error(f'Could find checkpoint at path {path}.')
 		return self.model, self.optimizer, self.evaluator.epoch
@@ -298,7 +314,7 @@ class Trainer(object):
 							isBestResult = self.evaluator.perform_iteration_evaluation(self.current_sample_iteration, epoch_duration, time.time() - train_start,
 															train_duration)
 							if isBestResult:
-								self.early_stopping.reset_early_stopping(self.current_sample_iteration, self.evaluator.best_f1)
+								self.early_stopping.reset_early_stopping(self.current_sample_iteration, self.evaluator.best_f1, self.train_logger.data_frame)
 
 						except Exception as err:
 							self.logger.exception("Could not complete iteration evaluation")
@@ -344,8 +360,12 @@ class Trainer(object):
 			self.logger.exception("Could not restore best model")
 
 		self._checkpoint_cleanup()
+				
+		self.logger.debug('Export dataframe')
+		self.train_logger.export_df(self.log_dir + "df")
 
 		self.logger.debug('Exit training')
+
 
 		if perform_evaluation:
 			try:
@@ -413,6 +433,9 @@ class Trainer(object):
 
 	def get_num_samples_seen(self) -> int:
 		return self.current_sample_iteration
+
+	def get_df(self):
+		return self.train_logger.data_frame
 
 	def perform_final_evaluation(self, use_test_set: bool=True, verbose: bool=True):
 		return self.evaluator.perform_final_evaluation(use_test_set, verbose)
