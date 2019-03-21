@@ -116,5 +116,6 @@ data/conll2003/
 .idea/
 desktop.ini
 data/germeval2017/
+data/organic
 /data/cache
 .vscode/settings.json
