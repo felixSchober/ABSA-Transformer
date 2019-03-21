@@ -5,7 +5,7 @@ import logging
 from data.data_loader import Dataset
 
 from misc.preferences import PREFERENCES
-from misc.run_configuration import get_default_params, randomize_params, OutputLayerType
+from misc.run_configuration import get_default_params, randomize_params, OutputLayerType, hyperOpt_goodParams, elmo_params
 from misc import utils
 
 from optimizer import get_optimizer
@@ -16,28 +16,28 @@ from models.jointAspectTagger import JointAspectTagger
 from trainer.train import Trainer
 import pprint
 
-# PREFERENCES.defaults(
-#     data_root='./data/germeval2017',
-#     data_train='train_v1.4.tsv',    
-#     data_validation='dev_v1.4.tsv',
-#     data_test='test_TIMESTAMP1.tsv',
-#     early_stopping='highest_5_F1'
-# )
-# from data.germeval2017 import germeval2017_dataset
-
-
-from data.bio import bio_dataset
 PREFERENCES.defaults(
-    data_root='./data/bio',
-    data_train='train.csv',    
-    data_validation='validation.csv',
-    data_test='test.csv',
+    data_root='./data/germeval2017',
+    data_train='train_v1.4.tsv',    
+    data_validation='dev_v1.4.tsv',
+    data_test='test_TIMESTAMP1.tsv',
     early_stopping='highest_5_F1'
 )
+from data.germeval2017 import germeval2017_dataset
+
+
+# from data.bio import bio_dataset
+# PREFERENCES.defaults(
+#     data_root='./data/bio',
+#     data_train='train.csv',    
+#     data_validation='validation.csv',
+#     data_test='test.csv',
+#     early_stopping='highest_5_F1'
+# )
 
 def load(hp, logger):
     dataset = Dataset(
-        'bio2019',
+        'germeval',
         logger,
         hp,
         source_index=0,
@@ -50,7 +50,7 @@ def load(hp, logger):
         init_token=None,
         eos_token=None
     )
-    dataset.load_data(bio_dataset, verbose=True)
+    dataset.load_data(germeval2017_dataset, verbose=True)
     return dataset
 
 def load_model(dataset, hp, experiment_name):
@@ -70,14 +70,15 @@ def load_model(dataset, hp, experiment_name):
                         verbose=True)
     return trainer
 
-experiment_name = 'testing'
+experiment_name = 'vectorTest'
 use_cuda = True
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
 logger = logging.getLogger(__name__)
 logger.info('Current commit: ' + utils.get_current_git_commit())
-hp = get_default_params(use_cuda, {'output_layer_type': OutputLayerType.LinearSum})
-hp.num_epochs = 1
+hp = get_default_params(use_cuda, elmo_params)
+hp.num_epochs = 20
 hp.log_every_xth_iteration = -1
+hp.adam_weight_decay = 1e-5
 
 logger.info(hp)
 print(hp)
@@ -104,7 +105,7 @@ except Exception as err:
 # perform evaluation and log results
 result = None
 try:
-    result = trainer.perform_final_evaluation(use_test_set=False, verbose=True)
+    result = trainer.perform_final_evaluation(use_test_set=True, verbose=True)
 except Exception as err:
     logger.exception("Could not complete iteration evaluation for it " + str(err))
     print(f'Could not complete iterationevaluation because of {str(err)}')

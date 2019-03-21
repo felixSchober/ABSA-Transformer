@@ -8,10 +8,18 @@ from misc.utils import get_class_variable_table
 
 # see https://github.com/mjc92/TorchTextTutorial/blob/master/01.%20Getting%20started.ipynb
 
-def get_embedding(vocabulary, embedding_size):
+def get_embedding(vocabulary, embedding_size, embd):
+	if embd == 'elmo':
+		return None
 	embedding = Embedding(len(vocabulary), embedding_size)
 	embedding.weight.data.copy_(vocabulary.vectors)
 	return embedding
+
+def get_embedding_size(field, embd) -> int:
+	if embd == 'elmo':
+		return 1024
+	else:
+		return field.vocab.vectors.shape[1]
 
 DEFAULT_DATA_PIPELINE = data.Pipeline(lambda w: '0' if w.isdigit() else w )
 
@@ -84,6 +92,7 @@ class Dataset(object):
 
 		self.logger.info(f'Getting {self.pretrained_word_embeddings} with dimension {self.pretrained_word_embeddings_dim}')
 		word_vectors: vocab
+		word_vectors = None
 		if self.pretrained_word_embeddings == 'glove':
 			word_vectors = vocab.GloVe(name=self.pretrained_word_embeddings_name, dim=self.pretrained_word_embeddings_dim)
 		elif self.pretrained_word_embeddings == 'fasttext':

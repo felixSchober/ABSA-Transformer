@@ -12,6 +12,8 @@ from colorama import Fore, Style
 from data.data_loader import Dataset
 from typing import Tuple, List, Dict, Optional, Union
 import matplotlib.pyplot as plt
+import pandas as pd
+import math
 
 
 class TrainLogger(object):
@@ -45,14 +47,18 @@ class TrainLogger(object):
 		self.git_commit = get_current_git_commit()
 		self._initialize(dummy_input)
 		self.show_summary = True
+		self.last_reported_valid_loss = 10000
+		self.data_frame = pd.DataFrame()
+		self.current_iteration_df_row = {}
 
 	def _initialize(self, dummy_input: torch.Tensor):
 		model_summary = torch_summarize(self.model)
 		self.pre_training.info(model_summary)
 
 		if self.verbose:
-			summary(self.model, input_size=(
-				self.hyperparameters.clip_comments_to,), dtype='long')
+			dtype = 'float' if self.hyperparameters.embedding_type == 'elmo' else 'long'
+			# summary(self.model, input_size=(
+			# 	self.hyperparameters.clip_comments_to,), dtype=dtype)
 
 		if self.enable_tensorboard:
 			self._setup_tensorboard(dummy_input, model_summary)
@@ -104,18 +110,29 @@ class TrainLogger(object):
 	def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float,
 							valid_accuracy: float, epoch_duration: float, duration: float, total_time: float, best_loss: float, best_f1: float):
 
-		color_modifier_loss = Fore.WHITE if valid_loss > best_loss else Fore.GREEN
-		color_modifier_f1 = Fore.WHITE if valid_f1 < best_f1 else Fore.GREEN
+		color_modifier_loss = ''
+		color_modifier_f1 = ''
+		style_reset = ''
+		if not isnotebook():
+			color_modifier_loss = Fore.WHITE
+			if valid_loss < best_loss:
+				# better than last loss
+				color_modifier_loss = Fore.GREEN
+			elif valid_loss > self.last_reported_valid_loss:
+				# potential overfit
+				color_modifier_loss = Fore.YELLOW
+			color_modifier_f1 = Fore.WHITE if valid_f1 <= best_f1 else Fore.GREEN
+			style_reset = Style.RESET_ALL
 
-		summary = '{0}\t{1}\t{2:.2f}\t\t{3}{4:.2f}\t\t{5}{6:.3f}{7}\t\t{8:.3f}\t\t{9:.2f}m - {10:.1f}m / {11:.1f}m'.format(
+		summary = '{0}\t{1:.0f}k\t{2:.2f}\t\t{3}{4:.2f}\t\t{5}{6:.3f}{7}\t\t{8:.3f}\t\t{9:.2f}m - {10:.1f}m / {11:.1f}m'.format(
 			epoch + 1,
-			iteration,
+			iteration/1000,
 			train_loss,
 			color_modifier_loss,
 			valid_loss,
 			color_modifier_f1,
 			valid_f1,
-			Style.RESET_ALL,
+			style_reset,
 			valid_accuracy,
 			epoch_duration / 60,
 			duration / 60,
@@ -129,6 +146,7 @@ class TrainLogger(object):
 
 		self.progress_bar.write(summary)
 		self.logger.info(summary)
+		self.last_reported_valid_loss = valid_loss
 
 	def log_scalar(self, history: List[float], scalar_value: float, scalar_type: str, scalar_name: str,
 					iteration: int) -> None:
@@ -175,6 +193,74 @@ class TrainLogger(object):
 				self.hyperparameters, 'Hyper Parameters')
 			self.logger.debug(varibable_output)
 			self.log_text(varibable_output, 'parameters/hyperparameters')
+
+	def log_aspect_metrics(self, head_index, f1_mean, score_list, metrics_list, iterator_name):
+		# get name for aspect / transformer head
+		t_head_name = self.dataset.target_names[head_index]
+
+		t_head_results = {
+			f't_head_{t_head_name}_{iterator_name}_f1': f1_mean
+		}		
+
+		# for each target class, calculate precision, recall
+		recall_mean = 0.0
+		precission_mean = 0.0
+
+		for i, cls_name in enumerate(self.dataset.class_labels):
+			t_head_results[f't_head_{t_head_name}_{cls_name}_{iterator_name}_f1'] = score_list[i]
+
+			# calculate precission and recall
+			m = metrics_list[i]
+			precission = m['tp'] / (m['tp'] + m['fp'])
+			recall = m['tp']/(m['tp'] + m['fn'])
+
+			if math.isnan(precission):
+				precission = 0.0
+			if math.isnan(recall):
+				recall = 0.0
+			recall_mean += recall
+			precission_mean += precission
+			t_head_results[f't_head_{t_head_name}_{cls_name}_{iterator_name}_precission'] = precission
+			t_head_results[f't_head_{t_head_name}_{cls_name}_{iterator_name}_recall'] = recall
+
+		t_head_results[f't_head_{t_head_name}_{iterator_name}_recall'] = recall_mean / self.dataset.target_size
+		t_head_results[f't_head_{t_head_name}_{iterator_name}_precission'] = precission_mean / self.dataset.target_size
+
+		self.current_iteration_df_row.update(t_head_results)
+
+	def complete_iteration(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float,
+							valid_accuracy: float, epoch_duration: float, duration: float, total_time: float, best_loss: float, best_f1: float, end_of_training:bool=False):
+
+		if not end_of_training:
+			self.print_epoch_summary(epoch, iteration, train_loss, valid_loss, valid_f1, valid_accuracy, epoch_duration, duration, total_time, best_loss, best_f1)
+
+			self.current_iteration_df_row['epoch'] = epoch
+			self.current_iteration_df_row['iteration'] = iteration
+			self.current_iteration_df_row['train_loss'] = train_loss
+			self.current_iteration_df_row['valid_loss'] = valid_loss
+			self.current_iteration_df_row['valid_f1'] = valid_f1
+			self.current_iteration_df_row['valid_accuracy'] = valid_accuracy
+			self.current_iteration_df_row['epoch_duration'] = epoch_duration
+			self.current_iteration_df_row['elapsed_duration'] = duration
+
+		self.data_frame = self.data_frame.append(self.current_iteration_df_row, ignore_index=True)
+		self.current_iteration_df_row = {}
+
+	def export_df(self, path):
+		try:
+			self.data_frame.to_csv(path + '.csv')
+		except Exception as err:
+			self.logger.exception('Could not export dataframe to csv')
+
+		try:
+			self.data_frame.to_pickle(path + '.pkl')
+		except Exception as err:
+			self.logger.exception('Could not pickle dataframe')
+
+		try:
+			self.data_frame.to_excel(path + '.xlsx', sheet_name=self.experiment_name)
+		except Exception as err:
+			self.logger.exception('Could not export dataframe to excel sheet')
 
 	def calculate_train_duration(self, num_epochs: int, current_epoch: int, time_elapsed: float,
 								 epoch_duration: float) -> float:

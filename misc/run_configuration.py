@@ -1,4 +1,4 @@
-from misc.utils import get_class_variable_table
+from misc.utils import get_class_variable_table, set_seeds
 import random
 from enum import Enum
 from typing import Dict
@@ -23,7 +23,7 @@ default_params = {
 	'batch_size': 12,
 	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
 	'learning_rate_scheduler': {
-		'noam_learning_rate_warmup': 8000,
+		'noam_learning_rate_warmup': 6000,
 		'noam_learning_rate_factor': 0.8
 	},
 	'optimizer_type':  OptimizerType.Adam,
@@ -60,7 +60,7 @@ default_params = {
 
 hyperOpt_goodParams = {
 	'output_layer_type': OutputLayerType.LinearSum,
-	'embedding_type': 'glove',
+	'embedding_type': 'fasttext',
 	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
 	'learning_rate_scheduler': {
 		'noam_learning_rate_warmup': 8000,
@@ -81,7 +81,38 @@ hyperOpt_goodParams = {
 	'pointwise_layer_size': 405,
 	'output_dropout_rate': 0.79602089766246,
 	'clip_comments_to': 113,
-	'harmonize_bahn': True
+	'harmonize_bahn': True,
+	'model_size': 300
+
+}
+
+elmo_params = {
+	'output_layer_type': OutputLayerType.LinearSum,
+	'embedding_type': 'elmo',
+	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
+	'learning_rate_scheduler': {
+		'noam_learning_rate_warmup': 8000,
+		'noam_learning_rate_factor': 1.418
+	},
+	'optimizer_type':  OptimizerType.Adam,
+	'optimizer':  {
+		'learning_rate': 7.2e-5,
+		'adam_beta1': 0.81,
+		'adam_beta2': 0.7173,
+		'adam_eps': 0.0008140
+	},
+	'num_encoder_blocks': 2,
+	'num_heads': 8,
+	'att_d_k': 128,
+	'att_d_v': 128,
+	'dropout_rate': 0.302424,
+	'pointwise_layer_size': 405,
+	'output_dropout_rate': 0.79602089766246,
+	'clip_comments_to': 113,
+	'harmonize_bahn': True,
+	'model_size': 1024,
+	'att_d_k': 128,
+	'att_d_v': 128,
 }
 
 class RunConfiguration(object):
@@ -112,7 +143,6 @@ class RunConfiguration(object):
 			self.learning_rate_scheduler_type = learning_rate_scheduler_type
 			self.output_layer_type = output_layer_type
 			self.optimizer_type = optimizer_type
-			self.embedding_type = kwargs['embedding_type']
 
 			# LEARNING RATE SCHEDULER
 			self.learning_rate = kwargs['optimizer']['learning_rate']
@@ -191,6 +221,9 @@ class RunConfiguration(object):
 			self.log_every_xth_iteration = log_every_xth_iteration
 			self.num_epochs = num_epochs
 
+			# - Embedding
+			assert kwargs['embedding_type'] in ['glove', 'fasttext', 'elmo']
+			self.embedding_type = kwargs['embedding_type']
 			self.embedding_name = kwargs['embedding_name']
 			self.embedding_dim = kwargs['embedding_dim']
 			self.clip_comments_to = self._get_default('clip_comments_to', cast_int=True)
@@ -204,7 +237,8 @@ class RunConfiguration(object):
 			self.use_spell_checkers = self._get_default('use_spell_checkers', False)
 			self.replace_url_tokens = self._get_default('replace_url_tokens', False)
 			
-			self.seed = 42
+			self.seed = 42			
+			set_seeds(self.seed)
 
 		def _get_default(self, key: str, default=None, section: Dict = None, cast_int: bool=False):
 			if section is None:
@@ -226,9 +260,16 @@ class RunConfiguration(object):
 			# those are the keys that are necessary to run a saved model
 			keys = ['model_size', 'use_cuda', 'n_enc_blocks', 'n_heads', 'd_k', 'd_v', 'dropout_rate',
 			'pointwise_layer_size', 'output_layer_type', 'output_conv_num_filters', 'output_conv_kernel_size', 
-			'output_conv_stride', 'output_conv_padding', 'embedding_dim', 'clip_comments_to']
+			'output_conv_stride', 'output_conv_padding', 'embedding_dim', 'clip_comments_to', 'optimizer_type', 
+			'embedding_type', 'output_layer_type', 'transformer_use_bias', 'output_dropout_rate']
 
 			for k in keys:
+				if not k in self.__dict__ and not k in other.__dict__:
+					continue
+
+				if not k in self.__dict__ or not k in self.__dict__:
+					return False
+
 				if self.__dict__[k] != other.__dict__[k]:
 					return False
 			return True

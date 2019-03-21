@@ -27,7 +27,6 @@ class PointWiseFCLayer(nn.Module):
         self.d_input = d_input
         self.d_layer = d_layer
         self.p_dropout = dropout
-        self.layer_norm = LayerNorm(d_input)
 
         if use_conv:
             self.w_1 = nn.Conv1d(d_input, d_layer, 1) 
@@ -38,10 +37,8 @@ class PointWiseFCLayer(nn.Module):
         self.dropout = nn.Dropout(self.p_dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        residual = x
         result = self.w_2(F.relu(self.w_1(x)))
         result = self.dropout(result)
-        result = self.layer_norm(result + residual)
         return result
 
     def __str__(self):
@@ -238,8 +235,6 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         # only performs a forward pass without any learned parameters
         self.attention_layer = ScaledDotProductAttentionLayer(d_k, d_v, dropout_rate)
 
-        self.layer_norm = LayerNorm(self.d_model)
-
         # after concatinating the attention output of the heads this last matrix is used to project the output
         # back to the original input size so that the output of this layer can be used again for the next layer
         # The input of this layer is the output of the forward pass of head attention head, multiplied by the number of heads
@@ -270,9 +265,6 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         """
         x_queries: [batch_size, num_words, d_model] (100, 10, 512)
         """
-
-        # residual used as depicted in fig. 1
-        residual = x_queries
 
         # project key, query, value for each head using the linear layers
         Q = self.query_projections(x_queries)       # [batch_size, num_words, d_model]
@@ -312,9 +304,6 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         if self.dropout is not None:
             result = self.dropout(result)
 
-        # add residual again
-        result = self.layer_norm(result + residual)
-
         return result
     
     def __str__(self):
@@ -330,7 +319,6 @@ class MultiHeadedSelfAttentionLayer(nn.Module):
         result = indentation + "[\n"
         result += indentation + "- " + self.__str__() + ": - Parameters\n" + self._get_parameters(indentation + "\t") + "\n"
         result += self.attention_layer.print_model_graph(indentation + "\t")
-        result += indentation + "\t- " + self.layer_norm.__str__() + "\n"
         result += indentation + "]\n"
         return result
 

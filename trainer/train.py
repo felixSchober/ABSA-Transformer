@@ -47,13 +47,14 @@ class Trainer(object):
 	experiment_number : int
 	early_stopping : EarlyStopping
 	checkpoint_dir : str
+	log_dir: str
 	log_imgage_dir : str
 	seed : int
 	enable_tensorboard : bool
 	log_every_xth_iteration : int
 	logger : logging.Logger
 	logger_prediction : logging.Logger
-
+	current_sample_iteration: int
 	num_labels : int
 	iterations_per_epoch_train : int
 	batch_size : int
@@ -91,9 +92,11 @@ class Trainer(object):
 		self.test_iterator = dataset.test_iter
 		
 		self.num_epochs = hyperparameters.num_epochs
+		self.current_sample_iteration = 0 # how many samples did the classifier see? (current iteration * batch_size)
 		self.iterations_per_epoch_train = len(self.train_iterator)
 		self.batch_size = self.train_iterator.batch_size
 
+		self.log_dir = os.path.join(os.getcwd(), 'logs', experiment_name)
 		self.checkpoint_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
 		self.log_imgage_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'images')
 		self.seed = hyperparameters.seed
@@ -197,12 +200,7 @@ class Trainer(object):
 			else:
 				checkpoint = torch.load(path)
 
-			self.evaluator.epoch = checkpoint['epoch']
-			self.model.load_state_dict(checkpoint['state_dict'])
-			self.optimizer.optimizer.load_state_dict(checkpoint['optimizer'])
-			self.evaluator.best_f1 = checkpoint['f1']
-			self.best_model_checkpoint = checkpoint
-			self.pre_training.info(f'Loaded model at epoch {self.evaluator.epoch} with reported f1 of {self.evaluator.best_f1}')
+			# hyper parameter compatebility check
 			if checkpoint['hp']:
 				c_hp = checkpoint['hp']
 				self.pre_training.info(f'Model should be used with following hyper parameters: \n{c_hp}')
@@ -212,14 +210,33 @@ class Trainer(object):
 					self.pre_training.warn(f'Checkpoint might be incompatible with model. See parameters for checkpoint model above. Current Hyperparameters are\n{self.hyperparameters}')
 				else:
 					self.pre_training.info('Hyperparameters are compatible!')
+
+			self.evaluator.epoch = checkpoint['epoch']
+			self.model.load_state_dict(checkpoint['state_dict'])
+			self.optimizer.optimizer.load_state_dict(checkpoint['optimizer'])
+			self.evaluator.best_f1 = checkpoint['f1']
+			self.best_model_checkpoint = checkpoint
+			self.pre_training.info(f'Loaded model at epoch {self.evaluator.epoch} with reported f1 of {self.evaluator.best_f1}')
+
+			if checkpoint['df']:
+				self.pre_training.info('Dataframe was restored from model checkpoint. Displaying last 3 entries')
+				self.train_logger.data_frame = checkpoint['df']
+				#self.pre_training.info(self.train_logger.data_frame.tail(3))
+			else:
+				self.pre_training.info('Cannot load dataframe from checkpoint')
+
 			# move optimizer back to cuda 
 			# see https://github.com/pytorch/pytorch/issues/2830
 			if torch.cuda.is_available():
-				for state in self.optimizer.optimizer.state.values():
-					for k, v in state.items():
-						if isinstance(v, torch.Tensor):
-							state[k] = v.cuda()
-
+				self.pre_training.info('Move optimizer to cuda')
+				try:
+					for state in self.optimizer.optimizer.state.values():
+						for k, v in state.items():
+							if isinstance(v, torch.Tensor):
+								state[k] = v.cuda()
+				except Exception as err:
+					self.pre_training.exception("Could not move the optimizer state to cuda.")
+				
 		else:
 			self.pre_training.error(f'Could find checkpoint at path {path}.')
 		return self.model, self.optimizer, self.evaluator.epoch
@@ -235,12 +252,13 @@ class Trainer(object):
 
 		self.set_cuda(use_cuda)
 		self.evaluator.change_train_mode(True)
-		set_seeds(self.seed)
 		continue_training = True
 		iterations_per_epoch = self.iterations_per_epoch_train
 
 		self.pre_training.info('{} Iterations per epoch with batch size of {}'.format(self.iterations_per_epoch_train, self.batch_size))
 		self.pre_training.info(f'Total iterations: {self.iterations_per_epoch_train * self.num_epochs}')
+		self.pre_training.info(f'Total number of samples: {self.iterations_per_epoch_train * self.num_epochs * self.batch_size}')
+
 		self.pre_training.info('START training.')
 
 		iteration = 0
@@ -256,7 +274,7 @@ class Trainer(object):
 
 				epoch_start = time.time()
 
-				self.logger.debug('START Epoch {}. Current Iteration {}'.format(epoch, iteration))
+				self.logger.debug('START Epoch {} - Current Iteration {} - Current Sample Iteration'.format(epoch, iteration, self.current_sample_iteration))
 
 				# Set up the batch generator for a new epoch
 				self.train_iterator.init_epoch()
@@ -269,6 +287,7 @@ class Trainer(object):
 						self.logger.info('continue_training is false -> Stop training')
 						break
 
+					self.current_sample_iteration += self.batch_size
 					iteration += 1
 
 					# self.logger.debug('Iteration ' + str(iteration))
@@ -279,8 +298,8 @@ class Trainer(object):
 					source_mask = create_padding_masks(padding, 1)
 
 					train_loss = self._step(x, y, source_mask)
-					self.train_logger.log_scalar(self.evaluator.train_loss_history, train_loss.item(), 'loss', 'train', iteration)
-					self.train_logger.log_scalar(None, self.optimizer.rate(), 'lr', 'general', iteration)
+					self.train_logger.log_scalar(self.evaluator.train_loss_history, train_loss.item(), 'loss', 'train', self.current_sample_iteration)
+					self.train_logger.log_scalar(None, self.optimizer.rate(), 'lr', 'general', self.current_sample_iteration)
 
 					del train_loss
 					del x
@@ -292,15 +311,15 @@ class Trainer(object):
 
 					if self.log_every_xth_iteration > 0 and iteration % self.log_every_xth_iteration == 0 and iteration > 1:
 						try:
-							isBestResult = self.evaluator.perform_iteration_evaluation(iteration, epoch_duration, time.time() - train_start,
+							isBestResult = self.evaluator.perform_iteration_evaluation(self.current_sample_iteration, epoch_duration, time.time() - train_start,
 															train_duration)
 							if isBestResult:
-								self.early_stopping.reset_early_stopping(iteration, self.evaluator.best_f1)
+								self.early_stopping.reset_early_stopping(self.current_sample_iteration, self.evaluator.best_f1, self.train_logger.data_frame)
 
 						except Exception as err:
 							self.logger.exception("Could not complete iteration evaluation")
 
-						# ############# REMOVE ##############
+						# ############# UNCOMMENT THIS CODE TO GRACEFULLY STOP AFTER 1st ITERATION EVALUATION ##############
 						# continue_training = False
 						# break
 						
@@ -312,18 +331,19 @@ class Trainer(object):
 
 				# at the end of each epoch, check the accuracies
 				mean_valid_f1 = -1
+				mean_valid_loss = 1000
+				mean_valid_accuracy = -1
 				try:
-					mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self.evaluator.evaluate_and_log_train(iteration, show_progress=False)
+					mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self.evaluator.evaluate_and_log_train(self.current_sample_iteration, show_progress=False)
 					epoch_duration = time.time() - epoch_start
-					self.train_logger.print_epoch_summary(epoch, iteration, mean_train_loss, mean_valid_loss, mean_valid_f1,
+					self.train_logger.complete_iteration(epoch, self.current_sample_iteration, mean_train_loss, mean_valid_loss, mean_valid_f1,
 											mean_valid_accuracy, epoch_duration, time.time() - train_start, train_duration, self.evaluator.best_loss, self.evaluator.best_f1)
-
-					if mean_valid_loss < self.evaluator.best_loss:
-						self.evaluator.best_loss = mean_train_loss
 				except Exception as err:
 					self.logger.exception("Could not complete end of epoch {} evaluation")
 
-				should_stop = self.early_stopping(mean_valid_loss, mean_valid_f1, mean_valid_accuracy, iteration)
+				should_stop = self.early_stopping(mean_valid_loss, mean_valid_f1, mean_valid_accuracy, self.current_sample_iteration)
+				self.evaluator.upadate_val_scores(mean_valid_f1, mean_valid_loss)
+
 				if should_stop or not continue_training:
 						continue_training = False
 						break
@@ -340,8 +360,12 @@ class Trainer(object):
 			self.logger.exception("Could not restore best model")
 
 		self._checkpoint_cleanup()
+				
+		self.logger.debug('Export dataframe')
+		self.train_logger.export_df(self.log_dir + "df")
 
 		self.logger.debug('Exit training')
+
 
 		if perform_evaluation:
 			try:
@@ -364,8 +388,6 @@ class Trainer(object):
 			'result_valid': validation_results,
 			'result_test': test_results
 		}
-
-	
 
 	def _checkpoint_cleanup(self):
 		path = self.checkpoint_dir
@@ -405,6 +427,15 @@ class Trainer(object):
 		if self.evaluator.best_f1:
 			return self.evaluator.best_f1
 		return 0.0
+
+	def get_num_iterations(self) -> int:
+		return self.iterations_per_epoch_train * self.evaluator.epoch
+
+	def get_num_samples_seen(self) -> int:
+		return self.current_sample_iteration
+
+	def get_df(self):
+		return self.train_logger.data_frame
 
 	def perform_final_evaluation(self, use_test_set: bool=True, verbose: bool=True):
 		return self.evaluator.perform_final_evaluation(use_test_set, verbose)
