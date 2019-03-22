@@ -114,7 +114,8 @@ class Trainer(object):
 			verbose,
 			hyperparameters,
 			dataset,
-			self.log_imgage_dir)		
+			self.log_imgage_dir,
+			self.loss.name)		
 
 		self.evaluator = TrainEvaluator(
 			self.model,
@@ -274,7 +275,7 @@ class Trainer(object):
 
 				epoch_start = time.time()
 
-				self.logger.debug('START Epoch {} - Current Iteration {} - Current Sample Iteration'.format(epoch, iteration, self.current_sample_iteration))
+				self.logger.debug('START Epoch {} - Current Iteration {} - Current Sample Iteration {}'.format(epoch, iteration, self.current_sample_iteration))
 
 				# Set up the batch generator for a new epoch
 				self.train_iterator.init_epoch()

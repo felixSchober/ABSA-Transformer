@@ -11,7 +11,8 @@ import matplotlib.pyplot as plt
 
 from data.data_loader import Dataset
 from trainer.utils import *
-from trainer.train_logger import TrainLogger, ITERATOR_TEST, ITERATOR_TRAIN, ITERATOR_VALIDATION
+from trainer.train_logger import TrainLogger
+from trainer.utils import ITERATOR_TEST, ITERATOR_TRAIN, ITERATOR_VALIDATION
 
 EvaluationResult = Tuple[float, float, np.array]
 

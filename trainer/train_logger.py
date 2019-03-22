@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import math
 from collections import defaultdict
-
+from trainer.train_plotter import TrainPlotter
+from trainer.utils import *
 # data frame default row
 df_row_template = {
 	'epoch': int(0),
@@ -27,15 +28,6 @@ df_row_template = {
 	'head name': '',				# name of the transformer head
 	'head category': ''				# category of the transformer head (n/a, neutral, etc)
 }
-METRIC_F1 = 'f1'
-METRIC_LOSS = 'loss'
-METRIC_PRECISSION = 'precission'
-METRIC_RECALL = 'recall'
-METRIC_ACCURACY = 'accuracy'
-
-ITERATOR_TRAIN = 'train'
-ITERATOR_VALIDATION = 'validation'
-ITERATOR_TEST = 'test'
 
 class TrainLogger(object):
 
@@ -49,7 +41,8 @@ class TrainLogger(object):
 				verbose: bool,
 				hp: RunConfiguration,
 				dataset: Dataset,
-				log_image_dir: str):
+				log_image_dir: str,
+				criterion_name: str):
 		super().__init__()
 
 		self.experiment_name = experiment_name
@@ -70,7 +63,9 @@ class TrainLogger(object):
 		self.show_summary = True
 		self.last_reported_valid_loss = 10000
 		self.data_frame = pd.DataFrame()
-		self.current_iteration_df_row = {}
+
+		max_eps = len(self.dataset.train_iter) * self.hyperparameters.batch_size * self.hyperparameters.num_epochs
+		self.train_plotter = TrainPlotter(log_image_dir, max_eps, criterion_name, experiment_name, self.dataset.task)
 
 	def _initialize(self, dummy_input: torch.Tensor):
 		model_summary = torch_summarize(self.model)
@@ -271,6 +266,13 @@ class TrainLogger(object):
 		self.append_df_row(epoch, iteration, METRIC_F1, ITERATOR_VALIDATION, valid_f1, is_general=True)
 		self.append_df_row(epoch, iteration, METRIC_ACCURACY, ITERATOR_VALIDATION, valid_accuracy, is_general=True)
 
+		try:
+			self.train_plotter.update(self.data_frame)
+			self.train_plotter.plot()
+		except Exception as err:
+			self.logger.exception('Could not plot results')
+		
+
 	def export_df(self, path):
 		try:
 			self.data_frame.to_csv(path + '.csv')
@@ -286,6 +288,12 @@ class TrainLogger(object):
 			self.data_frame.to_excel(path + '.xlsx', sheet_name=self.experiment_name)
 		except Exception as err:
 			self.logger.exception('Could not export dataframe to excel sheet')
+
+		try:
+			self.train_plotter.plot('svg')
+		except Exception as err:
+			self.logger.exception('Could not plot final results')
+
 
 	def calculate_train_duration(self, num_epochs: int, current_epoch: int, time_elapsed: float,
 								 epoch_duration: float) -> float:
