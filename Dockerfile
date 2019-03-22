@@ -96,7 +96,7 @@ RUN conda install -y spacy \
 RUN conda install -y -c conda-forge prettytable
 RUN conda install -y -c conda-forge beautifulsoup4
 RUN conda install -c conda-forge matplotlib 
-RUN conda install -c anaconda seaborn
+RUN conda install -c anaconda seaborn=0.9.0
 RUN conda install -y scikit-learn \
 	&& conda clean -ya
 
