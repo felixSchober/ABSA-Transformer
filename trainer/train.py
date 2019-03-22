@@ -344,6 +344,10 @@ class Trainer(object):
 				should_stop = self.early_stopping(mean_valid_loss, mean_valid_f1, mean_valid_accuracy, self.current_sample_iteration)
 				self.evaluator.upadate_val_scores(mean_valid_f1, mean_valid_loss)
 
+				# at the end of the epoch export the current dataframe
+				self.logger.debug('Export dataframe')
+				self.train_logger.export_df(os.path.join(self.log_dir, "df"))
+
 				if should_stop or not continue_training:
 						continue_training = False
 						break
@@ -360,10 +364,6 @@ class Trainer(object):
 			self.logger.exception("Could not restore best model")
 
 		self._checkpoint_cleanup()
-				
-		self.logger.debug('Export dataframe')
-		self.train_logger.export_df(self.log_dir + "df")
-
 		self.logger.debug('Exit training')
 
 

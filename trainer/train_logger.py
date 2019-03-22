@@ -14,7 +14,28 @@ from typing import Tuple, List, Dict, Optional, Union
 import matplotlib.pyplot as plt
 import pandas as pd
 import math
+from collections import defaultdict
 
+# data frame default row
+df_row_template = {
+	'epoch': int(0),
+	'iteration': int(0),
+	'metric type': '',				# loss, f1, etc.
+	'iterator type': '',			# train, valid, test
+	'value': float(0.0),			# value of the metric
+	'is general': False,			# is the metric a general metric or an head-metric
+	'head name': '',				# name of the transformer head
+	'head category': ''				# category of the transformer head (n/a, neutral, etc)
+}
+METRIC_F1 = 'f1'
+METRIC_LOSS = 'loss'
+METRIC_PRECISSION = 'precission'
+METRIC_RECALL = 'recall'
+METRIC_ACCURACY = 'accuracy'
+
+ITERATOR_TRAIN = 'train'
+ITERATOR_VALIDATION = 'validation'
+ITERATOR_TEST = 'test'
 
 class TrainLogger(object):
 
@@ -107,6 +128,18 @@ class TrainLogger(object):
 				self.logger.exception('Could not generate graph')
 			self.logger.debug('Graph Saved')
 
+	def append_df_row(self, epoch:int, iteration:int, metric:str, iterator_type:str, value:float, is_general:bool=False, head_name:str='', head_category:str=''):
+		df_row = defaultdict(**df_row_template)
+		df_row['epoch'] = epoch
+		df_row['iteration'] = iteration
+		df_row['metric type'] = metric
+		df_row['iterator type'] = iterator_type
+		df_row['value'] = value
+		df_row['head name'] = head_name
+		df_row['is general'] = is_general
+		df_row['head category'] = head_category
+		self.data_frame = self.data_frame.append(df_row, ignore_index=True)
+
 	def print_epoch_summary(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float,
 							valid_accuracy: float, epoch_duration: float, duration: float, total_time: float, best_loss: float, best_f1: float):
 
@@ -194,20 +227,20 @@ class TrainLogger(object):
 			self.logger.debug(varibable_output)
 			self.log_text(varibable_output, 'parameters/hyperparameters')
 
-	def log_aspect_metrics(self, head_index, f1_mean, score_list, metrics_list, iterator_name):
+	def log_aspect_metrics(self, head_index, f1_mean, score_list, metrics_list, iterator_name, iteration, epoch):
 		# get name for aspect / transformer head
 		t_head_name = self.dataset.target_names[head_index]
 
-		t_head_results = {
-			f't_head_{t_head_name}_{iterator_name}_f1': f1_mean
-		}		
+		# log mean f1
+		self.append_df_row(epoch, iteration, METRIC_F1, iterator_name, f1_mean, head_name=t_head_name)
 
 		# for each target class, calculate precision, recall
 		recall_mean = 0.0
 		precission_mean = 0.0
 
 		for i, cls_name in enumerate(self.dataset.class_labels):
-			t_head_results[f't_head_{t_head_name}_{cls_name}_{iterator_name}_f1'] = score_list[i]
+
+			self.append_df_row(epoch, iteration, METRIC_F1, iterator_name, score_list[i], head_name=t_head_name, head_category=cls_name)
 
 			# calculate precission and recall
 			m = metrics_list[i]
@@ -220,13 +253,12 @@ class TrainLogger(object):
 				recall = 0.0
 			recall_mean += recall
 			precission_mean += precission
-			t_head_results[f't_head_{t_head_name}_{cls_name}_{iterator_name}_precission'] = precission
-			t_head_results[f't_head_{t_head_name}_{cls_name}_{iterator_name}_recall'] = recall
 
-		t_head_results[f't_head_{t_head_name}_{iterator_name}_recall'] = recall_mean / self.dataset.target_size
-		t_head_results[f't_head_{t_head_name}_{iterator_name}_precission'] = precission_mean / self.dataset.target_size
+			self.append_df_row(epoch, iteration, METRIC_PRECISSION, iterator_name, precission, head_name=t_head_name, head_category=cls_name)
+			self.append_df_row(epoch, iteration, METRIC_RECALL, iterator_name, recall, head_name=t_head_name, head_category=cls_name)
 
-		self.current_iteration_df_row.update(t_head_results)
+		self.append_df_row(epoch, iteration, METRIC_RECALL, iterator_name, recall_mean / self.dataset.target_size, head_name=t_head_name)
+		self.append_df_row(epoch, iteration, METRIC_PRECISSION, iterator_name, precission_mean / self.dataset.target_size, head_name=t_head_name)
 
 	def complete_iteration(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float,
 							valid_accuracy: float, epoch_duration: float, duration: float, total_time: float, best_loss: float, best_f1: float, end_of_training:bool=False):
@@ -234,17 +266,10 @@ class TrainLogger(object):
 		if not end_of_training:
 			self.print_epoch_summary(epoch, iteration, train_loss, valid_loss, valid_f1, valid_accuracy, epoch_duration, duration, total_time, best_loss, best_f1)
 
-			self.current_iteration_df_row['epoch'] = epoch
-			self.current_iteration_df_row['iteration'] = iteration
-			self.current_iteration_df_row['train_loss'] = train_loss
-			self.current_iteration_df_row['valid_loss'] = valid_loss
-			self.current_iteration_df_row['valid_f1'] = valid_f1
-			self.current_iteration_df_row['valid_accuracy'] = valid_accuracy
-			self.current_iteration_df_row['epoch_duration'] = epoch_duration
-			self.current_iteration_df_row['elapsed_duration'] = duration
-
-		self.data_frame = self.data_frame.append(self.current_iteration_df_row, ignore_index=True)
-		self.current_iteration_df_row = {}
+		self.append_df_row(epoch, iteration, METRIC_LOSS, ITERATOR_TRAIN, train_loss, is_general=True)
+		self.append_df_row(epoch, iteration, METRIC_LOSS, ITERATOR_VALIDATION, valid_loss, is_general=True)
+		self.append_df_row(epoch, iteration, METRIC_F1, ITERATOR_VALIDATION, valid_f1, is_general=True)
+		self.append_df_row(epoch, iteration, METRIC_ACCURACY, ITERATOR_VALIDATION, valid_accuracy, is_general=True)
 
 	def export_df(self, path):
 		try:

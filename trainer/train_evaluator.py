@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 from data.data_loader import Dataset
 from trainer.utils import *
-from trainer.train_logger import TrainLogger
+from trainer.train_logger import TrainLogger, ITERATOR_TEST, ITERATOR_TRAIN, ITERATOR_VALIDATION
 
 EvaluationResult = Tuple[float, float, np.array]
 
@@ -109,7 +109,7 @@ class TrainEvaluator(object):
 		return np.array(losses).mean()
 
 	def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False,
-				 progress_label: str="Evaluation", f1_strategy: str='micro', iterator_name: str = 'unknwn') -> Tuple[float, float, float, np.array]:
+				 progress_label: str="Evaluation", f1_strategy: str='micro', iterator_name: str = 'unknwn', iteration:int=-1) -> Tuple[float, float, float, np.array]:
 		self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(
 			iterator.epoch, len(iterator)))
 
@@ -188,7 +188,7 @@ class TrainEvaluator(object):
 
 			# calculate f1 score based on predictions and targets
 			f_scores, p_scores, r_scores, s_scores = self.calculate_multiheaded_scores(
-				iterator_name, predictions.data, targets, f1_strategy)
+				iterator_name, predictions.data, targets, f1_strategy, iteration=iteration, epoch=self.train_iterator.epoch)
 			if show_c_matrix:
 				self.logger.debug(f'Resetting batch size to {prev_batch_size}.')
 				iterator.batch_size = prev_batch_size
@@ -211,14 +211,14 @@ class TrainEvaluator(object):
 	def evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=False) -> Tuple[float, float, float, float]:
 		mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
 		self.train_logger.log_scalar(
-			None, mean_train_loss, 'loss', 'train/mean', iteration)
+			None, mean_train_loss, 'loss', ITERATOR_TRAIN + '/mean', iteration)
 
 		# perform validation loss
 		self.logger.debug('Start Evaluation')
 
 		try:
 			mean_valid_loss, f_scores, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=show_c_matrix,
-																			 show_progress=show_progress, iterator_name='validation')
+																			 show_progress=show_progress, iterator_name=ITERATOR_VALIDATION, iteration=iteration)
 		finally:
 			self.change_train_mode(True)
 
@@ -229,26 +229,26 @@ class TrainEvaluator(object):
 		names = self.model.names
 		for score, name in zip(f_scores, names):
 			self.logger.info(f'Transformer Head {name} with f1 score: {score}.')
-			self.train_logger.log_scalar(None, score, 'f1', 'valid/' + name, iteration)
+			self.train_logger.log_scalar(None, score, 'f1', ITERATOR_VALIDATION + '/' + name, iteration)
 
 		self.train_logger.log_scalar(
-			self.val_loss_history, mean_valid_loss, 'loss', 'valid', iteration)
+			self.val_loss_history, mean_valid_loss, 'loss', ITERATOR_VALIDATION, iteration)
 		self.train_logger.log_scalar(
-			self.val_acc_history, mean_valid_f1, 'f1', 'valid', iteration)
+			self.val_acc_history, mean_valid_f1, 'f1', ITERATOR_VALIDATION, iteration)
 		self.dataset.baselines['current'] = accuracy
 		self.train_logger.log_scalars(
-			self.dataset.baselines, 'valid/accuracy', iteration)
+			self.dataset.baselines, ITERATOR_VALIDATION + '/accuracy', iteration)
 		# log combined scalars
 		self.train_logger.log_scalars({
 			'train': mean_train_loss,
 			'validation': mean_valid_loss
 		}, 'loss', iteration)
 
-		self.train_logger.log_confusion_matrices(c_matrices, 'valid', iteration)
+		self.train_logger.log_confusion_matrices(c_matrices, ITERATOR_VALIDATION, iteration)
 
 		return (mean_train_loss, mean_valid_loss, mean_valid_f1, accuracy)
 
-	def calculate_multiheaded_scores(self, iterator_name: str, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro') -> Tuple[List[float], List[float], List[float], List[float]]:
+	def calculate_multiheaded_scores(self, iterator_name: str, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro', iteration: int=0, epoch: int=0) -> Tuple[List[float], List[float], List[float], List[float]]:
 		predictions = torch.t(prediction)
 		targets = torch.t(targets)
 
@@ -272,7 +272,7 @@ class TrainEvaluator(object):
 				# precision, recall, f_beta, support = precision_recall_fscore_support(y_true, y_pred, beta=1.0,
 				#																	 average=f1_strategy)
 				f1_mean, cls_f1_scores, metrics = self.calculate_f1(y_true, y_pred)
-				self.train_logger.log_aspect_metrics(i, f1_mean, cls_f1_scores, metrics, iterator_name)
+				self.train_logger.log_aspect_metrics(i, f1_mean, cls_f1_scores, metrics, iterator_name, iteration, epoch)
 				precision = 0
 				recall = 0
 				support = 0
@@ -361,7 +361,7 @@ class TrainEvaluator(object):
 
 		try:
 			tr_loss, tr_f1, tr_accuracy, tr_c_matrices = self.evaluate(self.train_iterator, show_progress=verbose,
-																   progress_label="Evaluating TRAIN", iterator_name='train')
+																   progress_label="Evaluating TRAIN", iterator_name=ITERATOR_TRAIN)
 		finally:
 			self.change_train_mode(True)
 
@@ -375,8 +375,8 @@ class TrainEvaluator(object):
 			self.logger.info('TRAIN f1-s:\t{}'.format(tr_f1))
 			self.logger.info('TRAIN accuracy:\t{}'.format(tr_accuracy))
 
-		self.train_logger.log_scalar(None, tr_loss, 'final', 'train/loss', 0)
-		self.train_logger.log_scalar(None, tr_f1, 'final', 'train/f1', 0)
+		self.train_logger.log_scalar(None, tr_loss, 'final', ITERATOR_TRAIN + '/loss', 0)
+		self.train_logger.log_scalar(None, tr_f1, 'final', ITERATOR_TRAIN + '/f1', 0)
 
 		if tr_c_matrices is not None:
 			from misc.visualizer import plot_confusion_matrix
@@ -388,7 +388,7 @@ class TrainEvaluator(object):
 		try:
 			val_loss, val_f1, val_accuracy, val_c_matrices = self.evaluate(self.valid_iterator, show_progress=verbose,
 																	   progress_label="Evaluating VALIDATION",
-																	   show_c_matrix=verbose, iterator_name='validation')
+																	   show_c_matrix=verbose, iterator_name=ITERATOR_VALIDATION)
 		finally:
 			self.change_train_mode(True)
 
@@ -403,8 +403,8 @@ class TrainEvaluator(object):
 			self.logger.info('VALID f1-s:\t{}'.format(val_f1))
 			self.logger.info('VALID accuracy:\t{}'.format(val_accuracy))
 
-		self.train_logger.log_scalar(None, val_loss, 'final', 'train/loss', 0)
-		self.train_logger.log_scalar(None, val_f1, 'final', 'train/f1', 0)
+		self.train_logger.log_scalar(None, val_loss, 'final', ITERATOR_VALIDATION + '/loss', 0)
+		self.train_logger.log_scalar(None, val_f1, 'final', ITERATOR_VALIDATION + '/f1', 0)
 		if val_c_matrices is not None:
 			from misc.visualizer import plot_confusion_matrix
 			fig = plot_confusion_matrix(val_c_matrices, self.dataset.class_labels)
@@ -418,7 +418,7 @@ class TrainEvaluator(object):
 
 			te_loss, te_f1, te_accuracy, te_c_matrices = self.evaluate(self.test_iterator, show_progress=verbose,
 																	   progress_label="Evaluating TEST",
-																	   show_c_matrix=verbose, iterator_name='test')
+																	   show_c_matrix=verbose, iterator_name=ITERATOR_TEST)
 			te_f1 = np.mean(te_f1)
 			if verbose:
 				self.pre_training.info('TEST loss:\t{}'.format(te_loss))
@@ -429,8 +429,8 @@ class TrainEvaluator(object):
 				self.logger.info('TEST f1-s:\t{}'.format(te_f1))
 				self.logger.info('TEST accuracy:\t{}'.format(te_accuracy))
 
-			self.train_logger.log_scalar(None, te_loss, 'final', 'test/loss', 0)
-			self.train_logger.log_scalar(None, te_f1, 'final', 'test/f1', 0)
+			self.train_logger.log_scalar(None, te_loss, 'final', ITERATOR_TEST + '/loss', 0)
+			self.train_logger.log_scalar(None, te_f1, 'final', ITERATOR_TEST + '/f1', 0)
 			if te_c_matrices is not None:
 				from misc.visualizer import plot_confusion_matrix
 				fig = plot_confusion_matrix(te_c_matrices, self.dataset.class_labels)
