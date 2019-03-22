@@ -112,4 +112,4 @@ RUN pip install colorama
 
 # install jupyter notebook
 
-ENTRYPOINT ["jupyter-notebook", "--ip", "0.0.0.0", "--no-browser", "--allow-root", '--port=8888']
+ENTRYPOINT ["jupyter-notebook", "--ip", "0.0.0.0", "--no-browser", "--allow-root", "--port=8888"]
