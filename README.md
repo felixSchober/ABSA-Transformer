@@ -1,4 +1,6 @@
 # ABSA-Transformer
+![Docker Build Status](https://img.shields.io/docker/cloud/build/jorba/absa-transformer.svg)
+
 This is the repository for my NLP master thesis with the title **Transfer and Multitask Learning for Aspect-Based Sentiment Analysis Using the Google Transformer Architecture**.
 
 It is based on the Google Transformer architecture and the paper *Attention is all you need* (https://arxiv.org/abs/1706.03762)
@@ -7,7 +9,7 @@ I recommend to check out the excellent [Annotated Transformer](http://nlp.seas.h
 ## Run Code
 ### Docker
 
-I created a docker image you can use to run the code inside a docker container.
+I created a docker image you can use to run the code inside a docker container. The docker image is based on https://github.com/anibali/docker-pytorch and runs on CUDA 8.0
 
 #### CUDA
 The image is based on https://github.com/anibali/docker-pytorch. In order to run it with cuda support you need to install the latest NVIDIA drivers and libraries as well as CUDA.
@@ -20,14 +22,25 @@ To run this image you have to login to the DockerHub wiht `docker login`. The cr
 This repository can also be obtained prebuild from the DockerHub. For now the repository is private. Once authenticated the image can be run via
 
 ```
-docker run -rm -it --init \
+docker run -it --init \
 	-p 8888:8888 \
 	--runtime=nvidia \
 	--volume=$(pwd):/app \
+	--name=absa
 	jorba/absa-transformer:latest
 ```
 
-Use this one-liner for easy copy and pasting: `docker run -it --init -p 8888:8888 --runtime=nvidia --volume=$(pwd):/app jorba/absa-transformer:latest`
+Use this one-liner for easy copy and pasting: `docker run -it --init -p 8888:8888 --runtime=nvidia --volume=$(pwd):/app --name=absa jorba/absa-transformer:latest`
+
+#### Upgrade image from DockerHub
+The docker runtime will always try to run the local version of the image instead of pulling a new one from the docker hub even when including the tag `:latest`. To upgrade a container, run the following commands:
+
+```
+docker pull jorba/absa-transformer:latest
+docker stop absa
+docker rm absa
+docker run -it --init -p 8888:8888 --runtime=nvidia --volume=$(pwd):/app --name=absa jorba/absa-transformer:latest
+```
 
 #### Build with Dockerfile
 
@@ -48,9 +61,10 @@ To run the image simply run this command in the terminal. (Replace `image:versio
 
 It will create a container and start the jupyter notebook server which you can access at http://localhost:8888
 ```
-docker run -rm -it --init \
+docker run -it --init \
 	-p 8888:8888 \
 	--runtime=nvidia \
+	--name=absa \
 	--volume=$(pwd):/app \
 	image:version
 ```
@@ -58,9 +72,10 @@ docker run -rm -it --init \
 For the windows command line (not powershell), use `%cd%` instead to mount the current directory as a volume so that the run command looks like this:
 
 ```
-docker run -rm -it --init \
+docker run -it --init \
 	-p 8888:8888 \
 	--runtime=nvidia \
+	--name=absa \
 	--volume=%cd%:/app \
 	image:version
 ```
