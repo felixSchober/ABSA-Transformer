@@ -169,7 +169,7 @@ class Trainer(object):
 		loss.backward()
 		self.optimizer.step(loss)
 
-		return loss.data	
+		return loss.data / batch_size	
 
 	def load_model(self, file_name=None, custom_path=None):
 

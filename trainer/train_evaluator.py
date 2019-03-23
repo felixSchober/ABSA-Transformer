@@ -125,6 +125,9 @@ class TrainEvaluator(object):
 			if show_c_matrix:
 				prev_batch_size = iterator.batch_size
 				iterator.batch_size = 1
+				bs = 1
+			else:
+				bs = iterator.batch_size
 
 			losses = []
 			f1_scores = []
@@ -144,7 +147,9 @@ class TrainEvaluator(object):
 				source_mask = create_padding_masks(padding, 1)
 
 				loss = self.get_loss(x, source_mask, y)
-				losses.append(loss.item())
+
+				# divide by batch size so that we can compare losses regardless of batch size (a higher batch size will produce a nummerically higher loss than a batch size of 1)
+				losses.append(loss.item() / bs)
 
 				# [batch_size, num_words] in the collnl2003 task num labels
 				# will contain the
