@@ -63,6 +63,7 @@ class TrainPlotter(object):
 		self.generate_barplot(self.head_f1_series, 'head name', f'{self.experiment_name} F1 Scores for individual aspect heads on {self.dataset_name}', 'f1 score', 'aspect', path)
 
 	def generate_lineplot(self, series: pd.core.series.Series, title:str, y_label:str, path:str, max_iterations:int=None, file_format:str='jpg', hue:Optional[str]=None):
+		plt.clf()
 		plt.figure(figsize=(10,6))       
 		ax = sns.lineplot(x='iteration', y='value', hue=hue, data=self.df[series])
 		plt.title(title, fontsize=20) 
@@ -75,6 +76,7 @@ class TrainPlotter(object):
 		plt.savefig(f'{path}.{file_format}', format=file_format)
 
 	def generate_barplot(self, series: pd.core.series.Series, x_value:str, title:str, y_label:str, x_label:str, path:str, hue:Optional[str]=None, file_format:str='jpg', angle_xticks:bool=True):
+		plt.clf()
 		plt.figure(figsize=(20,10))
 
 		ax = sns.barplot(data=self.df[series], color='b', x=x_value, y='value')
