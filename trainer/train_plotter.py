@@ -19,10 +19,9 @@ class TrainPlotter(object):
 		self.dataset_name = dataset_name
 
 		self.confusion_matrix_path = os.path.join(image_path, 'confusion matices')
-		self.loss_path = os.path.join(image_path, 'loss curves')
-		self.loss_path_general = os.path.join(self.loss_path, 'general')
-		self.loss_path_heads = os.path.join(self.loss_path, 'heads')
-		self.f1_curves = os.path.join(image_path, 'f1 curves')
+		self.loss_path_general = os.path.join(image_path, 'loss curves')
+		self.f1_path_heads = os.path.join(image_path, 'f1 curves', 'heads')
+		self.f1_curves = os.path.join(image_path, 'f1 curves', 'general')
 
 		self.loss_series: Optional[pd.core.series.Series] = None
 		self.general_f1_series: Optional[pd.core.series.Series] = None
@@ -38,15 +37,10 @@ class TrainPlotter(object):
 		sns.set(rc={"font.size":14, "axes.labelsize":18})
 
 	def _init_folders(self):
-		# confusion matrices
-		# loss curves
-		#	general
-		#	heads
-		# f1 curves
 		create_dir_if_necessary(self.confusion_matrix_path)
-		create_dir_if_necessary(self.loss_path)
 		create_dir_if_necessary(self.loss_path_general)
-		create_dir_if_necessary(self.loss_path_heads)
+		create_dir_if_necessary(os.path.join(self.image_path, 'f1 curves'))
+		create_dir_if_necessary(self.f1_path_heads)
 		create_dir_if_necessary(self.f1_curves)
 
 
@@ -59,13 +53,13 @@ class TrainPlotter(object):
 	def plot(self, format:str='jpg'):
 		it = int(self.df['iteration'].iloc[-1])
 
-		path = os.path.join(self.loss_path, f'{it}_loss')
+		path = os.path.join(self.loss_path_general, f'{it}_loss')
 		self.generate_lineplot(self.loss_series, f'{self.experiment_name} train and validation losses for {self.dataset_name}', self.loss_name, path, self.max_iteration, format, 'iterator type')
 
 		path = os.path.join(self.f1_curves, f'{it}_f1')
 		self.generate_lineplot(self.general_f1_series, f'{self.experiment_name} train and validation f1 scores for {self.dataset_name}', 'f1 score', path, self.max_iteration, format, 'iterator type')
 		
-		path = os.path.join(self.loss_path_heads, f'{it}_f1')
+		path = os.path.join(self.f1_path_heads, f'{it}_f1')
 		self.generate_barplot(self.head_f1_series, 'head name', f'{self.experiment_name} F1 Scores for individual aspect heads on {self.dataset_name}', 'f1 score', 'aspect', path)
 
 	def generate_lineplot(self, series: pd.core.series.Series, title:str, y_label:str, path:str, max_iterations:int=None, file_format:str='jpg', hue:Optional[str]=None):
@@ -77,6 +71,7 @@ class TrainPlotter(object):
 
 		if max_iterations is not None:
 			plt.xlim((0, max_iterations))
+		plt.tight_layout()
 		plt.savefig(f'{path}.{file_format}', format=file_format)
 
 	def generate_barplot(self, series: pd.core.series.Series, x_value:str, title:str, y_label:str, x_label:str, path:str, hue:Optional[str]=None, file_format:str='jpg', angle_xticks:bool=True):
@@ -90,6 +85,7 @@ class TrainPlotter(object):
 		if angle_xticks:
 			plt.xticks(rotation=45, ha="right")
 
+		plt.tight_layout()
 		plt.savefig(f'{path}.{file_format}', format=file_format)
 
 
