@@ -3,15 +3,15 @@ runs/
 logs/
 
 # ML stuff / data
-data/conll2003/
-.vector_cache/
+#data/conll2003/
+#.vector_cache/
 *.zip
 
 # misc
 .idea/
 .git/
 desktop.ini
-data/germeval2017/
+#data/germeval2017/
 /data/cache
 .vscode/settings.json
 
