@@ -11,11 +11,13 @@ RUN apt-get update && apt-get install -y \
     git \
     bzip2 \
     libx11-6 \
+	unzip \
 	ipython ipython-notebook \
  && rm -rf /var/lib/apt/lists/*
 
 # Create a working directory
 RUN mkdir /app
+
 WORKDIR /app
 
 # Create a non-root user and switch to it
@@ -43,6 +45,9 @@ RUN /home/user/miniconda/bin/conda install conda-build \
 ENV CONDA_DEFAULT_ENV=py36
 ENV CONDA_PREFIX=/home/user/miniconda/envs/$CONDA_DEFAULT_ENV
 ENV PATH=$CONDA_PREFIX/bin:$PATH
+
+# update conda
+RUN conda update -n base -c default conda
 
 # CUDA 8.0-specific steps
 RUN conda install -y -c pytorch \
@@ -77,13 +82,18 @@ RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
 RUN conda install -y -c menpo opencv3=3.1.0 \
  && conda clean -ya
 
-
-# +++++++++++++++++++++++END+++++++++++++++++++++++++
-
-RUN conda update -n base -c default conda
-
-# install jupyter
+ # install jupyter
 RUN conda install -y jupyter 
+
+# install elmo
+RUN curl -o elmo.zip -L -S https://github.com/HIT-SCIR/ELMoForManyLangs/archive/master.zip \
+	&& ls \
+	&& unzip elmo.zip \
+	&& cd ELMoForManyLangs-master \
+	&& python setup.py install \
+	&& cd .. \
+	&& rm -r elmo.zip \
+	&& rm -r ELMoForManyLangs-master
 
 # get additional requirements - conda
 RUN conda install -y tqdm
@@ -96,20 +106,24 @@ RUN conda install -y spacy \
 RUN conda install -y -c conda-forge prettytable
 RUN conda install -y -c conda-forge beautifulsoup4
 RUN conda install -c conda-forge matplotlib 
-RUN conda install -c anaconda seaborn
+RUN conda install -c anaconda seaborn=0.9.0
 RUN conda install -y scikit-learn \
 	&& conda clean -ya
 
-# get additional requirements - pip
-RUN pip install hyperopt
-RUN pip install torchtext
-RUN pip install stop-words
-RUN pip install pyspellchecker
-RUN pip install revtok
-RUN pip install tensorflow
-RUN pip install tensorboardX
-RUN pip install colorama
+# +++++++++++++++++++++++END+++++++++++++++++++++++++
 
-# install jupyter notebook
+# add the requirements.txt to enable caching
+ADD requirements.txt /app/
+RUN pip install -r requirements.txt
+
+# get additional requirements - pip
+# RUN pip install hyperopt
+# RUN pip install torchtext
+# RUN pip install stop-words
+# RUN pip install pyspellchecker
+# RUN pip install revtok
+# RUN pip install tensorflow
+# RUN pip install tensorboardX
+# RUN pip install colorama
 
 ENTRYPOINT ["jupyter-notebook", "--ip", "0.0.0.0", "--no-browser", "--allow-root", "--port=8888"]

@@ -155,7 +155,7 @@ def germeval2017_dataset(
 
 	train_device = torch.device('cuda:0' if torch.cuda.is_available() and use_cuda else 'cpu')
 	train_iter, val_iter, test_iter = data.BucketIterator.splits(
-		(train, val, test), batch_size=batch_size, device=train_device)
+		(train, val, test), batch_size=batch_size, device=train_device, shuffle=True)
 
 	# add embeddings
 	embedding_size = get_embedding_size(comment_field, hyperparameters.embedding_type)

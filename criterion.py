@@ -19,6 +19,10 @@ class CrossEntropyLoss2d(nn.Module):
 	def output_frame_size(self):
 		return self.n_classes
 
+	@property
+	def name(self):
+		return 'NLLLoss2d'
+
 
 class NllLoss(nn.Module):
 	def __init__(self, output_size, weight:List[float]=None, use_cuda=True):
@@ -40,6 +44,10 @@ class NllLoss(nn.Module):
 		targets = targets.view(-1)
 		#return F.cross_entropy(logits, targets, weight=self.weight)
 		return F.nll_loss(logits, targets, weight=self.weight)
+
+	@property
+	def name(self):
+		return 'NLL Loss'
 
 
 class LossCombiner(nn.Module):
@@ -68,6 +76,10 @@ class LossCombiner(nn.Module):
 
 		return loss
 
+	@property
+	def name(self):
+		return self.losses[0].name
+
 class MultiHeadNllLoss(nn.Module):
 	def __init__(self, output_size: int, n_heads: int, weights:List[List[float]]=None, use_cuda=True):
 		super().__init__()
@@ -87,6 +99,10 @@ class MultiHeadNllLoss(nn.Module):
 		logits = self._transform_logits(logits)
 		targets = targets.view(-1)
 		return F.nll_loss(logits, targets, weight=self.weight)
+
+	@property
+	def name(self):
+		return 'NLL Loss'
 	
 
 
