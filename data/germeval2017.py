@@ -25,6 +25,7 @@ def preprocess_relevance_word(word: str) -> int:
 	return 1
 
 def germeval2017_dataset(
+					task:str,
 					pretrained_vectors,
 					hyperparameters: RunConfiguration,
 					batch_size=80,
@@ -164,7 +165,7 @@ def germeval2017_dataset(
 	examples = train.examples[0:3] + val.examples[0:3] + test.examples[0:3]
 
 	return {
-		'task': 'germeval2017',
+		'task': task,
 		'split_length': (len(train), len(val), len(test)),
 		'iters': (train_iter, val_iter, test_iter), 
 		'vocabs': (comment_field.vocab, general_sentiment_field.vocab, aspect_sentiment_field.vocab),

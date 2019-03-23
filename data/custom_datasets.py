@@ -268,7 +268,6 @@ class CustomSequenceTaggingDataSet(Dataset):
 		super(CustomSequenceTaggingDataSet, self).__init__(examples, fields,
 													 **kwargs)
 
-
 class CustomGermEval2017Dataset(Dataset):
 
 	@staticmethod
@@ -538,7 +537,6 @@ class CustomGermEval2017Dataset(Dataset):
 		with open(aspects_path, "wb") as f:
 			pickle.dump(self.aspects, f)
 
-
 class CustomBioDataset(Dataset):
 
 	@staticmethod
@@ -602,7 +600,7 @@ class CustomBioDataset(Dataset):
 			
 		super(CustomBioDataset, self).__init__(examples, tuple(fields))    
 
-	def _load(self, path, filename, fields, a_sentiment=[], separator='|', verbose=True, hp=None, **kwargs):
+	def _load(self, path, filename, fields, a_sentiment=[], separator='|', verbose=True, hp=None, task=None, **kwargs):
 		examples = []
 		
 		# remove punctuation
@@ -628,7 +626,14 @@ class CustomBioDataset(Dataset):
 		else:
 			spell = None
 
-		with open(path, encoding="utf8") as input_file:
+		if task == 'all':
+			aspect_example_index = -1
+		elif task == 'entities':
+			aspect_example_index = -5
+		elif task == 'attributes':
+			aspect_example_index = - 4
+
+		with open(path, 'rb') as input_file:
 			aspect_sentiment_categories = set()
 			aspect_sentiments: List[Dict[str, str]] = []
 
@@ -647,6 +652,7 @@ class CustomBioDataset(Dataset):
 			skip_line = True
 
 			for line in iterator:
+				line = line.decode(errors='ignore')
 				columns = []
 				line = line.strip()
 				if skip_line or line == '':
@@ -669,10 +675,10 @@ class CustomBioDataset(Dataset):
 					columns.append(dict())
 					last_sample = columns
 				else:
-					aspect_category = columns[-1].strip()
-					aspect_sentiment = columns[7].strip()
-
+					# based on aspect task select columns
+					aspect_category = columns[aspect_example_index].strip()
 					
+					aspect_sentiment = columns[7].strip()			
 
 					crnt_sentence_number = columns[5]
 					crnt_comment_number = columns[4]
