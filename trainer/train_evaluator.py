@@ -100,14 +100,14 @@ class TrainEvaluator(object):
 				history[iteration - self.log_every_xth_iteration:iteration])
 		return losses.mean()
 
-	def _compute_validation_losses(self) -> float:
-		self.valid_iterator.init_epoch()
-		losses = []
-		for valid_batch in self.valid_iterator:
-			x, y = valid_batch.comments, valid_batch.general_sentiments
-			loss = self.get_loss(x, None, y)
-			losses.append(loss.item())
-		return np.array(losses).mean()
+	# def _compute_validation_losses(self) -> float:
+	# 	self.valid_iterator.init_epoch()
+	# 	losses = []
+	# 	for valid_batch in self.valid_iterator:
+	# 		x, y = valid_batch.comments, valid_batch.general_sentiments
+	# 		loss = self.get_loss(x, None, y)
+	# 		losses.append(loss.item())
+	# 	return np.array(losses).mean()
 
 	def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False,
 				 progress_label: str="Evaluation", f1_strategy: str='micro', iterator_name: str = 'unknwn', iteration:int=-1) -> Tuple[float, float, float, np.array]:

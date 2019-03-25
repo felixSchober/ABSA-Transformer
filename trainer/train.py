@@ -169,7 +169,7 @@ class Trainer(object):
 		loss.backward()
 		self.optimizer.step(loss)
 
-		return loss.data / batch_size	
+		return loss.data / self.batch_size	
 
 	def load_model(self, file_name=None, custom_path=None):
 
@@ -295,7 +295,8 @@ class Trainer(object):
 					# Sets the module in training mode
 					self.model.train()
 
-					x, _, padding, y = batch.comments, batch.general_sentiments, batch.padding, batch.aspect_sentiments
+					#x, _, padding, y = batch.comments, batch.general_sentiments, batch.padding, batch.aspect_sentiments
+					x, padding, y = batch.comments, batch.padding, batch.aspect_sentiments
 					source_mask = create_padding_masks(padding, 1)
 
 					train_loss = self._step(x, y, source_mask)

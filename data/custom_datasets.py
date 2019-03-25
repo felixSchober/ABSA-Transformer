@@ -20,6 +20,7 @@ from data.custom_fields import ReversibleField
 from tqdm import tqdm
 import spacy
 from spellchecker import SpellChecker
+from data.spellchecker.spellchckr import get_dictionary
 from misc.utils import create_dir_if_necessary, check_if_file_exists
 
 
@@ -570,37 +571,43 @@ class CustomBioDataset(Dataset):
 		if path is None:
 			path = cls.download(root)
 
+		# lines for splits
+		lengths = (8918, 786, 738)
+
 		train_data = None if train is None else cls(
-			os.path.join(path, train), **kwargs)
+			os.path.join(path, train), length=lengths[0], **kwargs)
 		# make sure, we use exactly the same fields across all splits
 		train_aspects = train_data.aspects
 
 		val_data = None if validation is None else cls(
-			os.path.join(path, validation), a_sentiment=train_aspects, **kwargs)
+			os.path.join(path, validation), a_sentiment=train_aspects, length=lengths[1], **kwargs)
 
 		test_data = None if test is None else cls(
-			os.path.join(path, test), a_sentiment=train_aspects, **kwargs)
+			os.path.join(path, test), a_sentiment=train_aspects, length=lengths[2], **kwargs)
 
 		return tuple(d for d in (train_data, val_data, test_data)
 					 if d is not None)
 	
-	def __init__(self, path, fields, a_sentiment=[], separator='\t', **kwargs):
+	def __init__(self, path, fields, a_sentiment=[], separator='\t', task=None, **kwargs):
 		self.aspect_sentiment_fields = []
 		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
+		self.dataset_name = 'organic2019'
 
 		# first, try to load all models from cache
-		filename = path.split("\\")[-1]
-		examples, loaded_fields = self._try_load(filename.split(".")[0], fields)
+		_, filename = os.path.split(path)
+		filename = f'{filename.split(".")[0]}_{task}'
+
+		examples, loaded_fields = self._try_load(filename, fields)
 
 		if not examples:
-			examples, fields = self._load(path, filename, fields, a_sentiment, separator, **kwargs)
-			self._save(filename.split(".")[0], examples)
+			examples, fields = self._load(path, filename, fields, a_sentiment, separator, task=task, **kwargs)
+			self._save(filename, examples)
 		else:
 			fields = loaded_fields
 			
 		super(CustomBioDataset, self).__init__(examples, tuple(fields))    
 
-	def _load(self, path, filename, fields, a_sentiment=[], separator='|', verbose=True, hp=None, task=None, **kwargs):
+	def _load(self, path, filename, fields, a_sentiment=[], separator='|', verbose=True, hp=None, task=None, length=None, **kwargs):
 		examples = []
 		
 		# remove punctuation
@@ -622,7 +629,14 @@ class CustomBioDataset(Dataset):
 		# 13+: aspect Sentiment 1/n
 
 		if hp.use_spell_checkers:
-			spell = SpellChecker(language='de')  # German dictionary
+			if hp.language == 'en':
+				spell = SpellChecker(language='en')
+				d = get_dictionary()
+				spell.word_frequency.load_words(d)
+				spell.word_frequency.load_words(spell_checker_entities)
+			else:
+				spell = SpellChecker(language=hp.language)
+
 		else:
 			spell = None
 
@@ -640,7 +654,7 @@ class CustomBioDataset(Dataset):
 			raw_examples: List[List[Union[str, List[Dict[str, str]]]]] = []
 
 			if verbose:
-				iterator = tqdm(input_file, desc=f'Load {filename[0:7]}', leave=False)
+				iterator = tqdm(input_file, desc=f'Load {filename[0:7]}', leave=False, total=length)
 			else:
 				iterator = input_file
 
@@ -703,12 +717,9 @@ class CustomBioDataset(Dataset):
 							aspect_sentiment_categories.add(s_category)
 						last_sample.append(comment_sentiment_dict) 
 
-
-
 						comment_sentiment_dict = dict()
 						last_sentence_number = crnt_sentence_number
 						last_comment_number = crnt_comment_number
-
 						
 						raw_examples.append(last_sample)
 						last_sample = columns
@@ -725,17 +736,25 @@ class CustomBioDataset(Dataset):
 
 				# remove punctuation and clean text
 				comment = last_sample[-3]
+				comment = comment.translate(punctuation_remover)
+
+				# remove non ascii characters with empty space
+				comment = re.sub(r'[^\x00-\x7f]',r' ', comment)
+				
+				if hp.language == 'en':
+					comment = en_contraction_removal(comment)
 
 				comment = comment.split(' ')
 
 				if hp.replace_url_tokens:
 					comment = remove_websites(comment)
 
-				comment = ' '.join(comment)
-
 				if hp.use_spell_checkers:
-					comment = text_cleaner(comment, 'en', spell)
-				comment = comment.translate(punctuation_remover)
+					comment = fix_spellings(comment, spell)
+
+				comment = ' '.join(comment)
+				if hp.use_text_cleaner:
+					comment = text_cleaner(comment, hp.language, spell)
 
 				last_sample[-3] = comment
 				
@@ -805,10 +824,10 @@ class CustomBioDataset(Dataset):
 		return fields
 
 	def _try_load(self, name, fields):
-		path = os.path.join(os.getcwd(), 'data', 'cache')
+		path = os.path.join(os.getcwd(), 'data', 'cache', self.dataset_name)
 		create_dir_if_necessary(path)
-		samples_path = os.path.join(path, name + "2.pkl")
-		aspects_path = os.path.join(path, name + "_2aspects.pkl")
+		samples_path = os.path.join(path, name + ".pkl")
+		aspects_path = os.path.join(path, name + "_aspects.pkl")
 
 		if not check_if_file_exists(samples_path) or not check_if_file_exists(aspects_path):
 			return [], None
@@ -824,7 +843,7 @@ class CustomBioDataset(Dataset):
 		return examples, fields
 
 	def _save(self, name, samples):
-		path = os.path.join(os.getcwd(), 'data', 'cache')
+		path = os.path.join(os.getcwd(), 'data', 'cache', self.dataset_name)
 		create_dir_if_necessary(path)
 		samples_path = os.path.join(path, name + ".pkl")
 		aspects_path = os.path.join(path, name + "_aspects.pkl")
@@ -902,7 +921,7 @@ def text_cleaner(text: str, language: str, spellChecker):
 
 	if language == 'en':
 		text = en_contraction_removal(text)
-	spacy_nlp = spacy.load('de')
+	spacy_nlp = spacy.load(language)
 	parsed = spacy_nlp(text)
 	final_tokens = []
 	for t in parsed:
@@ -928,7 +947,20 @@ def text_cleaner(text: str, language: str, spellChecker):
 def en_contraction_removal(text: str) -> str:
 	apostrophe_handled = re.sub("’", "'", text)
 	# from https://gist.githubusercontent.com/tthustla/74e99a00541264e93c3bee8b2b49e6d8/raw/599100471e8127d6efad446717dc951a10b69777/yatwapart1_01.py
-	contraction_mapping = {"ain't": "is not", "aren't": "are not","can't": "cannot", 
+	contraction_mapping = {
+					"youre": "you are",
+					"youll": "you will",
+					"theyre": "they are", "theyll": "they will",
+					"weve": "we have",
+					"shouldnt": "should not",
+					"dont": "do not",
+					"doesnt": "does not", "doesn": "does not",
+					"didnt": "did not",
+					"wasn": "was not",
+					"arent": "are not", "aren": "are not",
+					"aint": "is not", "isnt": "is not", "isn": "is not",
+					"wouldnt": "would not", "wouldn": "would not",
+					"ain't": "is not", "aren't": "are not","can't": "cannot", 
 				   "can't've": "cannot have", "'cause": "because", "could've": "could have", 
 				   "couldn't": "could not", "couldn't've": "could not have","didn't": "did not", 
 				   "doesn't": "does not", "don't": "do not", "hadn't": "had not", 
@@ -971,7 +1003,7 @@ def en_contraction_removal(text: str) -> str:
 				   "y'all'd've": "you all would have","y'all're": "you all are","y'all've": "you all have",
 				   "you'd": "you would", "you'd've": "you would have", "you'll": "you will", 
 				   "you'll've": "you will have", "you're": "you are", "you've": "you have" }
-	expanded = ' '.join([contraction_mapping[t] if t in contraction_mapping else t for t in apostrophe_handled.split(" ")])
+	expanded = ' '.join([contraction_mapping[t.lower()] if t.lower() in contraction_mapping else t for t in apostrophe_handled.split(" ")])
 	return expanded
 
 def harmonize_bahn_names(text_tokens: List[str]) -> List[str]:
@@ -1008,3 +1040,75 @@ def remove_websites(text_tokens: List[str]) -> List[str]:
 			text_tokens[i] = 'web'
 
 	return result
+
+def fix_spellings(text_tokens: List[str], spell: SpellChecker) -> List[str]:
+	for i, w in enumerate(text_tokens):
+		if w == ' ' or w == '':
+			continue
+		
+		if w not in spell:
+			c = spell.correction(w)
+
+			if c == w:
+				continue
+			text_tokens[i] = c
+			spellCheckerReplaced.append((w, c))
+
+	return text_tokens
+
+spellCheckerReplaced = []
+
+spellchecker_definition_file_en = os.path.join(os.getcwd(), 'data', 'spellchecker', 'hunspell-en_US-2018', 'en_US.dic')
+
+spell_checker_entities = [
+	'Quora',
+	'walmart',
+	'costco',
+	'kroger',
+	'HEB',
+	'Publix',
+	'NPOP',
+	'USDA',
+	'cannot',
+	'websites',
+	'website',
+	'die-offs',
+	'googling',
+	'zillions',
+	'URL',
+	'Facebook',
+	'demonetized',
+	'e. coli'
+	"aren't",
+	"ain't",
+	'superbug',
+	'superbugs'
+	"you're",
+	"don't",
+	"doesn't",
+	"Glyphosate",
+	'maceration',
+	'GMO',
+	'non-GMO',
+	'anti-GMO'
+	'Cascadian',
+	'Google',
+	'24D',
+	'odor',
+	'16th',
+	'RS10000',
+	'Rs200',
+	'reusing',
+	'beets',
+	'premade',
+	'resilient',
+	'gazillion',
+	'TLDR',
+	'to-do',
+	'grass-fed',
+	'pricy',
+	'smellier',
+	'FAQs',
+	'omega-3',
+	'non-vegetarian'
+]
