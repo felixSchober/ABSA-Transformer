@@ -27,7 +27,7 @@ import pprint
 
 
 from data.organic2019 import organic_dataset as dsl
-from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES
+from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES
 PREFERENCES.defaults(
     data_root='./data/organic',
     data_train='train.csv',    
@@ -38,7 +38,7 @@ PREFERENCES.defaults(
 
 def load(hp, logger):
 	dataset = Dataset(
-		ORGANIC_TASK_ENTITIES,
+		ORGANIC_TASK_ATTRIBUTES,
 		logger,
 		hp,
 		source_index=0,
@@ -82,7 +82,9 @@ hp.log_every_xth_iteration = -1
 hp.adam_weight_decay = 1e-5
 hp.pointwise_layer_size = 256
 hp.n_enc_blocks = 2
-hp.embedding_type = 'fasttext'
+hp.embedding_type = 'glove'
+hp.language = 'en'
+hp.use_spell_checkers = False
 
 logger.info(hp)
 print(hp)
