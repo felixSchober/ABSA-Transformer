@@ -20,7 +20,6 @@ from data.torchtext.custom_fields import ReversibleField
 from tqdm import tqdm
 import spacy
 from spellchecker import SpellChecker
-from data.spellchecker.spellchckr import get_dictionary
 from misc.utils import create_dir_if_necessary, check_if_file_exists
 
 
@@ -629,13 +628,7 @@ class CustomBioDataset(Dataset):
 		# 13+: aspect Sentiment 1/n
 
 		if hp.use_spell_checkers:
-			if hp.language == 'en':
-				spell = SpellChecker(language='en')
-				d = get_dictionary()
-				spell.word_frequency.load_words(d)
-				spell.word_frequency.load_words(spell_checker_entities)
-			else:
-				spell = SpellChecker(language=hp.language)
+			spell = initialize_spellchecker(hp.language)
 
 		else:
 			spell = None
@@ -1056,6 +1049,23 @@ def fix_spellings(text_tokens: List[str], spell: SpellChecker) -> List[str]:
 
 	return text_tokens
 
+def initialize_spellchecker(language: str) -> SpellChecker:
+	if language != 'en':
+		return SpellChecker(language=language)
+
+	spell = SpellChecker(language='en')
+
+	# load word from additional dictionary
+	from data.spellchecker.spellchecker import get_en_dictionary, get_organic_dictionary
+	d = get_en_dictionary()
+	spell.word_frequency.load_words(d)
+
+	# load organic specific entities
+	d = get_organic_dictionary()
+	spell.word_frequency.load_words(d)
+
+	return spell
+
 spellCheckerReplaced = []
 
 spellchecker_definition_file_en = os.path.join(os.getcwd(), 'data', 'spellchecker', 'hunspell-en_US-2018', 'en_US.dic')
@@ -1110,5 +1120,65 @@ spell_checker_entities = [
 	'smellier',
 	'FAQs',
 	'omega-3',
-	'non-vegetarian'
+	'non-vegetarian',
+	'gmo-free',
+	'conventionally-grown',
+	'gluten-free',
+	'manure-based',
+	'organic-natural',
+	'antibiotic-resistant',
+	'organic-approved',
+	'pesticide-free',
+	'petroleum-based',
+	'pro-organic',
+	'all-natural',
+	'environmentally-damaging',
+	'food-grade',
+	'gourmet-delight',
+	'government-approved',
+	'government-independent',
+	'guilt-free',
+	'locally-grown',
+	'multi-cropping',
+	'myth-busting',
+	'natural-organic',
+	'organically-grown',
+	'organic-farming',
+	'organic-inorganic',
+	'peer-reviewed',
+	'pesticides-herbicides',
+	'safe-unsafe',
+	'sludge-based',
+	'three-fourths',
+	'usdaac-credited',
+	'youtube',
+	'additive-free',
+	'aflatoxin-free',
+	'ago-chemical-dependent',
+	'agro-complex',
+	'agro-ecosystem',
+	'amazonfresh',
+	'animal-based',
+	'animal-byproducts',
+	'antibiotic-resistance',
+	'antibiotics-fed',
+	'antibiotics-hormones',
+	'anti-nutrient',
+	'antioxidant-rich',
+	'apartments-like',
+	'apple-strawberry-banana',
+	'artificially-produced',
+	'big-basket',
+	'big-company',
+	'big-picture',
+	'bio-intensive',
+	'blemish-free',
+	'blood-meal',
+	'brain building',
+	'bucket-load',
+	'budget-friendly',
+	'bug-resistant',
+	'carbon-footprint',
+	'certified-noncertified',
+	'chemical-free'
 ]
