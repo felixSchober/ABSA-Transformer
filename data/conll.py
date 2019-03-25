@@ -101,7 +101,7 @@ def conll2003_dataset(tag_type, batch_size,
 
     # add embeddings
     embedding_size = inputs_word.vocab.vectors.shape[1]
-    source_embedding = get_embedding(inputs_word.vocab, embedding_size)
+    source_embedding = get_embedding(inputs_word.vocab, embedding_size, 'glove')
     
     examples = train.examples[0:3] + val.examples[0:3] + test.examples[0:3]
     return {
