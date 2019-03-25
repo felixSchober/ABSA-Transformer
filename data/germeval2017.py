@@ -7,8 +7,8 @@ import torchtext
 from torchtext import data
 from stop_words import get_stop_words
 
-from data.custom_fields import ReversibleField, ElmoField
-from data.custom_datasets import CustomGermEval2017Dataset
+from data.torchtext.custom_fields import ReversibleField, ElmoField
+from data.torchtext.custom_datasets import CustomGermEval2017Dataset
 from data.data_loader import get_embedding, get_embedding_size
 
 from misc.run_configuration import RunConfiguration

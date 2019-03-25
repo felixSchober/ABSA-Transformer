@@ -13,8 +13,8 @@ import random
 import logging
 import spacy
 from data.data_loader import get_embedding
-from data.custom_fields import ReversibleField
-from data.custom_datasets import CustomSequenceTaggingDataSet
+from data.torchtext.custom_fields import ReversibleField
+from data.torchtext.custom_datasets import CustomSequenceTaggingDataSet
 
 logger = logging.getLogger(__name__)
 

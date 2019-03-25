@@ -15,7 +15,7 @@ import torch.utils.data
 
 from torchtext.data.utils import RandomShuffler
 from torchtext.utils import download_from_url, unicode_csv_reader
-from data.custom_fields import ReversibleField
+from data.torchtext.custom_fields import ReversibleField
 #from tqdm.autonotebook import tqdm
 from tqdm import tqdm
 import spacy
@@ -506,7 +506,7 @@ class CustomGermEval2017Dataset(Dataset):
 		return fields
 
 	def _try_load(self, name, fields):
-		path = os.path.join(os.getcwd(), 'data', 'cache')
+		path = os.path.join(os.getcwd(), 'data', 'data', 'cache')
 		create_dir_if_necessary(path)
 		samples_path = os.path.join(path, name + "2.pkl")
 		aspects_path = os.path.join(path, name + "_2aspects.pkl")
@@ -525,7 +525,7 @@ class CustomGermEval2017Dataset(Dataset):
 		return examples, fields
 
 	def _save(self, name, samples):
-		path = os.path.join(os.getcwd(), 'data', 'cache')
+		path = os.path.join(os.getcwd(), 'data', 'data', 'cache')
 		create_dir_if_necessary(path)
 		samples_path = os.path.join(path, name + ".pkl")
 		aspects_path = os.path.join(path, name + "_aspects.pkl")
@@ -824,7 +824,7 @@ class CustomBioDataset(Dataset):
 		return fields
 
 	def _try_load(self, name, fields):
-		path = os.path.join(os.getcwd(), 'data', 'cache', self.dataset_name)
+		path = os.path.join(os.getcwd(), 'data', 'data', 'cache', self.dataset_name)
 		create_dir_if_necessary(path)
 		samples_path = os.path.join(path, name + ".pkl")
 		aspects_path = os.path.join(path, name + "_aspects.pkl")

@@ -7,8 +7,8 @@ import torchtext
 from torchtext import data
 from stop_words import get_stop_words
 
-from data.custom_fields import ReversibleField
-from data.custom_datasets import CustomBioDataset
+from data.torchtext.custom_fields import ReversibleField
+from data.torchtext.custom_datasets import CustomBioDataset
 from data.data_loader import get_embedding
 
 from misc.run_configuration import RunConfiguration

@@ -17,7 +17,7 @@ from trainer.train import Trainer
 import pprint
 
 # PREFERENCES.defaults(
-# 	data_root='./data/germeval2017',
+# 	data_root='./data/data/germeval2017',
 # 	data_train='train_v1.4.tsv',    
 # 	data_validation='dev_v1.4.tsv',
 # 	data_test='test_TIMESTAMP1.tsv',
@@ -29,7 +29,7 @@ import pprint
 from data.organic2019 import organic_dataset as dsl
 from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES
 PREFERENCES.defaults(
-    data_root='./data/organic',
+    data_root='./data/data/organic2019',
     data_train='train.csv',    
     data_validation='validation.csv',
     data_test='test.csv',
