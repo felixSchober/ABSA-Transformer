@@ -936,7 +936,6 @@ def text_cleaner(text: str, language: str, spellChecker):
 	spell_corrected = re.sub(r'(.)\1+', r'\1\1', joined)
 	return spell_corrected
 
-
 def en_contraction_removal(text: str) -> str:
 	apostrophe_handled = re.sub("’", "'", text)
 	# from https://gist.githubusercontent.com/tthustla/74e99a00541264e93c3bee8b2b49e6d8/raw/599100471e8127d6efad446717dc951a10b69777/yatwapart1_01.py
@@ -1067,8 +1066,6 @@ def initialize_spellchecker(language: str) -> SpellChecker:
 	return spell
 
 spellCheckerReplaced = []
-
-spellchecker_definition_file_en = os.path.join(os.getcwd(), 'data', 'spellchecker', 'hunspell-en_US-2018', 'en_US.dic')
 
 spell_checker_entities = [
 	'Quora',

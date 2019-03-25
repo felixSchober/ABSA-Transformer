@@ -116,5 +116,6 @@ logs/
 desktop.ini
 /data/data/
 /data/spellchecker/hunspell-en_US-2018/
+/data/cache/
 .vscode/settings.json
 
