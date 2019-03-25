@@ -121,5 +121,3 @@ def extract_samples(samples: List[torchtext.data.example.Example]) -> ExampleLis
         labels: List[str] = example.labels
         result.append(list(zip(input_words, labels)))
     return result
-
-

@@ -8,7 +8,7 @@ from torchtext import data
 from stop_words import get_stop_words
 
 from data.torchtext.custom_fields import ReversibleField
-from data.torchtext.custom_datasets import CustomBioDataset
+from data.torchtext.custom_datasets import CustomSentenceWiseBioDataset
 from data.data_loader import get_embedding
 
 from misc.run_configuration import RunConfiguration
@@ -128,7 +128,7 @@ def organic_dataset(
 	]
 
 	
-	train, val, test = CustomBioDataset.splits(
+	train, val, test = CustomSentenceWiseBioDataset.splits(
 								path=root,
 								root='.data',
 								train=train_file,

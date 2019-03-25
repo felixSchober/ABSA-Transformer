@@ -537,7 +537,7 @@ class CustomGermEval2017Dataset(Dataset):
 		with open(aspects_path, "wb") as f:
 			pickle.dump(self.aspects, f)
 
-class CustomBioDataset(Dataset):
+class CustomSentenceWiseBioDataset(Dataset):
 
 	@staticmethod
 	def sort_key(example):
@@ -590,7 +590,7 @@ class CustomBioDataset(Dataset):
 	def __init__(self, path, fields, a_sentiment=[], separator='\t', task=None, **kwargs):
 		self.aspect_sentiment_fields = []
 		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
-		self.dataset_name = 'organic2019'
+		self.dataset_name = 'organic2019Sentences'
 
 		# first, try to load all models from cache
 		_, filename = os.path.split(path)
@@ -604,7 +604,7 @@ class CustomBioDataset(Dataset):
 		else:
 			fields = loaded_fields
 			
-		super(CustomBioDataset, self).__init__(examples, tuple(fields))    
+		super(CustomSentenceWiseBioDataset, self).__init__(examples, tuple(fields))    
 
 	def _load(self, path, filename, fields, a_sentiment=[], separator='|', verbose=True, hp=None, task=None, length=None, **kwargs):
 		examples = []
@@ -760,6 +760,337 @@ class CustomBioDataset(Dataset):
 		# process the aspect sentiment
 		if len(self.aspects) == 0:
 			#aspect_sentiment_categories.add('QR-Code')
+			self.aspects = list(aspect_sentiment_categories)
+
+			# construct the fields
+			fields = self._construct_fields(fields)
+
+		for raw_example in raw_examples:
+			# go through each aspect sentiment and add it at the corresponding position
+			ss = ['n/a'] * len(self.aspects)
+			for s_category, s in raw_example[-1].items():
+				pos = self.aspects.index(s_category)
+				ss[pos] = s
+
+			raw_example[6] = ss
+
+
+			# 0: Sequence number
+			# 1: Index
+			# 2: Author_Id
+			# 3: Comment number
+			# 4: Sentence number
+			# 5: Domain Relevance
+			# 6: Sentiment
+			# 7: Sentence
+			# 8: Padding
+			# 9: Source File
+			# 10+: aspect Sentiment 1/n
+			
+			# construct example and add it
+			example = raw_example[0:6] + [raw_example[6]] + [raw_example[10], '', ''] + ss
+			examples.append(data.Example.fromlist(example, tuple(fields)))
+
+		# clip comments
+		for example in examples:
+			comment_length: int = len(example.comments)
+			if comment_length > hp.clip_comments_to:
+				example.comments = example.comments[0:hp.clip_comments_to]
+				comment_length = hp.clip_comments_to
+
+			example.padding = ['0'] * comment_length
+		return examples, fields
+		
+	def _construct_fields(self, fields):
+		for s_cat in self.aspects:
+
+				f = ReversibleField(
+								batch_first=True,
+								is_target=True,
+								sequential=False,
+								init_token=None,
+								eos_token=None,
+								unk_token=None,
+								use_vocab=True)
+				self.aspect_sentiment_fields.append((s_cat, f))
+				fields.append((s_cat, f))
+		return fields
+
+	def _try_load(self, name, fields):
+		path = os.path.join(os.getcwd(), 'data', 'data', 'cache', self.dataset_name)
+		create_dir_if_necessary(path)
+		samples_path = os.path.join(path, name + ".pkl")
+		aspects_path = os.path.join(path, name + "_aspects.pkl")
+
+		if not check_if_file_exists(samples_path) or not check_if_file_exists(aspects_path):
+			return [], None
+
+		with open(samples_path, 'rb') as f:
+			examples = pickle.load(f)
+
+		with open(aspects_path, 'rb') as f:
+			self.aspects = pickle.load(f)
+
+		# get all fields
+		fields = self._construct_fields(fields)
+		return examples, fields
+
+	def _save(self, name, samples):
+		path = os.path.join(os.getcwd(), 'data', 'cache', self.dataset_name)
+		create_dir_if_necessary(path)
+		samples_path = os.path.join(path, name + ".pkl")
+		aspects_path = os.path.join(path, name + "_aspects.pkl")
+
+		# print(f'Trying to save loaded dataset to {samples_path}.')
+		with open(samples_path, 'wb') as f:
+			pickle.dump(samples, f)
+			# print(f'Model {name} successfully saved.')
+
+		with open(aspects_path, "wb") as f:
+			pickle.dump(self.aspects, f) 
+
+class CustomCommentWiseBioDataset(Dataset):
+	@staticmethod
+	def sort_key(example):
+		for attr in dir(example):
+			if not callable(getattr(example, attr)) and \
+					not attr.startswith("__"):
+				return len(getattr(example, attr))
+		return 0
+
+	@classmethod
+	def splits(cls, path=None, root='.data', train=None, validation=None,
+			   test=None, **kwargs) -> Tuple[Dataset]:
+		"""Create Dataset objects for multiple splits of a dataset.
+		Arguments:
+			path (str): Common prefix of the splits' file paths, or None to use
+				the result of cls.download(root).
+			root (str): Root dataset storage directory. Default is '.data'.
+			train (str): Suffix to add to path for the train set, or None for no
+				train set. Default is None.
+			validation (str): Suffix to add to path for the validation set, or None
+				for no validation set. Default is None.
+			test (str): Suffix to add to path for the test set, or None for no test
+				set. Default is None.
+			Remaining keyword arguments: Passed to the constructor of the
+				Dataset (sub)class being used.
+		Returns:
+			Tuple[Dataset]: Datasets for train, validation, and
+			test splits in that order, if provided.
+		"""
+		if path is None:
+			path = cls.download(root)
+
+		# lines for splits
+		lengths = (8918, 786, 738)
+
+		train_data = None if train is None else cls(
+			os.path.join(path, train), length=lengths[0], **kwargs)
+		# make sure, we use exactly the same fields across all splits
+		train_aspects = train_data.aspects
+
+		val_data = None if validation is None else cls(
+			os.path.join(path, validation), a_sentiment=train_aspects, length=lengths[1], **kwargs)
+
+		test_data = None if test is None else cls(
+			os.path.join(path, test), a_sentiment=train_aspects, length=lengths[2], **kwargs)
+
+		return tuple(d for d in (train_data, val_data, test_data)
+					 if d is not None)
+	
+	def __init__(self, path, fields, a_sentiment=[], separator='\t', task=None, **kwargs):
+		self.aspect_sentiment_fields = []
+		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
+		self.dataset_name = 'organic2019Comments'
+
+		# first, try to load all models from cache
+		_, filename = os.path.split(path)
+		filename = f'{filename.split(".")[0]}_{task}'
+
+		examples, loaded_fields = self._try_load(filename, fields)
+
+		if not examples:
+			examples, fields = self._load(path, filename, fields, a_sentiment, separator, task=task, **kwargs)
+			self._save(filename, examples)
+		else:
+			fields = loaded_fields
+			
+		super(CustomCommentWiseBioDataset, self).__init__(examples, tuple(fields))    
+
+	def _load(self, path, filename, fields, a_sentiment=[], separator='|', verbose=True, hp=None, task=None, length=None, **kwargs):
+		examples = []
+		
+		# remove punctuation
+		punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "–" + "„")
+
+		# 0: Sequence number
+		# 1: Index
+		# 2: Author_Id
+		# 3: Comment number
+		# 4: Sentence number
+		# 5: Domain Relevance
+		# 6: Sentiment
+		# 7: Entity
+		# 8: Attribute
+		# 9: Sentence
+		# 10: Source File
+		# 11: Apsect Specific sentiment List
+		# 12: Padding Field
+		# 13+: aspect Sentiment 1/n
+
+		if hp.use_spell_checkers:
+			spell = initialize_spellchecker(hp.language)
+
+		else:
+			spell = None
+
+		if task == 'all':
+			aspect_example_index = -1
+		elif task == 'entities':
+			aspect_example_index = -5
+		elif task == 'attributes':
+			aspect_example_index = - 4
+
+		comments = {}
+		with open(path, 'rb') as input_file:
+			aspect_sentiment_categories = set()
+			aspect_sentiments: List[Dict[str, str]] = []
+
+			raw_examples: List[List[Union[str, List[Dict[str, str]]]]] = []
+
+			if verbose:
+				iterator = tqdm(input_file, desc=f'Load {filename[0:7]}', leave=False, total=length)
+			else:
+				iterator = input_file
+
+			last_sentence_number = None
+			last_comment_number = None
+			last_sample = None
+
+			# skip the first line
+			skip_line = True
+
+			for line in iterator:
+				line = line.decode(errors='ignore')
+				columns = []
+				line = line.strip()
+				if skip_line or line == '':
+					skip_line = False
+					continue
+				columns = line.split(separator)
+
+				if columns[-1] == 'Entity-Attribute':
+					continue
+
+				# comment is not relevant
+				if columns[6] == '0' or columns[-1] == '':
+					# skip for now
+					# pass
+					continue
+
+				# aspect sentiment is missing
+				if len(columns) == 12:
+					columns.append('')
+					columns.append(dict())
+					last_sample = columns
+				else:
+					# based on aspect task select columns
+					aspect_category = columns[aspect_example_index].strip()
+					
+					aspect_sentiment = columns[7].strip()			
+
+					crnt_sentence_number = columns[5]
+					crnt_comment_number = columns[4]
+					# if last_sentence_number and last_comment are set and equal this means we need to add to the sentiment dict
+					# otherwise we add the last sample and move on
+					
+					# case 1: not set 
+					#	-> first comment
+					if last_sentence_number is None or last_comment_number is None:
+						last_sentence_number = crnt_sentence_number
+						last_comment_number = crnt_comment_number
+						comment_sentiment_dict = dict()
+						last_sample = columns
+
+
+					# case 2: last and current do not numbers match
+					# new sample -> add to new dict
+					elif last_sentence_number != crnt_sentence_number or last_comment_number != crnt_comment_number:
+						# add last sample
+						# add all new potential keys to set
+						for s_category in comment_sentiment_dict.keys():
+							aspect_sentiment_categories.add(s_category)
+						last_sample.append(comment_sentiment_dict) 
+
+						comment_sentiment_dict = dict()
+						last_sentence_number = crnt_sentence_number
+						last_comment_number = crnt_comment_number
+
+						if crnt_comment_number not in comments:
+							comments[crnt_comment_number] = []
+
+						comments[crnt_comment_number].append(last_sample)
+						last_sample = columns
+
+					# case 3: last and current match
+					# 		-> add to last sample
+					elif last_sentence_number == crnt_sentence_number and last_comment_number == crnt_comment_number:
+						comment_sentiment_dict[aspect_category] = aspect_sentiment
+						continue	
+
+					comment_sentiment_dict[aspect_category] = aspect_sentiment
+					
+								
+
+				# remove punctuation and clean text
+				comment = last_sample[-3]
+				comment = comment.translate(punctuation_remover)
+
+				# remove non ascii characters with empty space
+				comment = re.sub(r'[^\x00-\x7f]',r' ', comment)
+				
+				if hp.language == 'en':
+					comment = en_contraction_removal(comment)
+
+				comment = comment.split(' ')
+
+				if hp.replace_url_tokens:
+					comment = remove_websites(comment)
+
+				if hp.use_spell_checkers:
+					comment = fix_spellings(comment, spell)
+
+				comment = ' '.join(comment)
+				if hp.use_text_cleaner:
+					comment = text_cleaner(comment, hp.language, spell)
+
+				last_sample[-3] = comment
+				
+				# add aspect sentiment field
+				last_sample.append('')
+
+				# add padding field
+				last_sample.append('')
+
+		# first, find out the longest comment length (most sentences)
+		#max_sentences = max([len(c) for c in comments.items()])
+
+		max_dual_sentence_length = hp.clip_comments_to // 2
+		for comment_sentences in comments.items():
+
+			# 1st sentence per comment does not have a previous sentence
+			s = comment_sentences[0]
+			raw_examples.append(f_sentence)
+			for i in range(len(comment_sentences) - 1):
+				first_comment_text = comment_sentences[i][-5]
+				second_comment_text = comment_sentences[i+1][-5]
+
+				# prepend this text to the next comment and clip both comments
+				comment_sentences[i+1][-5] = first_comment_text[:max_dual_sentence_length] + ' ' + second_comment_text[:max_dual_sentence_length]
+				raw_examples.append(comment_sentences[i+1])
+
+		# process the aspect sentiment
+		if len(self.aspects) == 0:
 			self.aspects = list(aspect_sentiment_categories)
 
 			# construct the fields
