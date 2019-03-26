@@ -944,11 +944,11 @@ class CustomCommentWiseBioDataset(Dataset):
 		else:
 			spell = None
 
-		if task == 'all':
+		if task == 'all_combine':
 			aspect_example_index = -1
-		elif task == 'entities':
+		elif task == 'entities_combine':
 			aspect_example_index = -5
-		elif task == 'attributes':
+		elif task == 'attributes_combine':
 			aspect_example_index = - 4
 
 		comments = {}
@@ -1076,17 +1076,18 @@ class CustomCommentWiseBioDataset(Dataset):
 		#max_sentences = max([len(c) for c in comments.items()])
 
 		max_dual_sentence_length = hp.clip_comments_to // 2
-		for comment_sentences in comments.items():
+		for comment_sentences in comments.values():
 
 			# 1st sentence per comment does not have a previous sentence
 			s = comment_sentences[0]
-			raw_examples.append(f_sentence)
+			raw_examples.append(s)
+			sentences = [s[-6] for s in comment_sentences]
 			for i in range(len(comment_sentences) - 1):
-				first_comment_text = comment_sentences[i][-5]
-				second_comment_text = comment_sentences[i+1][-5]
+				first_comment_text = sentences[i]
+				second_comment_text = sentences[i+1]
 
 				# prepend this text to the next comment and clip both comments
-				comment_sentences[i+1][-5] = first_comment_text[:max_dual_sentence_length] + ' ' + second_comment_text[:max_dual_sentence_length]
+				comment_sentences[i+1][-6] = f'{first_comment_text[:max_dual_sentence_length]} {second_comment_text[:max_dual_sentence_length]}'
 				raw_examples.append(comment_sentences[i+1])
 
 		# process the aspect sentiment
