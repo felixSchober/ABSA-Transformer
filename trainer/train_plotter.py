@@ -52,11 +52,13 @@ class TrainPlotter(object):
 
 
 	def update(self, df: pd.DataFrame):
+		it = int(df['iteration'].iloc[-1])
+
 		self.loss_series = (df['metric type']==METRIC_LOSS)&(df['is general'] == 1.0)
 		self.general_f1_series = (df['metric type']==METRIC_F1)&(df['is general'] == 1.0)
-		self.head_general_f1_series = (df['metric type']=='f1')&(df['is general'] == 0.0)&(df['head category'] == '')
-		self.head_sentiment_f1_series = (df['metric type']=='f1')&(df['is general'] == 0.0)&(df['head category'] != '')
-		self.head_recall_series = (df['metric type']=='recall')&(df['is general'] == 0.0)&(df['head category'] != '')
+		self.head_general_f1_series = (df['metric type']=='f1')&(df['is general'] == 0.0)&(df['head category'] == '')&(df['iteration'] == it)
+		self.head_sentiment_f1_series = (df['metric type']=='f1')&(df['is general'] == 0.0)&(df['head category'] != '')&(df['iteration'] == it)
+		self.head_recall_series = (df['metric type']=='recall')&(df['is general'] == 0.0)&(df['head category'] != '')&(df['iteration'] == it)
 		self.df = df		
 
 	def plot(self, format:str='jpg'):
