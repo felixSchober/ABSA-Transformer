@@ -947,10 +947,17 @@ class CustomCommentWiseBioDataset(Dataset):
 		return tuple(d for d in (train_data, val_data, test_data)
 					 if d is not None)
 	
-	def __init__(self, path, fields, a_sentiment=[], separator='\t', task=None, **kwargs):
+	def __init__(self, path, fields, a_sentiment=[], separator='\t', task=None, hp=None, **kwargs):
 		self.aspect_sentiment_fields = []
 		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
 		self.dataset_name = 'organic2019Comments'
+
+		# add spellChecked if spell checker is active
+		if hp.use_spell_checkers:
+			self.dataset_name += '_SP'
+
+		if hp.use_text_cleaner:
+			self.dataset_name += '_TC'
 
 		# first, try to load all models from cache
 		_, filename = os.path.split(path)
@@ -959,7 +966,7 @@ class CustomCommentWiseBioDataset(Dataset):
 		examples, loaded_fields = self._try_load(filename, fields)
 
 		if not examples:
-			examples, fields = self._load(path, filename, fields, a_sentiment, separator, task=task, **kwargs)
+			examples, fields = self._load(path, filename, fields, a_sentiment, separator, hp=hp, task=task, **kwargs)
 			self._save(filename, examples)
 		else:
 			fields = loaded_fields
