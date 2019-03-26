@@ -65,21 +65,30 @@ class TrainPlotter(object):
 		it = int(self.df['iteration'].iloc[-1])
 
 		path = os.path.join(self.loss_path_general, f'{it}_loss')
-		self.generate_lineplot(self.loss_series, f'{self.experiment_name}\nTrain and validation losses on\n{self.dataset_name}', self.loss_name, path, self.max_iteration, format, 'iterator type')
+		self.generate_lineplot(self.loss_series, f'{self.experiment_name}\nTrain and validation losses on\n{self.dataset_name}', self.loss_name, path, self.max_iteration, format, 'iterator type', legend_title='Split')
 
 		path = os.path.join(self.f1_curves, f'{it}_f1')
-		self.generate_lineplot(self.general_f1_series, f'{self.experiment_name}\nTrain and validation f1 scores on\n{self.dataset_name}', 'f1 score', path, self.max_iteration, format, 'iterator type')
+		self.generate_lineplot(self.general_f1_series, f'{self.experiment_name}\nTrain and validation f1 scores on\n{self.dataset_name}', 'f1 score', path, self.max_iteration, format, 'iterator type', legend_title='Split')
 		
 		path = os.path.join(self.f1_path_heads, f'{it}_f1')
-		self.generate_barplot(self.head_general_f1_series, 'head name', f'{self.experiment_name}\nF1 Scores for individual aspect heads on\n{self.dataset_name}', 'f1 score', 'aspect', path)
+		self.generate_barplot(self.head_general_f1_series, 'head name', f'{self.experiment_name}\nValidation F1 Scores for individual aspect heads on\n{self.dataset_name}', 'f1 score', 'aspect', path)
 
 		path = os.path.join(self.f1_path_heads_sentiment, f'{it}_f1')
-		self.generate_barplot(self.head_sentiment_f1_series, x_value='head name', title=f'{self.experiment_name}\nSentiment F1 Scores for individual aspect heads on\n{self.dataset_name}', y_label='f1 score', x_label='aspect', path=path, color=None, hue='head category')
+		self.generate_barplot(self.head_sentiment_f1_series, x_value='head name', title=f'{self.experiment_name}\nValidation Sentiment F1 Scores for individual aspect heads on\n{self.dataset_name}', y_label='f1 score', x_label='aspect', path=path, color=None, hue='head category', legend_title='Sentiment')
 
 		path = os.path.join(self.recall_path_heads_sentiment, f'{it}_recall')
-		self.generate_barplot(self.head_recall_series, x_value='head name', title=f'{self.experiment_name}\nSentiment recall for individual aspect heads on\n{self.dataset_name}', y_label='recall', x_label='aspect', path=path, color=None, hue='head category')
+		self.generate_barplot(self.head_recall_series, x_value='head name', title=f'{self.experiment_name}\nValidation Sentiment recall for individual aspect heads on\n{self.dataset_name}', y_label='recall', x_label='aspect', path=path, color=None, hue='head category', legend_title='Sentiment')
 
-	def generate_lineplot(self, series: pd.core.series.Series, title:str, y_label:str, path:str, max_iterations:int=None, file_format:str='jpg', hue:Optional[str]=None):
+	def generate_lineplot(self,
+					series: pd.core.series.Series,
+					title:str,
+					y_label:str,
+					path:str,
+					max_iterations:int=None,
+					file_format:str='jpg',
+					hue:Optional[str]=None,
+					legend_title: str=None):
+
 		plt.clf()
 		plt.figure(figsize=(10,6))       
 		ax = sns.lineplot(x='iteration', y='value', hue=hue, data=self.df[series])
@@ -87,12 +96,26 @@ class TrainPlotter(object):
 		plt.ylabel(y_label)
 		plt.xlabel("Iteration")
 
+		if legend_title is not None:
+			plt.legend().set_title(legend_title)
+
 		if max_iterations is not None:
 			plt.xlim((0, max_iterations))
 		plt.tight_layout()
 		plt.savefig(f'{path}.{file_format}', format=file_format)
 
-	def generate_barplot(self, series: pd.core.series.Series, x_value:str, title:str, y_label:str, x_label:str, path:str, color: Optional[str]='b', hue:Optional[str]=None, file_format:str='jpg', angle_xticks:bool=True):
+	def generate_barplot(self,
+					series: pd.core.series.Series,
+					x_value:str,
+					title:str,
+					y_label:str,
+					x_label:str,
+					path:str,
+					color: Optional[str]='b',
+					hue:Optional[str]=None,
+					file_format:str='jpg',
+					angle_xticks:bool=True,
+					legend_title: str=None):
 		plt.clf()
 		plt.figure(figsize=(20,10))
 
@@ -100,6 +123,9 @@ class TrainPlotter(object):
 		plt.title(title, fontsize=20) 
 		plt.ylabel(y_label)
 		plt.xlabel(x_label)
+
+		if legend_title is not None:
+			plt.legend().set_title(legend_title)
 
 		if angle_xticks:
 			plt.xticks(rotation=45, ha="right")
