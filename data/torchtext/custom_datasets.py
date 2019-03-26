@@ -537,6 +537,49 @@ class CustomGermEval2017Dataset(Dataset):
 		with open(aspects_path, "wb") as f:
 			pickle.dump(self.aspects, f)
 
+# mapping for organic dataset aspects
+od_entity_mapping = {
+	'g': 'organic general',
+	'p': 'organic products',
+	'f': 'organic farmers',
+	'c': 'organic companies',
+	'cg': 'conventional general',
+	'cp': 'conventional products',
+	'cf': 'conventional farming',
+	'cc': 'conventional companies',
+	'gg': 'GMOs genetic engineering general'
+}
+
+od_attribute_mapping = {
+	'g': 'general',
+	'p': 'price',
+	't': 'taste',
+	'q': 'Nutr. quality & freshness',
+	's': 'safety',
+	'h': 'healthiness',
+	'c': 'chemicals pesticides',
+	'll': 'label',
+	'or': 'origin source',
+	'l': 'local',
+	'av': 'availability',
+	'a': 'animal welfare',
+	'pp': 'productivity'
+}
+
+od_sentiment_mapping = {
+	'0': 'neutral',
+	'p': 'positive',
+	'n': 'negative'
+}
+
+def get_all_mapping():
+	result = {}
+	for entity_key, entity in od_entity_mapping:
+		for attribute_key, attribute in od_attribute_mapping:
+			compound_key = f'{entity_key}-{attribute_key}'
+			result[compound_key] = f'{entity}: {attribute}'
+	return result
+
 class CustomSentenceWiseBioDataset(Dataset):
 
 	@staticmethod
@@ -635,9 +678,12 @@ class CustomSentenceWiseBioDataset(Dataset):
 
 		if task == 'all':
 			aspect_example_index = -1
+			mapping = get_all_mapping()
 		elif task == 'entities':
 			aspect_example_index = -5
+			mapping = od_entity_mapping
 		elif task == 'attributes':
+			mapping = od_attribute_mapping
 			aspect_example_index = - 4
 
 		with open(path, 'rb') as input_file:
@@ -684,8 +730,11 @@ class CustomSentenceWiseBioDataset(Dataset):
 				else:
 					# based on aspect task select columns
 					aspect_category = columns[aspect_example_index].strip()
+
+					# use mapping to get a more human readable name
+					aspect_category = mapping[aspect_category]
 					
-					aspect_sentiment = columns[7].strip()			
+					aspect_sentiment = od_sentiment_mapping[columns[7].strip()]		
 
 					crnt_sentence_number = columns[5]
 					crnt_comment_number = columns[4]
@@ -946,9 +995,12 @@ class CustomCommentWiseBioDataset(Dataset):
 
 		if task == 'all_combine':
 			aspect_example_index = -1
+			mapping = get_all_mapping()
 		elif task == 'entities_combine':
 			aspect_example_index = -5
+			mapping = od_entity_mapping
 		elif task == 'attributes_combine':
+			mapping = od_attribute_mapping
 			aspect_example_index = - 4
 
 		comments = {}
@@ -996,8 +1048,11 @@ class CustomCommentWiseBioDataset(Dataset):
 				else:
 					# based on aspect task select columns
 					aspect_category = columns[aspect_example_index].strip()
+
+					# use mapping to get a more human readable name
+					aspect_category = mapping[aspect_category]
 					
-					aspect_sentiment = columns[7].strip()			
+					aspect_sentiment = od_sentiment_mapping[columns[7].strip()]		
 
 					crnt_sentence_number = columns[5]
 					crnt_comment_number = columns[4]
