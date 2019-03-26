@@ -58,6 +58,7 @@ def load_model(dataset, hp, experiment_name):
 	loss = LossCombiner(4, dataset.class_weights, NllLoss)
 	transformer = TransformerEncoder(dataset.source_embedding,
 									 hyperparameters=hp)
+	transformer.disable_grad()
 	model = JointAspectTagger(transformer, hp, 4, 20, dataset.target_names)
 	optimizer = get_optimizer(model, hp)
 	trainer = Trainer(
@@ -79,13 +80,13 @@ logger.info('Current commit: ' + utils.get_current_git_commit())
 hp = get_default_params(use_cuda, hyperOpt_goodParams)
 hp.num_epochs = 20
 hp.log_every_xth_iteration = -1
-hp.adam_weight_decay = 1e-5
+hp.adam_weight_decay = 1e-4
 hp.pointwise_layer_size = 256
 hp.n_enc_blocks = 2
 hp.embedding_type = 'glove'
 hp.language = 'en'
 hp.use_spell_checkers = False
-hp.clip_comments_to = 250
+hp.clip_comments_to = 300
 
 logger.info(hp)
 print(hp)

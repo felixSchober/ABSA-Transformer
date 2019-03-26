@@ -93,6 +93,11 @@ class TransformerEncoder(nn.Module):
 		result = indentation + "\t# Blocks: {0}".format(self.n_enc_blocks)
 		return result
 
+	def disable_grad(self):
+		for p in self.parameters():
+			if p.dim() > 1:
+				p.requires_grad = False
+
         
 class EncoderBlock(nn.Module):
 
