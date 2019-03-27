@@ -436,7 +436,7 @@ class CustomGermEval2017Dataset(Dataset):
 					comment = harmonize_bahn_names(comment)
 
 				if hp.replace_url_tokens:
-					comment = remove_websites(comment)
+					comment = replace_urls(comment)
 
 				comment = ' '.join(comment)
 
@@ -792,7 +792,7 @@ class CustomSentenceWiseBioDataset(Dataset):
 				comment = comment.split(' ')
 
 				if hp.replace_url_tokens:
-					comment = remove_websites(comment)
+					comment = replace_urls(comment)
 
 				if hp.use_spell_checkers:
 					comment = fix_spellings(comment, spell)
@@ -1120,7 +1120,7 @@ class CustomCommentWiseBioDataset(Dataset):
 				comment = comment.split(' ')
 
 				if hp.replace_url_tokens:
-					comment = remove_websites(comment)
+					comment = replace_urls(comment)
 
 				if hp.use_spell_checkers:
 					comment = fix_spellings(comment, spell)
@@ -1427,14 +1427,8 @@ def harmonize_bahn_names(text_tokens: List[str]) -> List[str]:
 			result.append(token)
 	return result
 
-def remove_websites(text_tokens: List[str]) -> List[str]:
-	result = []
-	for i in range(len(text_tokens)):
-
-		if text_tokens[i].lower().startswith('http'):
-			text_tokens[i] = 'web'
-
-	return result
+def replace_urls(words: List[str], url_token: str = '<URL>') -> List[str]:
+	return [url_token if (w.lower().startswith('www') or w.lower().startswith('http')) else w for w in words]
 
 def fix_spellings(text_tokens: List[str], spell: SpellChecker) -> List[str]:
 	for i, w in enumerate(text_tokens):
@@ -1583,7 +1577,7 @@ spell_checker_entities = [
 	'chemical-free'
 ]
 
-def intelligent_sentences_clipping(s1, s2, clip_to):
+def intelligent_sentences_clipping(s1: str, s2: str, clip_to: int):
 	# first clip s1 at the front.
 	# let's add words from the back until we hit the clipping mark
 
@@ -1637,7 +1631,7 @@ def intelligent_sentences_clipping(s1, s2, clip_to):
 	return s1, s2
 
 	
-def intelligent_sentence_clipping(s, clip_to):
+def intelligent_sentence_clipping(s: str, clip_to: int) -> str:
 	clipped = []
 	current_char_count = 0
 	for w in s.split(' '):

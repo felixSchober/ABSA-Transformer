@@ -237,7 +237,7 @@ class RunConfiguration(object):
 			self.use_stemming = self._get_default('use_stemming', False)
 			self.harmonize_bahn = self._get_default('harmonize_bahn', False)
 			self.use_spell_checkers = self._get_default('use_spell_checkers', False)
-			self.replace_url_tokens = self._get_default('replace_url_tokens', False)
+			self.replace_url_tokens = self._get_default('replace_url_tokens', True)
 			self.use_text_cleaner = self._get_default('use_text_cleaner', False)
 			
 			self.seed = 42			
