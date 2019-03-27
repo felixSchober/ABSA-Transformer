@@ -132,10 +132,12 @@ class RunConfiguration(object):
 			assert model_size > 0
 			assert kwargs['batch_size'] > 0
 			assert early_stopping == -1 or early_stopping > 0
+			assert kwargs['task'] != None and kwargs['task'] != ''
 
 			self.model_size = model_size
 			self.early_stopping = early_stopping
 			self.use_cuda = use_cuda
+			self.task = kwargs['task']
 
 			self.batch_size = self._get_default('batch_size', cast_int=True)
 
@@ -377,12 +379,13 @@ def from_hyperopt(hyperopt_params,
 	return rc
 	
 
-def get_default_params(use_cuda: bool = False, overwrite: Dict = None) -> RunConfiguration:
+def get_default_params(task, use_cuda: bool = False, overwrite: Dict = None) -> RunConfiguration:
 	params = default_params
 	if overwrite:
 		params = {**default_params, **overwrite}
 
 	return RunConfiguration(
 		use_cuda,
+		task=task,
 		**params
 	)
