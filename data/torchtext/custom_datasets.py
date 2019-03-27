@@ -844,12 +844,11 @@ class CustomSentenceWiseBioDataset(Dataset):
 			examples.append(data.Example.fromlist(example, tuple(fields)))
 
 		# clip comments
-		# TODO: Utilize intelligent clipping
 		for example in examples:
 			comment_length: int = len(example.comments)
 			if comment_length > hp.clip_comments_to:
-				example.comments = example.comments[0:hp.clip_comments_to]
-				comment_length = hp.clip_comments_to
+				example.comments = intelligent_sentence_clipping(example.comments, hp.clip_comments_to)
+				comment_length = len(example.comments)
 
 			example.padding = ['0'] * comment_length
 		return examples, fields
@@ -1156,7 +1155,7 @@ class CustomCommentWiseBioDataset(Dataset):
 				# clip the first comment at the front (since the last words are nearer at the current sentence)
 				# clip the second comment at the back.
 				# also, do not clip a word in half
-				first_comment_text, second_comment_text = clip_sentences_intelligently(first_comment_text, second_comment_text, max_dual_sentence_length)
+				first_comment_text, second_comment_text = intelligent_sentences_clipping(first_comment_text, second_comment_text, max_dual_sentence_length)
 
 				# prepend this text to the next comment and clip both comments
 				comment_sentences[i+1][-6] = f'{first_comment_text} {second_comment_text}'
@@ -1584,7 +1583,7 @@ spell_checker_entities = [
 	'chemical-free'
 ]
 
-def clip_sentences_intelligently(s1, s2, clip_to):
+def intelligent_sentences_clipping(s1, s2, clip_to):
 	# first clip s1 at the front.
 	# let's add words from the back until we hit the clipping mark
 
@@ -1638,3 +1637,22 @@ def clip_sentences_intelligently(s1, s2, clip_to):
 	return s1, s2
 
 	
+def intelligent_sentence_clipping(s, clip_to):
+	clipped = []
+	current_char_count = 0
+	for w in s.split(' '):
+		wl = len(w)
+		spaces = len(clipped)
+		if current_char_count + spaces + wl <= clip_to:
+			current_char_count += wl
+
+			# enter at back because sentence is not reversed
+			clipped.append(w)
+		else:
+			# doesn't fit anymore -> we are finished with the sentence
+			break
+
+	if len(clipped) == 0:
+		return s[:clip_to]
+
+	return ' '.join(clipped)
