@@ -7,11 +7,19 @@ import torchtext
 from torchtext import data
 from stop_words import get_stop_words
 
-from data.custom_fields import ReversibleField
-from data.custom_datasets import CustomBioDataset
+from data.torchtext.custom_fields import ReversibleField
+from data.torchtext.custom_datasets import CustomSentenceWiseBioDataset, CustomCommentWiseBioDataset
 from data.data_loader import get_embedding
 
 from misc.run_configuration import RunConfiguration
+
+ORGANIC_TASK_ALL = 'all'
+ORGANIC_TASK_ENTITIES = 'entities'
+ORGANIC_TASK_ATTRIBUTES = 'attributes'
+
+ORGANIC_TASK_ALL_COMBINE = 'all_combine'
+ORGANIC_TASK_ENTITIES_COMBINE = 'entities_combine'
+ORGANIC_TASK_ATTRIBUTES_COMBINE = 'attributes_combine'
 
 def preprocess_word(word: str) -> str:
 	# TODO: Actual processing
@@ -22,7 +30,8 @@ def preprocess_relevance_word(word: str) -> int:
 		return 0
 	return 1
 
-def bio_dataset(
+def organic_dataset(
+				task:str,
 				pretrained_vectors,
 				hyperparameters: RunConfiguration,
 				batch_size=80,
@@ -32,6 +41,8 @@ def bio_dataset(
 				test_file='test.csv',
 				use_cuda=False,
 				verbose=True):
+
+	assert task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ALL_COMBINE, ORGANIC_TASK_ATTRIBUTES_COMBINE, ORGANIC_TASK_ENTITIES_COMBINE]
 
 	if hyperparameters.use_stop_words:
 		stop_words = get_stop_words('de')
@@ -120,16 +131,30 @@ def bio_dataset(
 
 	]
 
-	train, val, test = CustomBioDataset.splits(
-							path=root,
-							root='.data',
-							train=train_file,
-							validation=validation_file,
-							test=test_file,
-							separator='|',
-							fields=fields,
-							verbose=verbose,
-							hp=hyperparameters)
+	if task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES]:
+		train, val, test = CustomSentenceWiseBioDataset.splits(
+									path=root,
+									root='.data',
+									train=train_file,
+									validation=validation_file,
+									test=test_file,
+									separator='|',
+									fields=fields,
+									verbose=verbose,
+									hp=hyperparameters,
+									task=task)
+	else:
+		train, val, test = CustomCommentWiseBioDataset.splits(
+									path=root,
+									root='.data',
+									train=train_file,
+									validation=validation_file,
+									test=test_file,
+									separator='|',
+									fields=fields,
+									verbose=verbose,
+									hp=hyperparameters,
+									task=task)
 
 	# use updated fields
 	fields = train.fields
@@ -150,12 +175,12 @@ def bio_dataset(
 
 	# add embeddings
 	embedding_size = comment_field.vocab.vectors.shape[1]
-	source_embedding = get_embedding(comment_field.vocab, embedding_size)
+	source_embedding = get_embedding(comment_field.vocab, embedding_size, hyperparameters.embedding_type)
 
 	examples = train.examples[0:3] + val.examples[0:3] + test.examples[0:3]
 
 	return {
-		'task': 'bio2019',
+		'task': 'organic19_' + task,
 		'split_length': (len(train), len(val), len(test)),
 		'iters': (train_iter, val_iter, test_iter), 
 		'vocabs': (comment_field.vocab, aspect_sentiment_field.vocab),

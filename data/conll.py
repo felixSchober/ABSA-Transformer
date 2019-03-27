@@ -13,8 +13,8 @@ import random
 import logging
 import spacy
 from data.data_loader import get_embedding
-from data.custom_fields import ReversibleField
-from data.custom_datasets import CustomSequenceTaggingDataSet
+from data.torchtext.custom_fields import ReversibleField
+from data.torchtext.custom_datasets import CustomSequenceTaggingDataSet
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +101,7 @@ def conll2003_dataset(tag_type, batch_size,
 
     # add embeddings
     embedding_size = inputs_word.vocab.vectors.shape[1]
-    source_embedding = get_embedding(inputs_word.vocab, embedding_size)
+    source_embedding = get_embedding(inputs_word.vocab, embedding_size, 'glove')
     
     examples = train.examples[0:3] + val.examples[0:3] + test.examples[0:3]
     return {
@@ -121,5 +121,3 @@ def extract_samples(samples: List[torchtext.data.example.Example]) -> ExampleLis
         labels: List[str] = example.labels
         result.append(list(zip(input_words, labels)))
     return result
-
-

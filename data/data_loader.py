@@ -81,7 +81,13 @@ class Dataset(object):
 		self.source_reverser = None
 		self.target_reverser = None
 		self.baselines = {}
+
+		# for each transformer head this list contains a list of class weight values
 		self.class_weights: List[List[float]] = []
+
+		# this list contains a loss scaling for each transformer head. This uses the inverse weight of the 
+		# number of times a label counts as n/a
+		self.t_heads_weights: List[float] = []
 
 		self.majority_class_baseline = 0.0
 	
@@ -101,6 +107,7 @@ class Dataset(object):
 				
 		self.logger.debug('Start loading dataset')
 		self.dataset = loader(
+			self.name,
 			word_vectors,
 			self.configuration,
 			self.batch_size,
@@ -187,8 +194,12 @@ class Dataset(object):
 
 			f_vocab = f.vocab
 
+			not_na_samples = 0 # samples that are not n/a
 			for l, freq in f_vocab.freqs.items():
 				total_samples += freq
+
+				if not l == 'n/a':
+					not_na_samples += freq
 
 			majority_class_baseline = 0.0
 			class_weight = [0.0] * self.target_size
@@ -202,8 +213,12 @@ class Dataset(object):
 				t.add_row([l, freq, acc*100, class_weight[stoi_pos]])
 			self.class_weights.append(class_weight)
 
+			head_weight = 1.0 - not_na_samples / total_samples
+			self.t_heads_weights.append(head_weight)
 
 			t.add_row(['Sum', total_samples, '', 1.0])
+			t.add_row(['Head Weight', '', '', head_weight])
+
 
 			if not 'majority_class' in self.baselines:
 				self.baselines['majority_class'] = majority_class_baseline

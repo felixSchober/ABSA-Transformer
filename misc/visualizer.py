@@ -1,6 +1,6 @@
 import logging
 from typing import Tuple, List, Dict, Optional, Union, Iterable
-from data.conll import ExampleList
+# from data.conll import ExampleList
 from torch import Tensor
 import torch.nn as nn
 import numpy as np
@@ -18,11 +18,11 @@ ExampleIterator = Iterable[ExampleBatch]
 logger = logging.getLogger('prediction')
 
 
-def print_samples(samples: ExampleList) -> None:
-	for sample in samples:
-		for word, label in sample:
-			print('{} - {}'.format(word, label))
-		print('\n#######################\n')
+# def print_samples(samples: ExampleList) -> None:
+# 	for sample in samples:
+# 		for word, label in sample:
+# 			print('{} - {}'.format(word, label))
+# 		print('\n#######################\n')
 
 def iterate_with_sample_data(data_iterator: data.Iterator, num_samples:int=5) -> ExampleIterator:
 	assert num_samples > 0
