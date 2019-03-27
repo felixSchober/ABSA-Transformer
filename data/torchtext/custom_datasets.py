@@ -1,4 +1,5 @@
 import torchtext.data as data
+import logging
 import re
 import io
 import os
@@ -21,6 +22,8 @@ from tqdm import tqdm
 import spacy
 from spellchecker import SpellChecker
 from misc.utils import create_dir_if_necessary, check_if_file_exists
+
+logger = logging.getLogger(__name__)
 
 
 class Dataset(torch.utils.data.Dataset):
@@ -841,6 +844,7 @@ class CustomSentenceWiseBioDataset(Dataset):
 			examples.append(data.Example.fromlist(example, tuple(fields)))
 
 		# clip comments
+		# TODO: Utilize intelligent clipping
 		for example in examples:
 			comment_length: int = len(example.comments)
 			if comment_length > hp.clip_comments_to:
@@ -1137,7 +1141,7 @@ class CustomCommentWiseBioDataset(Dataset):
 		# first, find out the longest comment length (most sentences)
 		#max_sentences = max([len(c) for c in comments.items()])
 
-		max_dual_sentence_length = hp.clip_comments_to // 2
+		max_dual_sentence_length = (hp.clip_comments_to // 2) - 1 # -1 because space between sentences
 		for comment_sentences in comments.values():
 
 			# 1st sentence per comment does not have a previous sentence
@@ -1148,8 +1152,14 @@ class CustomCommentWiseBioDataset(Dataset):
 				first_comment_text = sentences[i]
 				second_comment_text = sentences[i+1]
 
+				# clip both comments. 
+				# clip the first comment at the front (since the last words are nearer at the current sentence)
+				# clip the second comment at the back.
+				# also, do not clip a word in half
+				first_comment_text, second_comment_text = clip_sentences_intelligently(first_comment_text, second_comment_text, max_dual_sentence_length)
+
 				# prepend this text to the next comment and clip both comments
-				comment_sentences[i+1][-6] = f'{first_comment_text[:max_dual_sentence_length]} {second_comment_text[:max_dual_sentence_length]}'
+				comment_sentences[i+1][-6] = f'{first_comment_text} {second_comment_text}'
 				raw_examples.append(comment_sentences[i+1])
 
 		# process the aspect sentiment
@@ -1573,3 +1583,58 @@ spell_checker_entities = [
 	'certified-noncertified',
 	'chemical-free'
 ]
+
+def clip_sentences_intelligently(s1, s2, clip_to):
+	# first clip s1 at the front.
+	# let's add words from the back until we hit the clipping mark
+
+	clipped = []
+	current_char_count = 0
+	for w in reversed(s1.split(' ')):
+		# what is the len of the current word
+		wl = len(w)
+
+		# account for spaces in finished comment
+		spaces = len(clipped)
+
+		# does it fit?
+		if current_char_count + spaces + wl <= clip_to:
+			current_char_count += wl
+
+			# enter at front because we reversed the sentence
+			clipped.insert(0, w)
+		else:
+			# doesn't fit anymore -> we are finished with the sentence
+			break
+
+	s1 = ' '.join(clipped)
+
+	# try to fill with s2
+	clip_to = (clip_to - len(s1)) + clip_to
+	
+	# s2
+	clipped = []
+	current_char_count = 0
+	for w in s2.split(' '):
+		wl = len(w)
+		spaces = len(clipped)
+		if current_char_count + spaces + wl <= clip_to:
+			current_char_count += wl
+
+			# enter at back because sentence is not reversed
+			clipped.append(w)
+		else:
+			# doesn't fit anymore -> we are finished with the sentence
+			break
+
+	# now.. there is a weird case, where clip_comments is to short, so that not even the first words fit.
+	# in this case, show a warning and clip the words
+	if len(clipped) == 0:
+		logger.warn('Clip comments to might be to low. Could not fit even one word into sentence. Sentence: ' + s2)
+		s2 = s2[:clip_to]
+	else:
+		s2 = ' '.join(clipped)
+
+	return s1, s2
+
+	
