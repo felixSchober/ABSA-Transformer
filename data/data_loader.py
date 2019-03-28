@@ -1,10 +1,12 @@
+import os
 from typing import List
 from torchtext import data, datasets, vocab
 from torch.nn import Embedding
 from prettytable import PrettyTable
 from misc.run_configuration import RunConfiguration
+import matplotlib.pyplot as plt
 
-from misc.utils import get_class_variable_table
+from misc.utils import get_class_variable_table, create_dir_if_necessary, check_if_file_exists
 
 # see https://github.com/mjc92/TorchTextTutorial/blob/master/01.%20Getting%20started.ipynb
 
@@ -81,6 +83,7 @@ class Dataset(object):
 		self.source_reverser = None
 		self.target_reverser = None
 		self.baselines = {}
+		self.verbose = True
 
 		# for each transformer head this list contains a list of class weight values
 		self.class_weights: List[List[float]] = []
@@ -90,11 +93,19 @@ class Dataset(object):
 		self.t_heads_weights: List[float] = []
 
 		self.majority_class_baseline = 0.0
-	
+
+		if self.verbose:
+			# create an image folder
+			self.img_stats_folder = os.path.join(self.data_path, 'stats')
+			create_dir_if_necessary(self.img_stats_folder)
+				
+
 	def load_data(self,
 				loader,                
 				custom_preprocessing: data.Pipeline=DEFAULT_DATA_PIPELINE,
 				verbose=True):
+
+		self.verbose = verbose
 
 		self.logger.info(f'Getting {self.pretrained_word_embeddings} with dimension {self.pretrained_word_embeddings_dim}')
 		word_vectors: vocab
@@ -116,7 +127,7 @@ class Dataset(object):
 			self.valid_file,
 			self.test_file,
 			self.use_cuda,
-			verbose)
+			self.verbose)
 
 		self.vocabs = self.dataset['vocabs']
 		self.task = self.dataset['task']
@@ -187,10 +198,13 @@ class Dataset(object):
 	def _calculate_dataset_stats(self):
 
 		result_str = '\n\n'
+		target_sentiment_distribution = []
+		target_sentiment_distribution_labels = []
 		for name, f in self.target:
 			if name is None or not f.use_vocab:
 				continue
 			total_samples = 0
+			target_sentiment_distribution_labels.append(name)
 
 			f_vocab = f.vocab
 
@@ -204,11 +218,24 @@ class Dataset(object):
 			majority_class_baseline = 0.0
 			class_weight = [0.0] * self.target_size
 			t = PrettyTable(['Label', 'Samples', 'Triv. Accuracy', 'Class Weight'])
+			labels = []
+
+			sentiment_distributions = []
+
+			num_na_samples = total_samples - not_na_samples
+			observation_distribution = [float(num_na_samples)/total_samples, float(not_na_samples)/total_samples]
+			observation_distribution_lables = ['N/A', 'Sentiment']
+			target_sentiment_distribution.append(observation_distribution[1])
+
 			for l, freq in f_vocab.freqs.items():
 				acc = float(freq) / float(total_samples)
 				majority_class_baseline = max(majority_class_baseline, acc)
 				stoi_pos = f_vocab.stoi[l]
 				class_weight[stoi_pos] = 1 - acc
+
+				if l != 'n/a':
+					sentiment_distributions.append(float(freq) / not_na_samples)
+					labels.append(l)
 
 				t.add_row([l, freq, acc*100, class_weight[stoi_pos]])
 			self.class_weights.append(class_weight)
@@ -219,6 +246,9 @@ class Dataset(object):
 			t.add_row(['Sum', total_samples, '', 1.0])
 			t.add_row(['Head Weight', '', '', head_weight])
 
+			if self.verbose:
+				self.plot_dataset_stats(sentiment_distributions, labels, f'Sentiment Distribution - {name}', f'{name} sentiments.svg')
+				self.plot_dataset_stats(observation_distribution, observation_distribution_lables, f'Ratio of N/A and sentiment - {name}', f'{name} observations.svg')
 
 			if not 'majority_class' in self.baselines:
 				self.baselines['majority_class'] = majority_class_baseline
@@ -227,5 +257,31 @@ class Dataset(object):
 
 			result_str += '\n\n' + t.get_string(title=name) + '\n\n'
 
+		if self.verbose:
+			self.plot_dataset_stats(target_sentiment_distribution, target_sentiment_distribution_labels, f'Dataset Aspect Distribution', 'aspects.svg')
+
 		return result_str
 
+	def plot_dataset_stats(self, fractions, labels, title, fileName):
+		path = os.path.join(self.img_stats_folder, fileName)
+		# don't generate if already exists
+		if check_if_file_exists(path):
+			return
+		
+		fig1, ax1 = plt.subplots()
+		patches, texts, autotexts = ax1.pie(fractions, pctdistance=0.85, labels=labels, autopct='%1.1f%%',
+				shadow=False, startangle=90)
+
+		for text in texts:
+			text.set_color('grey')
+		for autotext in autotexts:
+			autotext.set_color('white')
+
+		centre_circle = plt.Circle((0,0),0.70,fc='white')
+		fig = plt.gcf()
+		fig.gca().add_artist(centre_circle)
+		ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+		plt.title(title)
+		plt.tight_layout()
+		plt.savefig(path, format=fileName.split('.')[-1])
