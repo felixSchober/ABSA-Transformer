@@ -285,11 +285,6 @@ class TrainLogger(object):
 			self.logger.exception('Could not pickle dataframe')
 
 		try:
-			self.data_frame.to_excel(path + '.xlsx', sheet_name=self.experiment_name)
-		except Exception as err:
-			self.logger.exception('Could not export dataframe to excel sheet')
-
-		try:
 			self.train_plotter.plot('svg')
 		except Exception as err:
 			self.logger.exception('Could not plot final results')
