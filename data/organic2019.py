@@ -43,9 +43,10 @@ def organic_dataset(
 				verbose=True):
 
 	assert task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ALL_COMBINE, ORGANIC_TASK_ATTRIBUTES_COMBINE, ORGANIC_TASK_ENTITIES_COMBINE]
+	assert hyperparameters.language == 'en'
 
 	if hyperparameters.use_stop_words:
-		stop_words = get_stop_words('de')
+		stop_words = get_stop_words(hyperparameters.language)
 	else:
 		stop_words = []
 
