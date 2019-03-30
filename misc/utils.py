@@ -81,7 +81,7 @@ def check_if_file_exists(path):
 
     return os.path.exists(path)
 
-
+loggers_set = False
 def create_loggers(log_path=None, experiment_name=None, log_file_name='run.log'):
     #logging.shutdown()
     #reload(logging)
@@ -156,6 +156,11 @@ def create_loggers(log_path=None, experiment_name=None, log_file_name='run.log')
     logger_prediction.addHandler(prediction_handler)
 
     return experiment_name
+
+def reset_loggers():
+	# Remove all handlers associated with the root logger object.
+	for handler in logging.root.handlers[:]:
+		logging.root.removeHandler(handler)
 
 
 def torch_summarize(model, show_weights=True, show_parameters=True):
