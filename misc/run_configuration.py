@@ -144,7 +144,7 @@ good_organic_hp_params = {
 	'batch_size': 20,
 	'language': 'en',
 	'early_stopping': 5,
-	'num_epochs': 1,
+	'num_epochs': 35,
 	'log_every_xth_iteration': -1,
 	'embedding_dim': 300,
 	'embedding_name': '6B',
