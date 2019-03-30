@@ -397,23 +397,35 @@ class TrainEvaluator(object):
 		self.valid_iterator.train = False
 
 		try:
-			tr_loss, tr_f1, tr_accuracy, tr_c_matrices = self.evaluate(self.train_iterator, show_progress=verbose,
+			tr_loss, tr_macro_f1, tr_accuracy, tr_c_matrices, tr_f1_micro, (tp, fn, fp) = self.evaluate(self.train_iterator, show_progress=verbose,
 																   progress_label="Evaluating TRAIN", iterator_name=ITERATOR_TRAIN)
 		finally:
 			self.change_train_mode(True)
 
-		tr_f1 = np.mean(tr_f1)
 		if verbose:
 			self.pre_training.info('TRAIN loss:\t{}'.format(tr_loss))
-			self.pre_training.info('TRAIN f1-s:\t{}'.format(tr_f1))
+			self.pre_training.info('TRAIN MACRO f1-s:\t{}'.format(tr_macro_f1))
+			self.pre_training.info('TRAIN MICRO f1-s:\t{}'.format(tr_f1_micro))
+
+			self.pre_training.info('TRAIN TP:\t{}'.format(tp))
+			self.pre_training.info('TRAIN FP:\t{}'.format(fn))
+			self.pre_training.info('TRAIN FN:\t{}'.format(fp))
+
 			self.pre_training.info('TRAIN accuracy:\t{}'.format(tr_accuracy))
 		else:
 			self.logger.info('TRAIN loss:\t{}'.format(tr_loss))
-			self.logger.info('TRAIN f1-s:\t{}'.format(tr_f1))
+			self.logger.info('TRAIN MACRO f1-s:\t{}'.format(tr_macro_f1))
+			self.logger.info('TRAIN MICRO f1-s:\t{}'.format(tr_f1_micro))
+
+			self.logger.info('TRAIN TP:\t{}'.format(tp))
+			self.logger.info('TRAIN FP:\t{}'.format(fn))
+			self.logger.info('TRAIN FN:\t{}'.format(fp))			
 			self.logger.info('TRAIN accuracy:\t{}'.format(tr_accuracy))
 
 		self.train_logger.log_scalar(None, tr_loss, 'final', ITERATOR_TRAIN + '/loss', 0)
-		self.train_logger.log_scalar(None, tr_f1, 'final', ITERATOR_TRAIN + '/f1', 0)
+		self.train_logger.log_scalar(None, tr_f1_micro, 'final', ITERATOR_TRAIN + '/f1/micro', 0)
+		self.train_logger.log_scalar(None, tr_macro_f1, 'final', ITERATOR_TRAIN + '/f1/macro', 0)
+
 
 		if tr_c_matrices is not None:
 			from misc.visualizer import plot_confusion_matrix
@@ -423,25 +435,35 @@ class TrainEvaluator(object):
 		self.pre_training.debug('--- Valid Scores ---')
 
 		try:
-			val_loss, val_f1, val_accuracy, val_c_matrices = self.evaluate(self.valid_iterator, show_progress=verbose,
+			val_loss, val_macro_f1, val_accuracy, val_c_matrices, val_f1_micro, (tp, fn, fp) = self.evaluate(self.valid_iterator, show_progress=verbose,
 																	   progress_label="Evaluating VALIDATION",
 																	   show_c_matrix=verbose, iterator_name=ITERATOR_VALIDATION)
 		finally:
 			self.change_train_mode(True)
 
-		val_f1 = np.mean(val_f1)
-
 		if verbose:
 			self.pre_training.info('VALID loss:\t{}'.format(val_loss))
-			self.pre_training.info('VALID f1-s:\t{}'.format(val_f1))
+			self.pre_training.info('VALID MACRO f1-s:\t{}'.format(val_macro_f1))
+			self.pre_training.info('VALID MICRO f1-s:\t{}'.format(val_f1_micro))
+
+			self.pre_training.info('VALID TP:\t{}'.format(tp))
+			self.pre_training.info('VALID FP:\t{}'.format(fn))
+			self.pre_training.info('VALID FN:\t{}'.format(fp))						
 			self.pre_training.info('VALID accuracy:\t{}'.format(val_accuracy))
 		else:
 			self.logger.info('VALID loss:\t{}'.format(val_loss))
-			self.logger.info('VALID f1-s:\t{}'.format(val_f1))
+			self.logger.info('VALID MACRO f1-s:\t{}'.format(val_macro_f1))
+			self.logger.info('VALID MICRO f1-s:\t{}'.format(val_f1_micro))
+
+			self.logger.info('VALID TP:\t{}'.format(tp))
+			self.logger.info('VALID FP:\t{}'.format(fn))
+			self.logger.info('VALID FN:\t{}'.format(fp))			
 			self.logger.info('VALID accuracy:\t{}'.format(val_accuracy))
 
 		self.train_logger.log_scalar(None, val_loss, 'final', ITERATOR_VALIDATION + '/loss', 0)
-		self.train_logger.log_scalar(None, val_f1, 'final', ITERATOR_VALIDATION + '/f1', 0)
+		self.train_logger.log_scalar(None, val_f1_micro, 'final', ITERATOR_VALIDATION + '/f1/micro', 0)
+		self.train_logger.log_scalar(None, val_macro_f1, 'final', ITERATOR_VALIDATION + '/f1/macro', 0)
+
 		if val_c_matrices is not None:
 			from misc.visualizer import plot_confusion_matrix
 			fig = plot_confusion_matrix(val_c_matrices, self.dataset.class_labels)
@@ -453,28 +475,39 @@ class TrainEvaluator(object):
 		if use_test_set:
 			self.test_iterator.train = False
 
-			te_loss, te_f1, te_accuracy, te_c_matrices = self.evaluate(self.test_iterator, show_progress=verbose,
+			te_loss, te_macro_f1, te_accuracy, te_c_matrices, te_f1_micro, (tp, fn, fp) = self.evaluate(self.test_iterator, show_progress=verbose,
 																	   progress_label="Evaluating TEST",
 																	   show_c_matrix=verbose, iterator_name=ITERATOR_TEST)
-			te_f1 = np.mean(te_f1)
 			if verbose:
 				self.pre_training.info('TEST loss:\t{}'.format(te_loss))
-				self.pre_training.info('TEST f1-s:\t{}'.format(te_f1))
+				self.pre_training.info('TEST MACRO f1-s:\t{}'.format(te_macro_f1))
+				self.pre_training.info('TEST MICRO f1-s:\t{}'.format(te_f1_micro))
+
+				self.pre_training.info('TEST TP:\t{}'.format(tp))
+				self.pre_training.info('TEST FP:\t{}'.format(fn))
+				self.pre_training.info('TEST FN:\t{}'.format(fp))							
 				self.pre_training.info('TEST accuracy:\t{}'.format(te_accuracy))
 			else:
 				self.logger.info('TEST loss:\t{}'.format(te_loss))
-				self.logger.info('TEST f1-s:\t{}'.format(te_f1))
+				self.logger.info('TEST MACRO f1-s:\t{}'.format(te_macro_f1))
+				self.logger.info('TEST MICRO f1-s:\t{}'.format(te_f1_micro))
+
+				self.logger.info('TEST TP:\t{}'.format(tp))
+				self.logger.info('TEST FP:\t{}'.format(fn))
+				self.logger.info('TEST FN:\t{}'.format(fp))			
 				self.logger.info('TEST accuracy:\t{}'.format(te_accuracy))
 
 			self.train_logger.log_scalar(None, te_loss, 'final', ITERATOR_TEST + '/loss', 0)
-			self.train_logger.log_scalar(None, te_f1, 'final', ITERATOR_TEST + '/f1', 0)
+			self.train_logger.log_scalar(None, te_f1_micro, 'final', ITERATOR_TEST + '/f1/micro', 0)			
+			self.train_logger.log_scalar(None, te_macro_f1, 'final', ITERATOR_TEST + '/f1/macro', 0)
+
 			if te_c_matrices is not None:
 				from misc.visualizer import plot_confusion_matrix
 				fig = plot_confusion_matrix(te_c_matrices, self.dataset.class_labels)
 				plt.show()
 
 		self.train_logger.complete_iteration(-1, -1, -1, -1,  -1, -1, -1, -1, -1, -1, -1, True)
-		return ((tr_loss, tr_f1, tr_c_matrices), (val_loss, val_f1, val_c_matrices), (te_loss, te_f1, te_c_matrices))
+		return ((tr_loss, tr_f1_micro, tr_c_matrices), (val_loss, val_f1_micro, val_c_matrices), (te_loss, te_f1_micro, te_c_matrices))
 
 	def perform_iteration_evaluation(self, iteration: int, epoch_duration: float, time_elapsed: float,
 										total_time: float) -> bool:
