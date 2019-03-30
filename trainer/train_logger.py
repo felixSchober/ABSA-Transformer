@@ -227,11 +227,16 @@ class TrainLogger(object):
 		t_head_name = self.dataset.target_names[head_index]
 
 		# log mean f1
-		self.append_df_row(epoch, iteration, METRIC_F1, iterator_name, f1_mean, head_name=t_head_name)
+		self.append_df_row(epoch, iteration, METRIC_MACRO_F1, iterator_name, f1_mean, head_name=t_head_name)
 
 		# for each target class, calculate precision, recall
 		recall_mean = 0.0
 		precission_mean = 0.0
+
+		# for micro f1 score
+		tp = 0.0
+		fp = 0.0
+		fn = 0.0
 
 		for i, cls_name in enumerate(self.dataset.class_labels):
 
@@ -246,14 +251,30 @@ class TrainLogger(object):
 				precission = 0.0
 			if math.isnan(recall):
 				recall = 0.0
-			recall_mean += recall
-			precission_mean += precission
+
+			# don't use n/a label for macro calculation
+			if cls_name != 'n/a':
+				recall_mean += recall
+				precission_mean += precission
+
+				# sum up tps
+				tp += m['tp']
+				fp += m['fp']
+				fn += m['fn']
 
 			self.append_df_row(epoch, iteration, METRIC_PRECISSION, iterator_name, precission, head_name=t_head_name, head_category=cls_name)
 			self.append_df_row(epoch, iteration, METRIC_RECALL, iterator_name, recall, head_name=t_head_name, head_category=cls_name)
 
-		self.append_df_row(epoch, iteration, METRIC_RECALL, iterator_name, recall_mean / self.dataset.target_size, head_name=t_head_name)
-		self.append_df_row(epoch, iteration, METRIC_PRECISSION, iterator_name, precission_mean / self.dataset.target_size, head_name=t_head_name)
+		self.append_df_row(epoch, iteration, METRIC_MACRO_RECALL, iterator_name, recall_mean / (self.dataset.target_size - 1), head_name=t_head_name)
+		self.append_df_row(epoch, iteration, METRIC_MACRO_PRECISSION, iterator_name, precission_mean / (self.dataset.target_size - 1), head_name=t_head_name)
+
+		# log micro f1 score for head. report 0 if tp+fn+fp == 0
+		if (tp+fn+fp) == 0:
+			micro_f1 = 0.0
+		else:			
+			micro_f1 = (2*tp) / (2*tp+fn+fp)
+		self.append_df_row(epoch, iteration, METRIC_MICRO_F1, iterator_name, micro_f1, head_name=t_head_name)
+
 
 	def complete_iteration(self, epoch: int, iteration: int, train_loss: float, valid_loss: float, valid_f1: float,
 							valid_accuracy: float, epoch_duration: float, duration: float, total_time: float, best_loss: float, best_f1: float, end_of_training:bool=False):
@@ -263,7 +284,7 @@ class TrainLogger(object):
 
 		self.append_df_row(epoch, iteration, METRIC_LOSS, ITERATOR_TRAIN, train_loss, is_general=True)
 		self.append_df_row(epoch, iteration, METRIC_LOSS, ITERATOR_VALIDATION, valid_loss, is_general=True)
-		self.append_df_row(epoch, iteration, METRIC_F1, ITERATOR_VALIDATION, valid_f1, is_general=True)
+		self.append_df_row(epoch, iteration, METRIC_MICRO_F1, ITERATOR_VALIDATION, valid_f1, is_general=True)
 		self.append_df_row(epoch, iteration, METRIC_ACCURACY, ITERATOR_VALIDATION, valid_accuracy, is_general=True)
 
 		try:

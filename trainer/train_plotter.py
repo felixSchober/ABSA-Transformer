@@ -6,7 +6,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 
 from misc.utils import create_dir_if_necessary
-from trainer.utils import METRIC_F1, METRIC_LOSS, METRIC_PRECISSION, METRIC_RECALL, METRIC_ACCURACY
+from trainer.utils import *
 
 class TrainPlotter(object):
 	
@@ -27,9 +27,11 @@ class TrainPlotter(object):
 		self.f1_curves = os.path.join(image_path, 'f1', 'general')
 
 		self.loss_series: Optional[pd.core.series.Series] = None
-		self.general_f1_series: Optional[pd.core.series.Series] = None
-		self.head_f1_series: Optional[pd.core.series.Series] = None
-		self.head_recall_series: Optional[pd.core.series.Series] = None
+		self.general_micro_f1_series: Optional[pd.core.series.Series] = None
+		self.head_general_micro_f1_series: Optional[pd.core.series.Series] = None
+		self.head_general_macro_f1_series: Optional[pd.core.series.Series] = None
+
+		self.head_macro_recall_series: Optional[pd.core.series.Series] = None
 
 		self._init_folders()
 		self._init_sns()
@@ -55,10 +57,14 @@ class TrainPlotter(object):
 		it = int(df['iteration'].iloc[-1])
 
 		self.loss_series = (df['metric type']==METRIC_LOSS)&(df['is general'] == 1.0)
-		self.general_f1_series = (df['metric type']==METRIC_F1)&(df['is general'] == 1.0)
-		self.head_general_f1_series = (df['metric type']=='f1')&(df['is general'] == 0.0)&(df['head category'] == '')&(df['iteration'] == it)
-		self.head_sentiment_f1_series = (df['metric type']=='f1')&(df['is general'] == 0.0)&(df['head category'] != '')&(df['iteration'] == it)
-		self.head_recall_series = (df['metric type']=='recall')&(df['is general'] == 0.0)&(df['head category'] != '')&(df['iteration'] == it)
+		self.general_micro_f1_series = (df['metric type']==METRIC_MICRO_F1)&(df['is general'] == 1.0)
+
+		self.head_general_micro_f1_series = (df['metric type']==METRIC_MICRO_F1)&(df['is general'] == 0.0)&(df['head category'] == '')&(df['iteration'] == it)
+		self.head_general_macro_f1_series = (df['metric type']==METRIC_MACRO_F1)&(df['is general'] == 0.0)&(df['head category'] == '')&(df['iteration'] == it)
+
+		self.head_sentiment_f1_series = (df['metric type']==METRIC_F1)&(df['is general'] == 0.0)&(df['head category'] != '')&(df['iteration'] == it)
+
+		self.head_macro_recall_series = (df['metric type']==METRIC_RECALL)&(df['is general'] == 0.0)&(df['head category'] != '')&(df['iteration'] == it)
 		self.df = df		
 
 	def plot(self, format:str='jpg'):
@@ -68,16 +74,16 @@ class TrainPlotter(object):
 		self.generate_lineplot(self.loss_series, f'{self.experiment_name}\nTrain and validation losses on\n{self.dataset_name}', self.loss_name, path, self.max_iteration, format, 'iterator type', legend_title='Split')
 
 		path = os.path.join(self.f1_curves, f'{it}_f1')
-		self.generate_lineplot(self.general_f1_series, f'{self.experiment_name}\nTrain and validation f1 scores on\n{self.dataset_name}', 'f1 score', path, self.max_iteration, format, 'iterator type', legend_title='Split')
+		self.generate_lineplot(self.general_micro_f1_series, f'{self.experiment_name}\nTrain and validation f1 scores on\n{self.dataset_name}', 'micro f1 score', path, self.max_iteration, format, 'iterator type', legend_title='Split')
 		
 		path = os.path.join(self.f1_path_heads, f'{it}_f1')
-		self.generate_barplot(self.head_general_f1_series, 'head name', f'{self.experiment_name}\nValidation F1 Scores for individual aspect heads on\n{self.dataset_name}', 'f1 score', 'aspect', path)
+		self.generate_barplot(self.head_general_micro_f1_series, 'head name', f'{self.experiment_name}\nValidation F1 scores for individual aspect heads on\n{self.dataset_name}', 'micro f1 score', 'aspect', path)
 
 		path = os.path.join(self.f1_path_heads_sentiment, f'{it}_f1')
-		self.generate_barplot(self.head_sentiment_f1_series, x_value='head name', title=f'{self.experiment_name}\nValidation Sentiment F1 Scores for individual aspect heads on\n{self.dataset_name}', y_label='f1 score', x_label='aspect', path=path, color=None, hue='head category', legend_title='Sentiment')
+		self.generate_barplot(self.head_sentiment_f1_series, x_value='head name', title=f'{self.experiment_name}\nValidation sentiment F1 scores for individual aspect heads on\n{self.dataset_name}', y_label='f1 score', x_label='aspect', path=path, color=None, hue='head category', legend_title='Sentiment')
 
 		path = os.path.join(self.recall_path_heads_sentiment, f'{it}_recall')
-		self.generate_barplot(self.head_recall_series, x_value='head name', title=f'{self.experiment_name}\nValidation Sentiment recall for individual aspect heads on\n{self.dataset_name}', y_label='recall', x_label='aspect', path=path, color=None, hue='head category', legend_title='Sentiment')
+		self.generate_barplot(self.head_macro_recall_series, x_value='head name', title=f'{self.experiment_name}\nValidation sentiment recall for individual aspect heads on\n{self.dataset_name}', y_label='macro recall', x_label='aspect', path=path, color=None, hue='head category', legend_title='Sentiment')
 
 	def generate_lineplot(self,
 					series: pd.core.series.Series,

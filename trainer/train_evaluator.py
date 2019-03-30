@@ -240,6 +240,8 @@ class TrainEvaluator(object):
 		elif f1_strategy == 'macro':
 			mean_valid_f1 = np.mean(f_scores)
 		names = self.model.names
+
+		# report head f1 scores and calculate weighted macro f1 score and unweighted macro f1 score
 		for score, name in zip(f_scores, names):
 			self.logger.info(f'Transformer Head {name} with f1 score: {score}.')
 			self.train_logger.log_scalar(None, score, 'f1', ITERATOR_VALIDATION + '/' + name, iteration)
@@ -310,9 +312,10 @@ class TrainEvaluator(object):
 			# this is for the calculation of the micro f1 score. It calculates the f1 score by summing up all tps, fps...
 			# From the documentation:
 			# Calculate metrics globally by counting the total true positives, false negatives and false positives.
-			tp += sum([m['tp'] for m in metrics])
-			fn += sum([m['fn'] for m in metrics])
-			fp += sum([m['fp'] for m in metrics])
+			# However, we exclude the n/a labels which are at position 0
+			tp += sum([m['tp'] for m in metrics[1:]])
+			fn += sum([m['fn'] for m in metrics[1:]])
+			fp += sum([m['fp'] for m in metrics[1:]])
 			
 		return f_scores_macro, tp, fn, fp
 
@@ -368,10 +371,13 @@ class TrainEvaluator(object):
 			f1 = self.calculate_binary_aspect_f1(metrics)
 			if math.isnan(f1):
 				f1 = 0.0
-			s_f1 += f1
+
+			# for macro f1 calculation exclude n/a label
+			if i > 0:
+				s_f1 += f1
 			metrics_list.append(metrics)
 			scores.append(f1)
-		return (s_f1 / self.dataset.target_size, scores, metrics_list)
+		return (s_f1 / (self.dataset.target_size - 1), scores, metrics_list)
 
 	def calculate_aspect_binary_classification_result(self, target, prediction, class_label):
 		mask_target = target == class_label
