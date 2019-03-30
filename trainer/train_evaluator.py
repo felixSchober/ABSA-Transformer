@@ -110,7 +110,7 @@ class TrainEvaluator(object):
 	# 	return np.array(losses).mean()
 
 	def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False,
-				 progress_label: str="Evaluation", f1_strategy: str='micro', iterator_name: str = 'unknwn', iteration:int=-1) -> Tuple[float, float, float, np.array]:
+				 progress_label: str="Evaluation", f1_strategy: str='micro', iterator_name: str = 'unknwn', iteration:int=-1) -> Tuple[float, float, float, np.array, float, Tuple[int, int, int]]:
 		self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(
 			iterator.epoch, len(iterator)))
 
@@ -193,7 +193,7 @@ class TrainEvaluator(object):
 			accuracy = float(true_pos) / float(total)
 
 			# calculate f1 score based on predictions and targets
-			f_scores, p_scores, r_scores, s_scores = self.calculate_multiheaded_scores(
+			f1_macro_scores, tp, fn, fp = self.calculate_multiheaded_scores(
 				iterator_name, predictions.data, targets, f1_strategy, iteration=iteration, epoch=self.train_iterator.epoch)
 			if show_c_matrix:
 				self.logger.debug(f'Resetting batch size to {prev_batch_size}.')
@@ -210,11 +210,14 @@ class TrainEvaluator(object):
 		# reset model into training mode
 		self.change_train_mode(True)
 
-		self.logger.debug('Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(
-			avg_loss, np.mean(f_scores), c_matrices))
-		return (avg_loss, f_scores, accuracy, c_matrices)
+		# calculate micro f1 score
+		f1_micro = (2 * tp) / (2 * tp + fn + fp)
 
-	def evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=False) -> Tuple[float, float, float, float]:
+		self.logger.debug('Evaluation finished. Avg loss: {} - Macro F1 {} - Micro F1 {} - c_matrices: {}'.format(
+			avg_loss, np.mean(f1_macro_scores), f1_micro, c_matrices))
+		return (avg_loss, f1_macro_scores, accuracy, c_matrices, f1_micro, (tp, fn, fp))
+
+	def evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=False, f1_strategy='micro') -> Tuple[float, float, float, float]:
 		mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
 		self.train_logger.log_scalar(
 			None, mean_train_loss, 'loss', ITERATOR_TRAIN + '/mean', iteration)
@@ -223,16 +226,22 @@ class TrainEvaluator(object):
 		self.logger.debug('Start Evaluation')
 
 		try:
-			mean_valid_loss, f_scores, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=show_c_matrix,
-																			 show_progress=show_progress, iterator_name=ITERATOR_VALIDATION, iteration=iteration)
+			mean_valid_loss, f_scores, accuracy, c_matrices, f1_micro, (tp, fn, fp) = self.evaluate(self.valid_iterator, show_c_matrix=show_c_matrix,
+																			 show_progress=show_progress, iterator_name=ITERATOR_VALIDATION, iteration=iteration, f1_strategy=f1_strategy)
 		finally:
 			self.change_train_mode(True)
 
 		self.logger.debug('Evaluation Complete')
 		# log results
 		# report scores for each aspect
-		mean_valid_f1 = np.mean(f_scores)
+
+		if f1_strategy == 'micro':
+			mean_valid_f1 = f1_micro
+		elif f1_strategy == 'macro':
+			mean_valid_f1 = np.mean(f_scores)
 		names = self.model.names
+
+		# report head f1 scores and calculate weighted macro f1 score and unweighted macro f1 score
 		for score, name in zip(f_scores, names):
 			self.logger.info(f'Transformer Head {name} with f1 score: {score}.')
 			self.train_logger.log_scalar(None, score, 'f1', ITERATOR_VALIDATION + '/' + name, iteration)
@@ -241,6 +250,12 @@ class TrainEvaluator(object):
 			self.val_loss_history, mean_valid_loss, 'loss', ITERATOR_VALIDATION, iteration)
 		self.train_logger.log_scalar(
 			self.val_acc_history, mean_valid_f1, 'f1', ITERATOR_VALIDATION, iteration)
+		self.train_logger.log_scalar(
+			None, tp, 'tp', ITERATOR_VALIDATION, iteration)
+		self.train_logger.log_scalar(
+			None, fn, 'fn', ITERATOR_VALIDATION, iteration)
+		self.train_logger.log_scalar(
+			None, fp, 'fp', ITERATOR_VALIDATION, iteration)
 		self.dataset.baselines['current'] = accuracy
 		self.train_logger.log_scalars(
 			self.dataset.baselines, ITERATOR_VALIDATION + '/accuracy', iteration)
@@ -254,15 +269,19 @@ class TrainEvaluator(object):
 
 		return (mean_train_loss, mean_valid_loss, mean_valid_f1, accuracy)
 
-	def calculate_multiheaded_scores(self, iterator_name: str, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro', iteration: int=0, epoch: int=0) -> Tuple[List[float], List[float], List[float], List[float]]:
+	def calculate_multiheaded_scores(self, iterator_name: str, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro', iteration: int=0, epoch: int=0) -> Tuple[List[float], int, int, int]:
 		predictions = torch.t(prediction)
 		targets = torch.t(targets)
 
-		f_scores: List[float] = []
-		p_scores: List[float] = []
-		r_scores: List[float] = []
-		s_scores: List[float] = []
+		# for macro score
+		f_scores_macro: List[float] = []
 
+		# for micro score
+		tp = 0
+		fn = 0
+		fp = 0
+
+		# iterate over all target heads and get true positives, false positives, etc for each aspect
 		for i in range(len(self.dataset.target)):
 			try:
 				y_pred = predictions[i]
@@ -286,10 +305,19 @@ class TrainEvaluator(object):
 			except Exception as err:
 				self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(),
 																								  targets.size()))
-			f_scores.append(f1_mean)
-			
+			# this is the macro score. From the scikit learn documentation:
+			# Calculate metrics for each label, and find their unweighted mean. This does not take label imbalance into account.
+			f_scores_macro.append(f1_mean)
 
-		return f_scores, [], [], []
+			# this is for the calculation of the micro f1 score. It calculates the f1 score by summing up all tps, fps...
+			# From the documentation:
+			# Calculate metrics globally by counting the total true positives, false negatives and false positives.
+			# However, we exclude the n/a labels which are at position 0
+			tp += sum([m['tp'] for m in metrics[1:]])
+			fn += sum([m['fn'] for m in metrics[1:]])
+			fp += sum([m['fp'] for m in metrics[1:]])
+			
+		return f_scores_macro, tp, fn, fp
 
 	def calculate_scores(self, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro') -> Tuple[List[float], List[float], List[float], List[float]]:
 		p_size = prediction.size()
@@ -343,10 +371,13 @@ class TrainEvaluator(object):
 			f1 = self.calculate_binary_aspect_f1(metrics)
 			if math.isnan(f1):
 				f1 = 0.0
-			s_f1 += f1
+
+			# for macro f1 calculation exclude n/a label
+			if i > 0:
+				s_f1 += f1
 			metrics_list.append(metrics)
 			scores.append(f1)
-		return (s_f1 / self.dataset.target_size, scores, metrics_list)
+		return (s_f1 / (self.dataset.target_size - 1), scores, metrics_list)
 
 	def calculate_aspect_binary_classification_result(self, target, prediction, class_label):
 		mask_target = target == class_label
@@ -366,23 +397,35 @@ class TrainEvaluator(object):
 		self.valid_iterator.train = False
 
 		try:
-			tr_loss, tr_f1, tr_accuracy, tr_c_matrices = self.evaluate(self.train_iterator, show_progress=verbose,
+			tr_loss, tr_macro_f1, tr_accuracy, tr_c_matrices, tr_f1_micro, (tp, fn, fp) = self.evaluate(self.train_iterator, show_progress=verbose,
 																   progress_label="Evaluating TRAIN", iterator_name=ITERATOR_TRAIN)
 		finally:
 			self.change_train_mode(True)
 
-		tr_f1 = np.mean(tr_f1)
 		if verbose:
 			self.pre_training.info('TRAIN loss:\t{}'.format(tr_loss))
-			self.pre_training.info('TRAIN f1-s:\t{}'.format(tr_f1))
+			self.pre_training.info('TRAIN MACRO f1-s:\t{}'.format(tr_macro_f1))
+			self.pre_training.info('TRAIN MICRO f1-s:\t{}'.format(tr_f1_micro))
+
+			self.pre_training.info('TRAIN TP:\t{}'.format(tp))
+			self.pre_training.info('TRAIN FP:\t{}'.format(fn))
+			self.pre_training.info('TRAIN FN:\t{}'.format(fp))
+
 			self.pre_training.info('TRAIN accuracy:\t{}'.format(tr_accuracy))
 		else:
 			self.logger.info('TRAIN loss:\t{}'.format(tr_loss))
-			self.logger.info('TRAIN f1-s:\t{}'.format(tr_f1))
+			self.logger.info('TRAIN MACRO f1-s:\t{}'.format(tr_macro_f1))
+			self.logger.info('TRAIN MICRO f1-s:\t{}'.format(tr_f1_micro))
+
+			self.logger.info('TRAIN TP:\t{}'.format(tp))
+			self.logger.info('TRAIN FP:\t{}'.format(fn))
+			self.logger.info('TRAIN FN:\t{}'.format(fp))			
 			self.logger.info('TRAIN accuracy:\t{}'.format(tr_accuracy))
 
 		self.train_logger.log_scalar(None, tr_loss, 'final', ITERATOR_TRAIN + '/loss', 0)
-		self.train_logger.log_scalar(None, tr_f1, 'final', ITERATOR_TRAIN + '/f1', 0)
+		self.train_logger.log_scalar(None, tr_f1_micro, 'final', ITERATOR_TRAIN + '/f1/micro', 0)
+		self.train_logger.log_scalar(None, tr_macro_f1, 'final', ITERATOR_TRAIN + '/f1/macro', 0)
+
 
 		if tr_c_matrices is not None:
 			from misc.visualizer import plot_confusion_matrix
@@ -392,25 +435,35 @@ class TrainEvaluator(object):
 		self.pre_training.debug('--- Valid Scores ---')
 
 		try:
-			val_loss, val_f1, val_accuracy, val_c_matrices = self.evaluate(self.valid_iterator, show_progress=verbose,
+			val_loss, val_macro_f1, val_accuracy, val_c_matrices, val_f1_micro, (tp, fn, fp) = self.evaluate(self.valid_iterator, show_progress=verbose,
 																	   progress_label="Evaluating VALIDATION",
 																	   show_c_matrix=verbose, iterator_name=ITERATOR_VALIDATION)
 		finally:
 			self.change_train_mode(True)
 
-		val_f1 = np.mean(val_f1)
-
 		if verbose:
 			self.pre_training.info('VALID loss:\t{}'.format(val_loss))
-			self.pre_training.info('VALID f1-s:\t{}'.format(val_f1))
+			self.pre_training.info('VALID MACRO f1-s:\t{}'.format(val_macro_f1))
+			self.pre_training.info('VALID MICRO f1-s:\t{}'.format(val_f1_micro))
+
+			self.pre_training.info('VALID TP:\t{}'.format(tp))
+			self.pre_training.info('VALID FP:\t{}'.format(fn))
+			self.pre_training.info('VALID FN:\t{}'.format(fp))						
 			self.pre_training.info('VALID accuracy:\t{}'.format(val_accuracy))
 		else:
 			self.logger.info('VALID loss:\t{}'.format(val_loss))
-			self.logger.info('VALID f1-s:\t{}'.format(val_f1))
+			self.logger.info('VALID MACRO f1-s:\t{}'.format(val_macro_f1))
+			self.logger.info('VALID MICRO f1-s:\t{}'.format(val_f1_micro))
+
+			self.logger.info('VALID TP:\t{}'.format(tp))
+			self.logger.info('VALID FP:\t{}'.format(fn))
+			self.logger.info('VALID FN:\t{}'.format(fp))			
 			self.logger.info('VALID accuracy:\t{}'.format(val_accuracy))
 
 		self.train_logger.log_scalar(None, val_loss, 'final', ITERATOR_VALIDATION + '/loss', 0)
-		self.train_logger.log_scalar(None, val_f1, 'final', ITERATOR_VALIDATION + '/f1', 0)
+		self.train_logger.log_scalar(None, val_f1_micro, 'final', ITERATOR_VALIDATION + '/f1/micro', 0)
+		self.train_logger.log_scalar(None, val_macro_f1, 'final', ITERATOR_VALIDATION + '/f1/macro', 0)
+
 		if val_c_matrices is not None:
 			from misc.visualizer import plot_confusion_matrix
 			fig = plot_confusion_matrix(val_c_matrices, self.dataset.class_labels)
@@ -422,28 +475,39 @@ class TrainEvaluator(object):
 		if use_test_set:
 			self.test_iterator.train = False
 
-			te_loss, te_f1, te_accuracy, te_c_matrices = self.evaluate(self.test_iterator, show_progress=verbose,
+			te_loss, te_macro_f1, te_accuracy, te_c_matrices, te_f1_micro, (tp, fn, fp) = self.evaluate(self.test_iterator, show_progress=verbose,
 																	   progress_label="Evaluating TEST",
 																	   show_c_matrix=verbose, iterator_name=ITERATOR_TEST)
-			te_f1 = np.mean(te_f1)
 			if verbose:
 				self.pre_training.info('TEST loss:\t{}'.format(te_loss))
-				self.pre_training.info('TEST f1-s:\t{}'.format(te_f1))
+				self.pre_training.info('TEST MACRO f1-s:\t{}'.format(te_macro_f1))
+				self.pre_training.info('TEST MICRO f1-s:\t{}'.format(te_f1_micro))
+
+				self.pre_training.info('TEST TP:\t{}'.format(tp))
+				self.pre_training.info('TEST FP:\t{}'.format(fn))
+				self.pre_training.info('TEST FN:\t{}'.format(fp))							
 				self.pre_training.info('TEST accuracy:\t{}'.format(te_accuracy))
 			else:
 				self.logger.info('TEST loss:\t{}'.format(te_loss))
-				self.logger.info('TEST f1-s:\t{}'.format(te_f1))
+				self.logger.info('TEST MACRO f1-s:\t{}'.format(te_macro_f1))
+				self.logger.info('TEST MICRO f1-s:\t{}'.format(te_f1_micro))
+
+				self.logger.info('TEST TP:\t{}'.format(tp))
+				self.logger.info('TEST FP:\t{}'.format(fn))
+				self.logger.info('TEST FN:\t{}'.format(fp))			
 				self.logger.info('TEST accuracy:\t{}'.format(te_accuracy))
 
 			self.train_logger.log_scalar(None, te_loss, 'final', ITERATOR_TEST + '/loss', 0)
-			self.train_logger.log_scalar(None, te_f1, 'final', ITERATOR_TEST + '/f1', 0)
+			self.train_logger.log_scalar(None, te_f1_micro, 'final', ITERATOR_TEST + '/f1/micro', 0)			
+			self.train_logger.log_scalar(None, te_macro_f1, 'final', ITERATOR_TEST + '/f1/macro', 0)
+
 			if te_c_matrices is not None:
 				from misc.visualizer import plot_confusion_matrix
 				fig = plot_confusion_matrix(te_c_matrices, self.dataset.class_labels)
 				plt.show()
 
 		self.train_logger.complete_iteration(-1, -1, -1, -1,  -1, -1, -1, -1, -1, -1, -1, True)
-		return ((tr_loss, tr_f1, tr_c_matrices), (val_loss, val_f1, val_c_matrices), (te_loss, te_f1, te_c_matrices))
+		return ((tr_loss, tr_f1_micro, tr_c_matrices), (val_loss, val_f1_micro, val_c_matrices), (te_loss, te_f1_micro, te_c_matrices))
 
 	def perform_iteration_evaluation(self, iteration: int, epoch_duration: float, time_elapsed: float,
 										total_time: float) -> bool:

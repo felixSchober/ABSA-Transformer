@@ -115,6 +115,42 @@ elmo_params = {
 	'att_d_v': 128,
 }
 
+good_organic_hp_params = {
+	'output_layer_type': OutputLayerType.LinearSum,
+	'embedding_type': 'glove',
+	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
+	'learning_rate_scheduler': {
+		'noam_learning_rate_warmup': 4631,
+		'noam_learning_rate_factor': 3.3368149482
+	},
+	'optimizer_type':  OptimizerType.Adam,
+	'optimizer':  {
+		'learning_rate': 0.001,
+		'adam_beta1': 0.89178641984,
+		'adam_beta2': 0.83491754824,
+		'adam_eps': 8.734158747166484e-09,		
+		'adam_weight_decay': 1e-08,
+	},
+	'num_encoder_blocks': 2,
+	'num_heads': 3,
+	'att_d_k': 100,
+	'att_d_v': 100,
+	'dropout_rate': 0.392996573831,
+	'pointwise_layer_size': 195,
+	'output_dropout_rate': 0.7608194889605,
+	'clip_comments_to': 195,
+	'model_size': 300,
+	'use_spell_checkers': False,
+	'batch_size': 20,
+	'language': 'en',
+	'early_stopping': 5,
+	'num_epochs': 1,
+	'log_every_xth_iteration': -1,
+	'embedding_dim': 300,
+	'embedding_name': '6B',
+	'task': 'entities'
+}
+
 class RunConfiguration(object):
 
 		def __init__(self,
@@ -132,10 +168,12 @@ class RunConfiguration(object):
 			assert model_size > 0
 			assert kwargs['batch_size'] > 0
 			assert early_stopping == -1 or early_stopping > 0
+			assert kwargs['task'] != None and kwargs['task'] != ''
 
 			self.model_size = model_size
 			self.early_stopping = early_stopping
 			self.use_cuda = use_cuda
+			self.task = kwargs['task']
 
 			self.batch_size = self._get_default('batch_size', cast_int=True)
 
@@ -235,7 +273,7 @@ class RunConfiguration(object):
 			self.use_stemming = self._get_default('use_stemming', False)
 			self.harmonize_bahn = self._get_default('harmonize_bahn', False)
 			self.use_spell_checkers = self._get_default('use_spell_checkers', False)
-			self.replace_url_tokens = self._get_default('replace_url_tokens', False)
+			self.replace_url_tokens = self._get_default('replace_url_tokens', True)
 			self.use_text_cleaner = self._get_default('use_text_cleaner', False)
 			
 			self.seed = 42			
@@ -377,10 +415,18 @@ def from_hyperopt(hyperopt_params,
 	return rc
 	
 
-def get_default_params(use_cuda: bool = False, overwrite: Dict = None) -> RunConfiguration:
-	params = default_params
+def get_default_params(task: str = None, use_cuda: bool = False, overwrite: Dict = None, from_default: Dict = None) -> RunConfiguration:
+		
+	if from_default is None:
+		params = default_params
+	else:
+		params = from_default.copy()
+
 	if overwrite:
-		params = {**default_params, **overwrite}
+		params = {**params, **overwrite}
+
+	if task is not None:
+		params['task'] = task
 
 	return RunConfiguration(
 		use_cuda,
