@@ -115,6 +115,36 @@ elmo_params = {
 	'att_d_v': 128,
 }
 
+good_organic_hp_params = {
+	'output_layer_type': OutputLayerType.LinearSum,
+	'embedding_type': 'glove',
+	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
+	'learning_rate_scheduler': {
+		'noam_learning_rate_warmup': 4631,
+		'noam_learning_rate_factor': 3.3368149482
+	},
+	'optimizer_type':  OptimizerType.Adam,
+	'optimizer':  {
+		'learning_rate': 0.001,
+		'adam_beta1': 0.89178641984,
+		'adam_beta2': 0.83491754824,
+		'adam_eps': 8.734158747166484e-09,		
+		'adam_weight_decay': 1e-08,
+	},
+	'num_encoder_blocks': 2,
+	'num_heads': 3,
+	'att_d_k': 100,
+	'att_d_v': 100,
+	'dropout_rate': 0.392996573831,
+	'pointwise_layer_size': 195,
+	'output_dropout_rate': 0.7608194889605,
+	'clip_comments_to': 195,
+	'model_size': 300,
+	'use_spell_checkers': False,
+	'batch_size': 20
+
+}
+
 class RunConfiguration(object):
 
 		def __init__(self,
