@@ -141,8 +141,14 @@ good_organic_hp_params = {
 	'clip_comments_to': 195,
 	'model_size': 300,
 	'use_spell_checkers': False,
-	'batch_size': 20
-
+	'batch_size': 20,
+	'language': 'en',
+	'early_stopping': 5,
+	'num_epochs': 1,
+	'log_every_xth_iteration': -1,
+	'embedding_dim': 300,
+	'embedding_name': '6B',
+	'task': 'entities'
 }
 
 class RunConfiguration(object):
@@ -409,13 +415,20 @@ def from_hyperopt(hyperopt_params,
 	return rc
 	
 
-def get_default_params(task, use_cuda: bool = False, overwrite: Dict = None) -> RunConfiguration:
-	params = default_params
+def get_default_params(task: str = None, use_cuda: bool = False, overwrite: Dict = None, from_default: Dict = None) -> RunConfiguration:
+		
+	if from_default is None:
+		params = default_params
+	else:
+		params = from_default.copy()
+
 	if overwrite:
-		params = {**default_params, **overwrite}
+		params = {**params, **overwrite}
+
+	if task is not None:
+		params['task'] = task
 
 	return RunConfiguration(
 		use_cuda,
-		task=task,
 		**params
 	)
