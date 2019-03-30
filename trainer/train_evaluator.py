@@ -110,7 +110,7 @@ class TrainEvaluator(object):
 	# 	return np.array(losses).mean()
 
 	def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False,
-				 progress_label: str="Evaluation", f1_strategy: str='micro', iterator_name: str = 'unknwn', iteration:int=-1) -> Tuple[float, float, float, np.array]:
+				 progress_label: str="Evaluation", f1_strategy: str='micro', iterator_name: str = 'unknwn', iteration:int=-1) -> Tuple[float, float, float, np.array, float, Tuple[int, int, int]]:
 		self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(
 			iterator.epoch, len(iterator)))
 
@@ -193,7 +193,7 @@ class TrainEvaluator(object):
 			accuracy = float(true_pos) / float(total)
 
 			# calculate f1 score based on predictions and targets
-			f_scores, p_scores, r_scores, s_scores = self.calculate_multiheaded_scores(
+			f1_macro_scores, tp, fn, fp = self.calculate_multiheaded_scores(
 				iterator_name, predictions.data, targets, f1_strategy, iteration=iteration, epoch=self.train_iterator.epoch)
 			if show_c_matrix:
 				self.logger.debug(f'Resetting batch size to {prev_batch_size}.')
@@ -210,11 +210,14 @@ class TrainEvaluator(object):
 		# reset model into training mode
 		self.change_train_mode(True)
 
-		self.logger.debug('Evaluation finished. Avg loss: {} - Avg: f1 {} - c_matrices: {}'.format(
-			avg_loss, np.mean(f_scores), c_matrices))
-		return (avg_loss, f_scores, accuracy, c_matrices)
+		# calculate micro f1 score
+		f1_micro = (2 * tp) / (2 * tp + fn + fp)
 
-	def evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=False) -> Tuple[float, float, float, float]:
+		self.logger.debug('Evaluation finished. Avg loss: {} - Macro F1 {} - Micro F1 {} - c_matrices: {}'.format(
+			avg_loss, np.mean(f1_macro_scores), f1_micro, c_matrices))
+		return (avg_loss, f1_macro_scores, accuracy, c_matrices, f1_micro, (tp, fn, fp))
+
+	def evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=False, f1_strategy='micro') -> Tuple[float, float, float, float]:
 		mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
 		self.train_logger.log_scalar(
 			None, mean_train_loss, 'loss', ITERATOR_TRAIN + '/mean', iteration)
@@ -223,15 +226,19 @@ class TrainEvaluator(object):
 		self.logger.debug('Start Evaluation')
 
 		try:
-			mean_valid_loss, f_scores, accuracy, c_matrices = self.evaluate(self.valid_iterator, show_c_matrix=show_c_matrix,
-																			 show_progress=show_progress, iterator_name=ITERATOR_VALIDATION, iteration=iteration)
+			mean_valid_loss, f_scores, accuracy, c_matrices, f1_micro, (tp, fn, fp) = self.evaluate(self.valid_iterator, show_c_matrix=show_c_matrix,
+																			 show_progress=show_progress, iterator_name=ITERATOR_VALIDATION, iteration=iteration, f1_strategy=f1_strategy)
 		finally:
 			self.change_train_mode(True)
 
 		self.logger.debug('Evaluation Complete')
 		# log results
 		# report scores for each aspect
-		mean_valid_f1 = np.mean(f_scores)
+
+		if f1_strategy == 'micro':
+			mean_valid_f1 = f1_micro
+		elif f1_strategy == 'macro':
+			mean_valid_f1 = np.mean(f_scores)
 		names = self.model.names
 		for score, name in zip(f_scores, names):
 			self.logger.info(f'Transformer Head {name} with f1 score: {score}.')
@@ -241,6 +248,12 @@ class TrainEvaluator(object):
 			self.val_loss_history, mean_valid_loss, 'loss', ITERATOR_VALIDATION, iteration)
 		self.train_logger.log_scalar(
 			self.val_acc_history, mean_valid_f1, 'f1', ITERATOR_VALIDATION, iteration)
+		self.train_logger.log_scalar(
+			None, tp, 'tp', ITERATOR_VALIDATION, iteration)
+		self.train_logger.log_scalar(
+			None, fn, 'fn', ITERATOR_VALIDATION, iteration)
+		self.train_logger.log_scalar(
+			None, fp, 'fp', ITERATOR_VALIDATION, iteration)
 		self.dataset.baselines['current'] = accuracy
 		self.train_logger.log_scalars(
 			self.dataset.baselines, ITERATOR_VALIDATION + '/accuracy', iteration)
@@ -254,15 +267,19 @@ class TrainEvaluator(object):
 
 		return (mean_train_loss, mean_valid_loss, mean_valid_f1, accuracy)
 
-	def calculate_multiheaded_scores(self, iterator_name: str, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro', iteration: int=0, epoch: int=0) -> Tuple[List[float], List[float], List[float], List[float]]:
+	def calculate_multiheaded_scores(self, iterator_name: str, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro', iteration: int=0, epoch: int=0) -> Tuple[List[float], int, int, int]:
 		predictions = torch.t(prediction)
 		targets = torch.t(targets)
 
-		f_scores: List[float] = []
-		p_scores: List[float] = []
-		r_scores: List[float] = []
-		s_scores: List[float] = []
+		# for macro score
+		f_scores_macro: List[float] = []
 
+		# for micro score
+		tp = 0
+		fn = 0
+		fp = 0
+
+		# iterate over all target heads and get true positives, false positives, etc for each aspect
 		for i in range(len(self.dataset.target)):
 			try:
 				y_pred = predictions[i]
@@ -286,10 +303,18 @@ class TrainEvaluator(object):
 			except Exception as err:
 				self.logger.exception('Could not compute f1 score for input with size {} and target size {}'.format(prediction.size(),
 																								  targets.size()))
-			f_scores.append(f1_mean)
-			
+			# this is the macro score. From the scikit learn documentation:
+			# Calculate metrics for each label, and find their unweighted mean. This does not take label imbalance into account.
+			f_scores_macro.append(f1_mean)
 
-		return f_scores, [], [], []
+			# this is for the calculation of the micro f1 score. It calculates the f1 score by summing up all tps, fps...
+			# From the documentation:
+			# Calculate metrics globally by counting the total true positives, false negatives and false positives.
+			tp += sum([m['tp'] for m in metrics])
+			fn += sum([m['fn'] for m in metrics])
+			fp += sum([m['fp'] for m in metrics])
+			
+		return f_scores_macro, tp, fn, fp
 
 	def calculate_scores(self, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro') -> Tuple[List[float], List[float], List[float], List[float]]:
 		p_size = prediction.size()
