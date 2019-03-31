@@ -97,7 +97,7 @@ big-picture
 bio-intensive
 blemish-free
 blood-meal
-brain building
+brain-building
 bucket-load
 budget-friendly
 bug-resistant
@@ -241,7 +241,7 @@ non-petrochemical
 non-storable
 non-synthetic
 non-toxicity
-normal-lypriced
+normally-priced
 norms-international
 not-natural-chemistry
 nutrient-adding
@@ -338,3 +338,5 @@ wine-usda
 without-increasing
 working-skills
 wrong-properly
+well-balanced
+well-rotted

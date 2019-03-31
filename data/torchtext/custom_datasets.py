@@ -638,6 +638,21 @@ class CustomSentenceWiseBioDataset(Dataset):
 		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
 		self.dataset_name = 'organic2019Sentences'
 
+		# add spellChecked if spell checker is active
+		if hp.use_spell_checkers:
+			self.dataset_name += '_SP'
+
+		if hp.use_text_cleaner:
+			self.dataset_name += '_TC'
+
+		if hp.contraction_removal:
+			self.dataset_name += '_CR'
+
+		if hp.organic_text_cleaning:
+			self.dataset_name += '_OC'
+
+		self.dataset_name += f'_{hp.clip_comments_to}'
+
 		# first, try to load all models from cache
 		_, filename = os.path.split(path)
 		filename = f'{filename.split(".")[0]}_{task}'
@@ -673,9 +688,13 @@ class CustomSentenceWiseBioDataset(Dataset):
 		# 12: Padding Field
 		# 13+: aspect Sentiment 1/n
 
+		# load organic spell checker
+		if hp.organic_text_cleaning:
+			from data.spellchecker.spellchecker import get_organic_words_replacement
+			organic_text_cleaning_dict = get_organic_words_replacement()
+
 		if hp.use_spell_checkers:
 			spell = initialize_spellchecker(hp.language)
-
 		else:
 			spell = None
 
@@ -793,6 +812,9 @@ class CustomSentenceWiseBioDataset(Dataset):
 
 				if hp.replace_url_tokens:
 					comment = replace_urls(comment)
+
+				if hp.organic_text_cleaning:
+					comment = fix_organic_spelling(comment, organic_text_cleaning_dict)
 
 				if hp.use_spell_checkers:
 					comment = fix_spellings(comment, spell)
@@ -965,6 +987,14 @@ class CustomCommentWiseBioDataset(Dataset):
 		if hp.use_text_cleaner:
 			self.dataset_name += '_TC'
 
+		if hp.contraction_removal:
+			self.dataset_name += '_CR'
+
+		if hp.organic_text_cleaning:
+			self.dataset_name += '_OC'
+
+		self.dataset_name += f'_{hp.clip_comments_to}'
+
 		# first, try to load all models from cache
 		_, filename = os.path.split(path)
 		filename = f'{filename.split(".")[0]}_{task}'
@@ -985,6 +1015,11 @@ class CustomCommentWiseBioDataset(Dataset):
 		# remove punctuation
 		punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "–" + "„")
 
+		# load organic spell checker
+		if hp.organic_text_cleaning:
+			from data.spellchecker.spellchecker import get_organic_words_replacement
+			organic_text_cleaning_dict = get_organic_words_replacement()
+
 		# 0: Sequence number
 		# 1: Index
 		# 2: Author_Id
@@ -1002,7 +1037,6 @@ class CustomCommentWiseBioDataset(Dataset):
 
 		if hp.use_spell_checkers:
 			spell = initialize_spellchecker(hp.language)
-
 		else:
 			spell = None
 
@@ -1117,13 +1151,16 @@ class CustomCommentWiseBioDataset(Dataset):
 				# remove non ascii characters with empty space
 				comment = re.sub(r'[^\x00-\x7f]',r' ', comment)
 				
-				if hp.language == 'en':
+				if hp.contraction_removal:
 					comment = en_contraction_removal(comment)
 
 				comment = comment.split(' ')
 
 				if hp.replace_url_tokens:
 					comment = replace_urls(comment)
+
+				if hp.organic_text_cleaning:
+					comment = fix_organic_spelling(comment, organic_text_cleaning_dict)
 
 				if hp.use_spell_checkers:
 					comment = fix_spellings(comment, spell)
@@ -1464,6 +1501,17 @@ def initialize_spellchecker(language: str) -> SpellChecker:
 	spell.word_frequency.load_words(d)
 
 	return spell
+
+def fix_organic_spelling(text_tokens: List[str], organic_text_cleaning_dict) -> List[str]:
+	for i, w in enumerate(text_tokens):
+		if w == ' ' or w == '':
+			continue
+
+		if w in organic_text_cleaning_dict:
+			text_tokens[i] = organic_text_cleaning_dict[w]
+
+	return text_tokens
+ 
 
 spellCheckerReplaced = []
 

@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Dict
 from misc.utils import check_if_file_exists
 import pickle
 import logging
@@ -55,5 +55,22 @@ def get_organic_dictionary() -> List[str]:
 	with open(path, encoding='utf8') as input_file:
 			for line in input_file:
 				dictionary.append(line.replace('\n', ''))
+
+	return dictionary
+
+def get_organic_words_replacement() -> Dict:
+	# load organic specific entities
+	path = os.path.join(os.getcwd(), 'data', 'spellchecker', 'organic-space-replace.txt')
+
+	if not check_if_file_exists(path):
+		logger.error(f'Could not find source spellchecker file at path {path}. Please download it from the website.')
+		return []
+	dictionary = {}
+	with open(path, encoding='utf8') as input_file:
+			for line in input_file:
+				line = line.replace('\n', '')
+				k = line.replace('-', '')
+				v = line.replace('-', ' ')
+				dictionary[k] = v
 
 	return dictionary
