@@ -277,7 +277,7 @@ class RunConfiguration(object):
 			self.language = language
 
 			# data loading
-			self.use_stop_words = self._get_default('use_stop_words', False)
+			self.use_stop_words = self._get_default('use_stop_words', True)
 			self.use_stemming = self._get_default('use_stemming', False)
 			self.harmonize_bahn = self._get_default('harmonize_bahn', False)
 			self.use_spell_checkers = self._get_default('use_spell_checkers', False)
