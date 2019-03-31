@@ -845,9 +845,12 @@ class CustomSentenceWiseBioDataset(Dataset):
 
 		# clip comments
 		for example in examples:
+
+			#example.comments = [w.strip() for w in example.comments]
+
 			comment_length: int = len(example.comments)
 			if comment_length > hp.clip_comments_to:
-				example.comments = intelligent_sentence_clipping(example.comments, hp.clip_comments_to)
+				example.comments = example.comments[:hp.clip_comments_to]
 				comment_length = len(example.comments)
 
 			example.padding = ['0'] * comment_length
@@ -1582,17 +1585,12 @@ def intelligent_sentences_clipping(s1: str, s2: str, clip_to: int):
 	# let's add words from the back until we hit the clipping mark
 
 	clipped = []
-	current_char_count = 0
+	current_word_count = 0
 	for w in reversed(s1.split(' ')):
 		# what is the len of the current word
-		wl = len(w)
-
-		# account for spaces in finished comment
-		spaces = len(clipped)
-
-		# does it fit?
-		if current_char_count + spaces + wl <= clip_to:
-			current_char_count += wl
+		
+		if current_word_count < clip_to:
+			current_word_count += 1
 
 			# enter at front because we reversed the sentence
 			clipped.insert(0, w)
@@ -1603,16 +1601,15 @@ def intelligent_sentences_clipping(s1: str, s2: str, clip_to: int):
 	s1 = ' '.join(clipped)
 
 	# try to fill with s2
-	clip_to = (clip_to - len(s1)) + clip_to
+	clip_to = (clip_to - len(clipped)) + clip_to
 	
 	# s2
 	clipped = []
-	current_char_count = 0
+	current_word_count = 0
 	for w in s2.split(' '):
-		wl = len(w)
-		spaces = len(clipped)
-		if current_char_count + spaces + wl <= clip_to:
-			current_char_count += wl
+		
+		if current_word_count < clip_to:
+			current_word_count += 1
 
 			# enter at back because sentence is not reversed
 			clipped.append(w)
@@ -1634,7 +1631,7 @@ def intelligent_sentences_clipping(s1: str, s2: str, clip_to: int):
 def intelligent_sentence_clipping(s: str, clip_to: int) -> str:
 	clipped = []
 	current_char_count = 0
-	for w in s.split(' '):
+	for w in s:
 		wl = len(w)
 		spaces = len(clipped)
 		if current_char_count + spaces + wl <= clip_to:
