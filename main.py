@@ -14,41 +14,45 @@ from criterion import NllLoss, LossCombiner
 from models.transformer.encoder import TransformerEncoder
 from models.jointAspectTagger import JointAspectTagger
 from trainer.train import Trainer
+
 import pprint
 
-PREFERENCES.defaults(
-	data_root='./data/data/germeval2017',
-	data_train='train_v1.4.tsv',    
-	data_validation='dev_v1.4.tsv',
-	data_test='test_TIMESTAMP1.tsv',
-	early_stopping='highest_5_F1'
-)
-from data.germeval2017 import germeval2017_dataset as dsl
-
-
-# from data.organic2019 import organic_dataset as dsl
-# from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ENTITIES_COMBINE
 # PREFERENCES.defaults(
-#     data_root='./data/data/organic2019',
-#     data_train='train.csv',    
-#     data_validation='validation.csv',
-#     data_test='test.csv',
-#     early_stopping='highest_5_F1'
+# 	data_root='./data/data/germeval2017',
+# 	data_train='train_v1.4.tsv',    
+# 	data_validation='dev_v1.4.tsv',
+# 	data_test='test_TIMESTAMP1.tsv',
+	# source_index=0,
+	# target_vocab_index=2,
+	# file_format='csv'
 # )
+# from data.germeval2017 import germeval2017_dataset as dsl
+
+
+from data.organic2019 import organic_dataset as dsl
+from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ENTITIES_COMBINE
+PREFERENCES.defaults(
+    data_root='./data/data/organic2019',
+    data_train='train.csv',    
+    data_validation='validation.csv',
+    data_test='test.csv',
+	source_index=0,
+	target_vocab_index=1,
+	file_format='csv'
+)
 
 def load(hp, logger):
 	dataset = Dataset(
-		'organic',
-		#ORGANIC_TASK_ENTITIES_COMBINE,
+		hp.task,
 		logger,
 		hp,
-		source_index=0,
-		target_vocab_index=2,
+		source_index=PREFERENCES.source_index,
+		target_vocab_index=PREFERENCES.target_vocab_index,
 		data_path=PREFERENCES.data_root,
 		train_file=PREFERENCES.data_train,
 		valid_file=PREFERENCES.data_validation,
 		test_file=PREFERENCES.data_test,
-		file_format='.csv',
+		file_format=PREFERENCES.file_format,
 		init_token=None,
 		eos_token=None
 	)
@@ -77,10 +81,13 @@ use_cuda = True
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
 logger = logging.getLogger(__name__)
 logger.info('Current commit: ' + utils.get_current_git_commit())
-hp = get_default_params('entities', use_cuda, good_organic_hp_params)
-hp.num_epochs = 35
-hp.log_every_xth_iteration = -1
-hp.language = 'de'
+
+hp = get_default_params(use_cuda=True, overwrite={'use_stop_words': True, 'clip_comments_to': 80, 'task': ORGANIC_TASK_ENTITIES_COMBINE}, from_default=good_organic_hp_params)
+
+
+#hp.num_epochs = 35
+#hp.log_every_xth_iteration = -1
+#hp.language = 'de'
 # hp.adam_weight_decay = 1e-4
 # hp.pointwise_layer_size = 256
 # hp.n_enc_blocks = 2
@@ -88,7 +95,7 @@ hp.language = 'de'
 #hp.language = 'en'
 #hp.use_spell_checkers = True
 #hp.clip_comments_to = 300
-hp.embedding_type = 'fasttext'
+#hp.embedding_type = 'fasttext'
 logger.info(hp)
 print(hp)
 
