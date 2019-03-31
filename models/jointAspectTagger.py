@@ -39,6 +39,10 @@ class JointAspectTagger(nn.Module):
 		
 		self.logger.debug(f"Initialize parameters with nn.init.xavier_uniform_")
 		for p in self.parameters():
+
+			# don't "initialize" pretrained embeddings
+			if p.size() == self.encoder.src_embeddings.weight.size() and hyperparameters.embedding_type != '':
+				continue
 			if p.dim() > 1:
 				nn.init.xavier_uniform_(p)
 		self.logger.debug(f"Tagger initialized")
