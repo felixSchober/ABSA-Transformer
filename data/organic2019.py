@@ -106,7 +106,7 @@ def organic_dataset(
 							unk_token=None,
 							is_target=False)
 
-	comment_field = ReversibleField(
+	comment_field = data.Field(
 							batch_first=True,    # produce tensors with batch dimension first
 							lower=True,
 							fix_length=hyperparameters.clip_comments_to,
@@ -115,8 +115,7 @@ def organic_dataset(
 							init_token=None,
 							eos_token=None,
 							is_target=False,
-							stop_words=stop_words,
-							preprocessing=data.Pipeline(preprocess_word))
+							stop_words=stop_words)
 
 	fields = [
 		(None, None), 										# sq_number
