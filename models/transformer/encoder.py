@@ -33,16 +33,6 @@ class TransformerEncoder(nn.Module):
 
 		super(TransformerEncoder, self).__init__()
 
-		if src_embeddings is None:
-			if hyperparameters.embedding_type == 'elmo':
-				self.src_embeddings = None
-			else:
-				assert d_vocab is not None
-				self.src_embeddings = Embeddings(hyperparameters.model_size, d_vocab)
-		else:
-			self.src_embeddings = src_embeddings
-			#self.src_embeddings.weight.requires_grad = False
-
 		self.n_head = hyperparameters.n_heads
 		self.n_enc_blocks = hyperparameters.n_enc_blocks
 		self.d_model = hyperparameters.model_size
@@ -57,6 +47,7 @@ class TransformerEncoder(nn.Module):
 
 		self.encoder_blocks = self._initialize_encoder_blocks()
 		self.layer_norm = LayerNorm(self.d_model)
+		self._initialize_embeddings(src_embeddings, hyperparameters, d_vocab)
         
 
 	def _initialize_encoder_blocks(self) -> nn.ModuleList:
@@ -64,6 +55,20 @@ class TransformerEncoder(nn.Module):
 		for _ in range(self.n_enc_blocks):
 			blocks.append(EncoderBlock(self.dropout_rate, self.pointwise_layer_size, self.d_model, self.d_k, self.d_v, self.n_head, self.bias))
 		return nn.ModuleList(blocks)
+
+	def _initialize_embeddings(self, src_embeddings: nn.Embedding, hyperparameters: RunConfiguration, d_vocab: int = None):
+		if src_embeddings is None:
+			if hyperparameters.embedding_type == 'elmo':
+				self.src_embeddings = None
+			else:
+				assert d_vocab is not None
+				self.src_embeddings = Embeddings(hyperparameters.model_size, d_vocab)
+		else:
+			self.src_embeddings = src_embeddings
+
+			# disable grad if the pretrained embedding should not be finetuned
+			if not hyperparameters.finetune_embedding:
+				self.src_embeddings.weight.requires_grad = False
 
 	def forward(self, x: torch.Tensor, mask: torch.Tensor=None) -> torch.Tensor:
 

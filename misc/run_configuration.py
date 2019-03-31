@@ -265,6 +265,7 @@ class RunConfiguration(object):
 			self.embedding_name = kwargs['embedding_name']
 			self.embedding_dim = kwargs['embedding_dim']
 			self.clip_comments_to = self._get_default('clip_comments_to', cast_int=True)
+			self.finetune_embedding = self._get_default('finetune_embedding', False)
 
 			self.language = language
 
