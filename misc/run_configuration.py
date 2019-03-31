@@ -266,8 +266,8 @@ class RunConfiguration(object):
 			# - Embedding
 			assert kwargs['embedding_type'] in ['glove', 'fasttext', 'elmo', '']
 			self.embedding_type = kwargs['embedding_type']
-			self.embedding_name = kwargs['embedding_name']
-			self.embedding_dim = kwargs['embedding_dim']
+			self.embedding_name = self._get_default('embedding_name', '6B')
+			self.embedding_dim = self._get_default('embedding_dim', 300, cast_int=True)
 			self.clip_comments_to = self._get_default('clip_comments_to', cast_int=True)
 			self.finetune_embedding = self._get_default('finetune_embedding', True)
 
@@ -282,9 +282,9 @@ class RunConfiguration(object):
 			self.harmonize_bahn = self._get_default('harmonize_bahn', False)
 			self.use_spell_checkers = self._get_default('use_spell_checkers', False)
 			self.replace_url_tokens = self._get_default('replace_url_tokens', True)
-			self.use_text_cleaner = self._get_default('use_text_cleaner', False)
+			self.use_text_cleaner = self._get_default('use_text_cleaner', True)
 			self.contraction_removal = self._get_default('contraction_removal', False)
-			self.organic_text_cleaning = self._get_default('organic_text_cleaning', False)
+			self.organic_text_cleaning = self._get_default('organic_text_cleaning', True)
 
 			# contraction removal only possible for english language
 			assert self.contraction_removal == False or (self.contraction_removal == True and self.language == 'en')
