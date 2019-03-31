@@ -257,15 +257,22 @@ class RunConfiguration(object):
 				self.output_conv_padding = self._get_default('output_conv_padding', section=p, cast_int=True)
 
 			self.log_every_xth_iteration = log_every_xth_iteration
+
+			# value can either be -1 for no intra-epoch evaluations or bigger than 0
+			assert self.log_every_xth_iteration == -1 or self.log_every_xth_iteration > 0
+
 			self.num_epochs = num_epochs
 
 			# - Embedding
-			assert kwargs['embedding_type'] in ['glove', 'fasttext', 'elmo']
+			assert kwargs['embedding_type'] in ['glove', 'fasttext', 'elmo', '']
 			self.embedding_type = kwargs['embedding_type']
 			self.embedding_name = kwargs['embedding_name']
 			self.embedding_dim = kwargs['embedding_dim']
 			self.clip_comments_to = self._get_default('clip_comments_to', cast_int=True)
 			self.finetune_embedding = self._get_default('finetune_embedding', True)
+
+			# finetuning can only be off if embedding is pretrained
+			assert self.embedding_type != '' or (self.embedding_type == '' and self.finetune_embedding == True)
 
 			self.language = language
 
@@ -276,7 +283,15 @@ class RunConfiguration(object):
 			self.use_spell_checkers = self._get_default('use_spell_checkers', False)
 			self.replace_url_tokens = self._get_default('replace_url_tokens', True)
 			self.use_text_cleaner = self._get_default('use_text_cleaner', False)
-			
+			self.contraction_removal = self._get_default('contraction_removal', False)
+			self.organic_text_cleaning = self._get_default('organic_text_cleaning', False)
+
+			# contraction removal only possible for english language
+			assert self.contraction_removal == False or (self.contraction_removal == True and self.language == 'en')
+
+			# text cleaning only supported for english (organic) language
+			assert self.organic_text_cleaning == False or (self.organic_text_cleaning == True and self.language == 'en')
+
 			self.seed = 42			
 			set_seeds(self.seed)
 
