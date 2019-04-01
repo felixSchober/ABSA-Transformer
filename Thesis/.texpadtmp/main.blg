@@ -1,0 +1,9 @@
+[0] Config.pm:302> INFO - This is Biber 2.11
+[0] Config.pm:305> INFO - Logfile is '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.blg'
+[49] biber-darwin:313> INFO - === Mon Apr  1, 2019, 12:36:25
+[77] Biber.pm:371> INFO - Reading '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.bcf'
+[164] Biber.pm:857> INFO - Found 0 citekeys in bib section 0
+[170] Utils.pm:193> WARN - The file '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.bcf' does not contain any citations!
+[177] bbl.pm:617> INFO - Writing '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.bbl' with encoding 'UTF-8'
+[177] bbl.pm:720> INFO - Output to /Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.bbl
+[177] Biber.pm:110> INFO - WARNINGS: 1

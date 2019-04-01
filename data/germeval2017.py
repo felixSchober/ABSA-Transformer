@@ -8,7 +8,7 @@ from torchtext import data
 from stop_words import get_stop_words
 
 from data.torchtext.custom_fields import ReversibleField, ElmoField
-from data.torchtext.custom_datasets import CustomGermEval2017Dataset
+from data.torchtext.germeval2017_dataset import GermEval2017Dataset
 from data.data_loader import get_embedding, get_embedding_size
 
 from misc.run_configuration import RunConfiguration
@@ -125,7 +125,7 @@ def germeval2017_dataset(
 		('padding', padding_field)                          # artificial field that we append to fill it with the padding information later to create the masks
 			]
 
-	train, val, test = CustomGermEval2017Dataset.splits(
+	train, val, test = GermEval2017Dataset.splits(
 							path=root,
 							root='.data',
 							train=train_file,

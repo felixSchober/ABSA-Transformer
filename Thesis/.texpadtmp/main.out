@@ -1,0 +1,29 @@
+\BOOKMARK [0][-]{Doc-Start}{Acknowledgments}{}% 1
+\BOOKMARK [0][-]{chapter*.1}{Abstract}{}% 2
+\BOOKMARK [0][-]{chapter.1}{Introduction}{}% 3
+\BOOKMARK [1][-]{section.1.1}{Motivation}{chapter.1}% 4
+\BOOKMARK [1][-]{section.1.2}{Outline}{chapter.1}% 5
+\BOOKMARK [0][-]{chapter.2}{Related Work}{}% 6
+\BOOKMARK [0][-]{chapter.3}{Theoretical Background}{}% 7
+\BOOKMARK [1][-]{section.3.1}{Methodology}{chapter.3}% 8
+\BOOKMARK [2][-]{subsection.3.1.1}{Performance Measurements}{section.3.1}% 9
+\BOOKMARK [2][-]{subsection.3.1.2}{Cross Validation}{section.3.1}% 10
+\BOOKMARK [0][-]{chapter.4}{Method}{}% 11
+\BOOKMARK [0][-]{chapter.5}{Experimental Setup}{}% 12
+\BOOKMARK [1][-]{section.5.1}{Data}{chapter.5}% 13
+\BOOKMARK [2][-]{subsection.5.1.1}{Conll-2003 - Named Entity Recognition}{section.5.1}% 14
+\BOOKMARK [2][-]{subsection.5.1.2}{SemEval-2016 - Restaurants and Laptops}{section.5.1}% 15
+\BOOKMARK [2][-]{subsection.5.1.3}{GermEval-2017 - Deutsche Bahn Tweets}{section.5.1}% 16
+\BOOKMARK [2][-]{subsection.5.1.4}{Organic-2019 - Organic Comments}{section.5.1}% 17
+\BOOKMARK [0][-]{chapter.6}{Discussion of Results}{}% 18
+\BOOKMARK [1][-]{section.6.1}{Hyper Parameter Optimization}{chapter.6}% 19
+\BOOKMARK [1][-]{section.6.2}{Results for Named Entity Recognition}{chapter.6}% 20
+\BOOKMARK [1][-]{section.6.3}{Results for Aspect-Based Sentiment Analysis}{chapter.6}% 21
+\BOOKMARK [2][-]{subsection.6.3.1}{GermEval-2017}{section.6.3}% 22
+\BOOKMARK [2][-]{subsection.6.3.2}{GermEval-2017}{section.6.3}% 23
+\BOOKMARK [2][-]{subsection.6.3.3}{Organic-2019}{section.6.3}% 24
+\BOOKMARK [0][-]{chapter.7}{Conclusion}{}% 25
+\BOOKMARK [1][-]{section.7.1}{Future Work}{chapter.7}% 26
+\BOOKMARK [0][-]{section*.8}{Acronyms}{}% 27
+\BOOKMARK [0][-]{chapter*.10}{List of Figures}{}% 28
+\BOOKMARK [0][-]{chapter*.11}{List of Tables}{}% 29

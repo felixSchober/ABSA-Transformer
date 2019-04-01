@@ -55,7 +55,8 @@ default_params = {
 		'output_conv_stride': 1,
 		'output_conv_padding': 0
 	},
-	'output_dropout_rate': 0.2
+	'output_dropout_rate': 0.2,
+	'task': 'absa'
 }
 
 hyperOpt_goodParams = {
@@ -82,7 +83,8 @@ hyperOpt_goodParams = {
 	'output_dropout_rate': 0.79602089766246,
 	'clip_comments_to': 113,
 	'harmonize_bahn': True,
-	'model_size': 300
+	'model_size': 300,
+	'organic_text_cleaning': False
 
 }
 
@@ -282,7 +284,7 @@ class RunConfiguration(object):
 			self.harmonize_bahn = self._get_default('harmonize_bahn', False)
 			self.use_spell_checkers = self._get_default('use_spell_checkers', False)
 			self.replace_url_tokens = self._get_default('replace_url_tokens', True)
-			self.use_text_cleaner = self._get_default('use_text_cleaner', True)
+			self.use_text_cleaner = self._get_default('use_text_cleaner', False)
 			self.contraction_removal = self._get_default('contraction_removal', False)
 			self.organic_text_cleaning = self._get_default('organic_text_cleaning', True)
 
