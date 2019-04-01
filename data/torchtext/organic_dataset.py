@@ -326,7 +326,7 @@ class OrganicDataset(Dataset):
 			example.padding = ['0'] * comment_length
 		return examples, fields
 
-	def process_comment_text(sample, hp, organic_text_cleaning_dict, spell):
+	def process_comment_text(self, sample, hp, organic_text_cleaning_dict, spell):
 		# remove punctuation and clean text
 		comment = sample[-3]
 		comment = comment.translate(punctuation_remover)

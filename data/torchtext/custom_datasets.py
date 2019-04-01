@@ -16,12 +16,8 @@ import torch.utils.data
 
 from torchtext.data.utils import RandomShuffler
 from torchtext.utils import download_from_url, unicode_csv_reader
-from data.torchtext.custom_fields import ReversibleField
-#from tqdm.autonotebook import tqdm
-from tqdm import tqdm
 import spacy
 from spellchecker import SpellChecker
-from misc.utils import create_dir_if_necessary, check_if_file_exists
 
 logger = logging.getLogger(__name__)
 
@@ -39,14 +35,6 @@ class Dataset(torch.utils.data.Dataset):
 			will have a shared vocabulary.
 	"""
 	sort_key = None
-
-	@staticmethod
-	def sort_key(example):
-		for attr in dir(example):
-			if not callable(getattr(example, attr)) and \
-					not attr.startswith("__"):
-				return len(getattr(example, attr))
-		return 0
 
 	def __init__(self, examples, fields, filter_pred=None):
 		"""Create a dataset from a list of Examples and Fields.
