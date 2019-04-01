@@ -54,13 +54,11 @@
       <file>blx-compat.def</file>
       <file>biblatex.def</file>
       <file>standard.bbx</file>
-      <file>alphabetic.bbx</file>
-      <file>alphabetic.cbx</file>
+      <file>numeric.bbx</file>
+      <file>numeric.cbx</file>
       <file>biblatex.cfg</file>
       <file>english.lbx</file>
       <file>american.lbx</file>
-      <file>german.lbx</file>
-      <file>ngerman.lbx</file>
     </requires>
   </internal>
   <external package="biblatex" priority="5" active="0">
@@ -82,7 +80,7 @@
       <file>main.bcf</file>
     </requires>
     <requires type="editable">
-      <file>bibliography.bib</file>
+      <file>bibliography/library.bib</file>
     </requires>
   </external>
 </requests>

@@ -1,23 +1,13 @@
 \RequirePackage[l2tabu,orthodox]{nag}
 
-% TODO: decide if one-sided/two-sided
-%\documentclass[headsepline,footsepline,footinclude=false,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc,BCOR=12mm,DIV=12]{scrbook} % two-sided
+
 \documentclass[headsepline,footsepline,footinclude=false,oneside,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc]{scrbook} % one-sided
 
-% TODO: change citation style in settings
-\input{settings}
+\input{settings/packages}
+\input{settings/settings}
+\input{settings/commands}
 
-% TODO: change thesis information
-\newcommand*{\getUniversity}{Technische Universität München}
-\newcommand*{\getFaculty}{Department of Informatics}
-\newcommand*{\getTitle}{Thesis title}
-\newcommand*{\getTitleGer}{Titel der Abschlussarbeit}
-\newcommand*{\getAuthor}{Author}
-\newcommand*{\getDoctype}{Thesis type (Bachelor's Thesis in Informatics, Master's Thesis in Robotics, \ldots)}
-\newcommand*{\getSupervisor}{Supervisor}
-\newcommand*{\getAdvisor}{Advisor}
-\newcommand*{\getSubmissionDate}{Submission date}
-\newcommand*{\getSubmissionLocation}{Munich}
+\input{glossary/acronyms}
 
 \begin{document}
 
@@ -39,9 +29,18 @@
 \mainmatter{}
 
 \input{chapters/01_introduction}
-% TODO: add more chapters here
+\input{chapters/02_related_work}
+\input{chapters/03_theory}
+\input{chapters/04_method}
+\input{chapters/05_experimental_setup}
+\input{chapters/06_discussion}
+\input{chapters/07_conclusion}
+
 
 \appendix{}
+
+\glsaddall{} % add all defined terms to glossary, even if not referenced in text
+\printglossaries{}
 
 \microtypesetup{protrusion=false}
 \listoffigures{}

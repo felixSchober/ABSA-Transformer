@@ -1,15 +1,9 @@
 [0] Config.pm:302> INFO - This is Biber 2.11
 [0] Config.pm:305> INFO - Logfile is '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.blg'
-[45] biber-darwin:313> INFO - === Mon Apr  1, 2019, 11:33:12
-[72] Biber.pm:371> INFO - Reading '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.bcf'
-[172] Biber.pm:857> INFO - Found 1 citekeys in bib section 0
-[187] Biber.pm:3976> INFO - Processing section 0
-[200] Biber.pm:4136> INFO - Looking for bibtex format file '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/bibliography.bib' for section 0
-[201] bibtex.pm:1500> INFO - LaTeX decoding ...
-[205] bibtex.pm:1316> INFO - Found BibTeX data source '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/bibliography.bib'
-[220] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[220] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[220] Biber.pm:3804> INFO - Sorting list 'anyt/global//global/global' of type 'entry' with template 'anyt' and locale 'en-US'
-[220] Biber.pm:3810> INFO - No sort tailoring available for locale 'en-US'
-[222] bbl.pm:617> INFO - Writing '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.bbl' with encoding 'UTF-8'
-[223] bbl.pm:720> INFO - Output to /Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.bbl
+[49] biber-darwin:313> INFO - === Mon Apr  1, 2019, 12:36:25
+[77] Biber.pm:371> INFO - Reading '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.bcf'
+[164] Biber.pm:857> INFO - Found 0 citekeys in bib section 0
+[170] Utils.pm:193> WARN - The file '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.bcf' does not contain any citations!
+[177] bbl.pm:617> INFO - Writing '/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.bbl' with encoding 'UTF-8'
+[177] bbl.pm:720> INFO - Output to /Users/felix/Documents/Repositories/TUM/ABSA-Transformer/Thesis/.texpadtmp/main.bbl
+[177] Biber.pm:110> INFO - WARNINGS: 1

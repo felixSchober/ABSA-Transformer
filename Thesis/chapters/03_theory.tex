@@ -1,0 +1,47 @@
+\chapter{Theoretical Background}
+\label{ch:theory}
+
+\section{Methodology}
+\subsection{Performance Measurements}
+
+\subsubsection*{Precession - Recall}
+The most used measure for the precision of food classifiers is the average accuracy which is calculated by dividing the number of correct matches and the total number of samples. Accuracy, however, gives no information about the underlying conditions. It is a measure of overall performance. To have a higher chance of suggesting the correct items, future systems may present a list of options that the user can chose from. Intuitively, the accuracy is much higher if a classifier can present a list of items with high confidences instead of only one item because the problem is much easier. Accuracy, however, does not measures how easy a problem is. If a classifier were able to suggest all classes as options the accuracy would always be 100\% although the results are not useful at all.
+
+The combination of precision and recall objectively measures the actual relevance and performance of a classifier for a class of images because it includes the amount of considered items and the correct predictions. In this case the amount of considered items changes based on how many items the classifier can suggest. Precision and recall is defined as:
+
+\begin{equation}
+Precision = \frac{T_p}{T_p+F_p} \quad Recall = \frac{T_p}{T_p+F_n}.
+\end{equation}
+
+\begin{itemize}
+	\item True positives $T_P$ is the number of correctly classified images of a class.
+	\item False positives $F_P$ are all images that the classifier predicted to be positive but are in reality negative. {(Type I Error)}
+	\item False negatives $F_N$ are all images that are positive {(belong to the class)} but are labeled as negative {(do not belong to class)} {(Type II Error)}
+\end{itemize}
+
+A high recall means that many images were matched correctly and a high precision denotes a low number of incorrectly classified images. The bigger the area under the Precision-Recall curve the better the classifier.
+
+\subsubsection*{Null Error Rate}
+The null error rate is a baseline for any classification task that calculates the accuracy if a classifier would just predict the class with the most images.
+
+\subsubsection*{Confusion Matrix}
+Confusion matrices are one of the most important metrics to understand why a classifier struggles with certain classes while getting a high precision with others. As the name suggests, a confusion matrix tells if the classifier "confuses" two classes.
+
+A confusion matrix for $n$ classes is always a $n \times n$ matrix where columns represent the actual images classes and rows represent the predicted image classes so if the diagonal of the matrix has high values this means that the classifier makes correct predictions.
+
+\subsubsection*{Categorical Cross-Entropy}
+The categorical cross-entropy $L_i$ is an error function that is used for the training of neural networks in classification tasks as the objective function. It is more versatile than the accuracy or the \gls{mse} because it takes the deviations of the predicted label $p_{i,j}$ and the actual label $t_{i,j}$ into account and weights the "closeness" of the prediction with the logarithm. For classification, cross entropy is more useful than \gls{mse} because \gls{mse} gives too much emphasis on incorrect predictions. The categorical cross entropy function is defined as:
+
+\begin{equation}
+L_i = - \sum_{j} t_{i,j}\log(p_{i,j})
+\end{equation} 
+
+The loss values that are used for the discussion of results for neural networks are the average values of the categorical cross-entropy {(\gls{ace})}.
+
+\subsection{Cross Validation}
+Cross validation is one of the most essential techniques to evaluate real-world classification performance. Classifiers like \glspl{svm} or neural networks are always better on data they have already seen. This is called overfitting {(see section \ref{subsec:overfittingDropout})}. By training and testing on the same data the classification performance would be much better than the actual real world performance. To test if a classifier can actually work with samples it has not seen cross validation divides the dataset into different partitions. 
+
+For most tasks it is sufficient to divide the dataset into a training and a test set. The data in the training set is used to train the classifier and the test data is used to evaluate it with data is has not seen before.
+
+\subsubsection*{k-fold Cross Validation}
+To make the classification evaluation even more robust, $k$-fold cross validation is used. By applying $k$-fold cross validation the dataset is randomly partitioned into $k$ different parts. $k-2$ parts are used for training and two parts are used for the evaluation. This process is repeated $k$-times and after each iteration the parts are exchanged so that at the end, each sample was used for training and for validation. Calculating the mean of the $k$ evaluations gives a much more robust measurement because the evaluation does not depend on the difficulty of the test partitions.
