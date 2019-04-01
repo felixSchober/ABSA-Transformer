@@ -55,7 +55,8 @@ default_params = {
 		'output_conv_stride': 1,
 		'output_conv_padding': 0
 	},
-	'output_dropout_rate': 0.2
+	'output_dropout_rate': 0.2,
+	'task': 'absa'
 }
 
 hyperOpt_goodParams = {
@@ -82,7 +83,8 @@ hyperOpt_goodParams = {
 	'output_dropout_rate': 0.79602089766246,
 	'clip_comments_to': 113,
 	'harmonize_bahn': True,
-	'model_size': 300
+	'model_size': 300,
+	'organic_text_cleaning': False
 
 }
 
