@@ -8,18 +8,11 @@ from torchtext import data
 from stop_words import get_stop_words
 
 from data.torchtext.custom_fields import ReversibleField
-from data.torchtext.organic_dataset import SingleSentenceOrganicDataset, DoubleSentenceOrganicDataset
+from data.torchtext.organic_dataset import *
 from data.data_loader import get_embedding
 
 from misc.run_configuration import RunConfiguration
 
-ORGANIC_TASK_ALL = 'all'
-ORGANIC_TASK_ENTITIES = 'entities'
-ORGANIC_TASK_ATTRIBUTES = 'attributes'
-
-ORGANIC_TASK_ALL_COMBINE = 'all_combine'
-ORGANIC_TASK_ENTITIES_COMBINE = 'entities_combine'
-ORGANIC_TASK_ATTRIBUTES_COMBINE = 'attributes_combine'
 
 def preprocess_word(word: str) -> str:
 	# TODO: Actual processing

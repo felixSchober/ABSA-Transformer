@@ -30,7 +30,7 @@ import pprint
 
 
 from data.organic2019 import organic_dataset as dsl
-from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ENTITIES_COMBINE
+from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ENTITIES_COMBINE, ORGANIC_TASK_COARSE
 PREFERENCES.defaults(
     data_root='./data/data/organic2019',
     data_train='train.csv',    
@@ -76,13 +76,13 @@ def load_model(dataset, hp, experiment_name):
 						verbose=True)
 	return trainer
 
-experiment_name = 'organic2019'
+experiment_name = 'testing'
 use_cuda = True
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
 logger = logging.getLogger(__name__)
 logger.info('Current commit: ' + utils.get_current_git_commit())
 
-hp = get_default_params(use_cuda=True, overwrite={'use_stop_words': True, 'clip_comments_to': 80, 'task': ORGANIC_TASK_ENTITIES_COMBINE}, from_default=good_organic_hp_params)
+hp = get_default_params(use_cuda=True, overwrite={'use_stop_words': True, 'clip_comments_to': 80, 'task': ORGANIC_TASK_ATTRIBUTES, 'organic_text_cleaning': True, }, from_default=good_organic_hp_params)
 
 
 #hp.num_epochs = 35

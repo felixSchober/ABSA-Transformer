@@ -15,6 +15,17 @@ import spacy
 from misc.utils import create_dir_if_necessary, check_if_file_exists
 from data.torchtext.custom_datasets import *
 
+
+ORGANIC_TASK_ALL = 'all'
+ORGANIC_TASK_ENTITIES = 'entities'
+ORGANIC_TASK_ATTRIBUTES = 'attributes'
+ORGANIC_TASK_COARSE = 'coarse'
+
+ORGANIC_TASK_ALL_COMBINE = 'all_combine'
+ORGANIC_TASK_ENTITIES_COMBINE = 'entities_combine'
+ORGANIC_TASK_ATTRIBUTES_COMBINE = 'attributes_combine'
+ORGANIC_TASK_COARSE_COMBINE = 'coarse_combine'
+
 # mapping for organic dataset aspects
 od_entity_mapping = {
 	'g': 'organic general',
@@ -40,6 +51,7 @@ od_attribute_mapping = {
 	'll': 'label',
 	'or': 'origin source',
 	'l': 'local',
+	'e': 'environment',
 	'av': 'availability',
 	'a': 'animal welfare',
 	'pp': 'productivity',
@@ -52,6 +64,50 @@ od_sentiment_mapping = {
 	'n': 'negative'
 }
 
+od_coarse_entities = {
+	'g': 'organic',
+	'p': 'organic',
+	'f': 'organic',
+	'c': 'organic',
+
+	'cg': 'conventional',
+	'cp': 'conventional',
+	'cf': 'conventional',
+	'cc': 'conventional',
+
+	'gg': 'GMO'
+}
+
+od_coarse_attributes = {
+	'g': 'general',
+	'p': 'price',
+	
+	't': 'experienced quality',
+	'q': 'experienced quality',
+
+	's': 'safety and healthiness',
+	'h': 'safety and healthiness',
+	'c': 'safety and healthiness',
+
+	'll': 'trustworthy sources',
+	'or': 'trustworthy sources',
+	'l': 'trustworthy sources',
+	'av': 'trustworthy sources',
+
+	'e': 'environment',
+	'a': 'environment',
+	'pp': 'environment',
+}
+
+def create_coarse_organic_mapping():
+	result = {}
+	for entity_key, _ in od_entity_mapping:
+		for attribute_key, _ in od_attribute_mapping:
+			c_ent = od_coarse_entities[entity_key]
+			c_att = od_coarse_attributes[attribute_key]
+			compound_key = f'{entity_key}-{attribute_key}'
+			result[compound_key] = f'{c_ent}: {c_att}'
+
 def get_all_mapping():
 	result = {}
 	for entity_key, entity in od_entity_mapping:
@@ -59,6 +115,8 @@ def get_all_mapping():
 			compound_key = f'{entity_key}-{attribute_key}'
 			result[compound_key] = f'{entity}: {attribute}'
 	return result
+
+
 
 class OrganicDataset(Dataset):
 
@@ -174,15 +232,18 @@ class OrganicDataset(Dataset):
 		else:
 			spell = None
 
-		if task == 'all':
+		if task.startswith(ORGANIC_TASK_ALL):
 			aspect_example_index = -1
 			mapping = get_all_mapping()
-		elif task == 'entities':
+		elif task.startswith(ORGANIC_TASK_ENTITIES):
 			aspect_example_index = -5
 			mapping = od_entity_mapping
-		elif task == 'attributes':
+		elif task.startswith(ORGANIC_TASK_ATTRIBUTES):
 			mapping = od_attribute_mapping
 			aspect_example_index = - 4
+		elif task.startswith(ORGANIC_TASK_COARSE):
+			aspect_example_index = -1
+			mapping = create_coarse_organic_mapping()
 
 		with open(path, 'rb') as input_file:
 			aspect_sentiment_categories = set()
