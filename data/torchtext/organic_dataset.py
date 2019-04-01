@@ -25,7 +25,8 @@ od_entity_mapping = {
 	'cp': 'conventional products',
 	'cf': 'conventional farming',
 	'cc': 'conventional companies',
-	'gg': 'GMOs genetic engineering general'
+	'gg': 'GMOs genetic engineering general',
+	'': ''											# when there is no aspect (in case of irrelevant comments)
 }
 
 od_attribute_mapping = {
@@ -41,7 +42,8 @@ od_attribute_mapping = {
 	'l': 'local',
 	'av': 'availability',
 	'a': 'animal welfare',
-	'pp': 'productivity'
+	'pp': 'productivity',
+	'': ''											# when there is no aspect (in case of irrelevant comments)
 }
 
 od_sentiment_mapping = {
@@ -87,15 +89,15 @@ class OrganicDataset(Dataset):
 		lengths = (8918, 786, 738)
 
 		train_data = None if train is None else cls(
-			os.path.join(path, train), length=lengths[0], **kwargs)
+			path=os.path.join(path, train), length=lengths[0], **kwargs)
 		# make sure, we use exactly the same fields across all splits
 		train_aspects = train_data.aspects
 
 		val_data = None if validation is None else cls(
-			os.path.join(path, validation), a_sentiment=train_aspects, length=lengths[1], **kwargs)
+			path=os.path.join(path, validation), a_sentiment=train_aspects, length=lengths[1], **kwargs)
 
 		test_data = None if test is None else cls(
-			os.path.join(path, test), a_sentiment=train_aspects, length=lengths[2], **kwargs)
+			path=os.path.join(path, test), a_sentiment=train_aspects, length=lengths[2], **kwargs)
 
 		return tuple(d for d in (train_data, val_data, test_data)
 					 if d is not None)
@@ -223,7 +225,9 @@ class OrganicDataset(Dataset):
 					# use mapping to get a more human readable name
 					aspect_category = mapping[aspect_category]
 					
-					aspect_sentiment = od_sentiment_mapping[columns[7].strip()]		
+					s_k = columns[7].strip()
+					if s_k != '':
+						aspect_sentiment = od_sentiment_mapping[columns[7].strip()]		
 
 					crnt_sentence_number = columns[5]
 					crnt_comment_number = columns[4]
@@ -262,13 +266,15 @@ class OrganicDataset(Dataset):
 					# case 3: last and current match
 					# 		-> add to last sample
 					elif last_sentence_number == crnt_sentence_number and last_comment_number == crnt_comment_number:
-						comment_sentiment_dict[aspect_category] = aspect_sentiment
+						if aspect_category != '':
+							comment_sentiment_dict[aspect_category] = aspect_sentiment
 						continue	
 
-					comment_sentiment_dict[aspect_category] = aspect_sentiment
+					if aspect_category != '':
+						comment_sentiment_dict[aspect_category] = aspect_sentiment
 					
 				# remove punctuation and clean text
-				last_sample = self.process_comment_text(hp, last_sample, organic_text_cleaning_dict, spell)
+				last_sample = self.process_comment_text(last_sample, hp, organic_text_cleaning_dict, spell)
 				
 				# add aspect sentiment field
 				last_sample.append('')
@@ -413,7 +419,7 @@ class SingleSentenceOrganicDataset(OrganicDataset):
 		super(SingleSentenceOrganicDataset, self).__init__('organic2019Sentence', **kwargs)
 
 
-	def convert_to_raw_examples(self, comments):
+	def convert_to_raw_examples(self, comments, hp):
 		raw_examples = []
 
 		for comment_sentences in comments.values():
