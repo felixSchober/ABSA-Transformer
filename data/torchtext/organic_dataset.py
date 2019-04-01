@@ -101,19 +101,33 @@ od_coarse_attributes = {
 
 def create_coarse_organic_mapping():
 	result = {}
-	for entity_key, _ in od_entity_mapping:
-		for attribute_key, _ in od_attribute_mapping:
+	for entity_key in od_entity_mapping.keys():
+		if entity_key == '':
+			continue
+		for attribute_key in od_attribute_mapping.keys():
+			if attribute_key == '':
+				continue
 			c_ent = od_coarse_entities[entity_key]
 			c_att = od_coarse_attributes[attribute_key]
 			compound_key = f'{entity_key}-{attribute_key}'
 			result[compound_key] = f'{c_ent}: {c_att}'
+	# add a 'missing aspect' key
+	result[''] = ''
+	return result
 
 def get_all_mapping():
 	result = {}
-	for entity_key, entity in od_entity_mapping:
-		for attribute_key, attribute in od_attribute_mapping:
+	for entity_key, entity in od_entity_mapping.items():
+		if entity_key == '':
+			continue
+		for attribute_key, attribute in od_attribute_mapping.items():
+			if attribute_key == '':
+				continue
 			compound_key = f'{entity_key}-{attribute_key}'
 			result[compound_key] = f'{entity}: {attribute}'
+
+	# add a 'missing aspect' key
+	result[''] = ''
 	return result
 
 
@@ -290,6 +304,7 @@ class OrganicDataset(Dataset):
 				else:
 					# based on aspect task select columns
 					aspect_category = columns[aspect_example_index].strip()
+					aspect_category = aspect_category.replace(';', '').replace('"', '')
 
 					# use mapping to get a more human readable name
 					aspect_category = mapping[aspect_category]
