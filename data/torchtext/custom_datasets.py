@@ -286,8 +286,6 @@ def rationed_split(examples, train_ratio, test_ratio, val_ratio, rnd):
 
 def text_cleaner(text: str, language: str, spellChecker):
 
-	if language == 'en':
-		text = en_contraction_removal(text)
 	spacy_nlp = spacy.load(language)
 	parsed = spacy_nlp(text)
 	final_tokens = []
@@ -295,10 +293,6 @@ def text_cleaner(text: str, language: str, spellChecker):
 
 		if t.is_punct or t.is_space or t.like_num or t.like_url or str(t).startswith('@'):
 			continue
-
-		if spellChecker is not None:
-			# test if word is spelled correctly
-			pass
 		
 		if t.lemma_ == '-PRON-':
 			final_tokens.append(str(t))
