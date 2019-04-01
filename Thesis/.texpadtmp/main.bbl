@@ -1,0 +1,51 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 2.9 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{anyt/global//global/global}
+    \entry{latex}{book}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,uniquepart=base,hash=5d77435450d10a850a5b58577b9a456b}{%
+           family={Lamport},
+           familyi={L\bibinitperiod},
+           given={Leslie},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Addison-Wesley Professional}%
+      }
+      \strng{namehash}{5d77435450d10a850a5b58577b9a456b}
+      \strng{fullhash}{5d77435450d10a850a5b58577b9a456b}
+      \strng{bibnamehash}{5d77435450d10a850a5b58577b9a456b}
+      \strng{authorbibnamehash}{5d77435450d10a850a5b58577b9a456b}
+      \strng{authornamehash}{5d77435450d10a850a5b58577b9a456b}
+      \strng{authorfullhash}{5d77435450d10a850a5b58577b9a456b}
+      \field{labelalpha}{Lam94}
+      \field{sortinit}{L}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{LaTeX : A Documentation Preparation System User's Guide and Reference Manual}
+      \field{year}{1994}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
