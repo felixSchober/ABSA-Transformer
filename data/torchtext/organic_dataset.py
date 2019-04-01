@@ -62,6 +62,14 @@ def get_all_mapping():
 
 class OrganicDataset(Dataset):
 
+	@staticmethod
+	def sort_key(example):
+		for attr in dir(example):
+			if not callable(getattr(example, attr)) and \
+					not attr.startswith("__"):
+				return len(getattr(example, attr))
+		return 0
+
 	@classmethod
 	def splits(cls, path=None, root='.data', train=None, validation=None,
 			   test=None, **kwargs) -> Tuple[Dataset]:
