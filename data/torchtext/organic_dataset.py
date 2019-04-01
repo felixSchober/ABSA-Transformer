@@ -268,7 +268,7 @@ class OrganicDataset(Dataset):
 					comment_sentiment_dict[aspect_category] = aspect_sentiment
 					
 				# remove punctuation and clean text
-				last_sample = self.process_comment_text(hp, organic_text_cleaning_dict, spell)
+				last_sample = self.process_comment_text(hp, last_sample, organic_text_cleaning_dict, spell)
 				
 				# add aspect sentiment field
 				last_sample.append('')

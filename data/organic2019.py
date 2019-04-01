@@ -8,7 +8,7 @@ from torchtext import data
 from stop_words import get_stop_words
 
 from data.torchtext.custom_fields import ReversibleField
-from data.torchtext.custom_datasets import CustomSentenceWiseBioDataset, CustomCommentWiseBioDataset
+from data.torchtext.organic_dataset import SingleSentenceOrganicDataset, DoubleSentenceOrganicDataset
 from data.data_loader import get_embedding
 
 from misc.run_configuration import RunConfiguration
@@ -132,7 +132,7 @@ def organic_dataset(
 	]
 
 	if task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES]:
-		train, val, test = CustomSentenceWiseBioDataset.splits(
+		train, val, test = SingleSentenceOrganicDataset.splits(
 									path=root,
 									root='.data',
 									train=train_file,
@@ -144,7 +144,7 @@ def organic_dataset(
 									hp=hyperparameters,
 									task=task)
 	else:
-		train, val, test = CustomCommentWiseBioDataset.splits(
+		train, val, test = DoubleSentenceOrganicDataset.splits(
 									path=root,
 									root='.data',
 									train=train_file,

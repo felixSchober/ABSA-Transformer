@@ -14,7 +14,7 @@ import spacy
 from misc.utils import create_dir_if_necessary, check_if_file_exists
 from data.torchtext.custom_datasets import Dataset, text_cleaner, replace_urls, fix_spellings, initialize_spellchecker
 
-class CustomGermEval2017Dataset(Dataset):
+class GermEval2017Dataset(Dataset):
 
 	@staticmethod
 	def sort_key(example):
@@ -75,7 +75,7 @@ class CustomGermEval2017Dataset(Dataset):
 		else:
 			fields = loaded_fields
 			
-		super(CustomGermEval2017Dataset, self).__init__(examples, tuple(fields))    
+		super(GermEval2017Dataset, self).__init__(examples, tuple(fields))    
 
 	def _load(self, path, filename, fields, a_sentiment=[], separator='\t', verbose=True, hp=None, **kwargs):
 		examples = []
