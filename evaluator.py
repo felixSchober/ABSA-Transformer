@@ -31,147 +31,165 @@ PREFERENCES.defaults(
 )
 
 def load_model(dataset, rc, experiment_name):
-    loss = LossCombiner(4, dataset.class_weights, NllLoss)
-    transformer = TransformerEncoder(dataset.source_embedding,
-                                     hyperparameters=rc)
-    model = JointAspectTagger(transformer, rc, 4, 20, dataset.target_names)
-    optimizer = get_optimizer(model, rc)
-    trainer = Trainer(
-                        model,
-                        loss,
-                        optimizer,
-                        rc,
-                        dataset,
-                        experiment_name,
-                        enable_tensorboard=False,
-                        verbose=False)
-    return trainer
+	loss = LossCombiner(4, dataset.class_weights, NllLoss)
+	transformer = TransformerEncoder(dataset.source_embedding,
+									 hyperparameters=rc)
+	model = JointAspectTagger(transformer, rc, 4, 20, dataset.target_names)
+	optimizer = get_optimizer(model, rc)
+	trainer = Trainer(
+						model,
+						loss,
+						optimizer,
+						rc,
+						dataset,
+						experiment_name,
+						enable_tensorboard=False,
+						verbose=False)
+	return trainer
 
 def load_dataset(rc, logger, task):
-    dataset = Dataset(
-        task,
-        logger,
-        rc,
-        source_index=PREFERENCES.source_index,
-        target_vocab_index=PREFERENCES.target_vocab_index,
-        data_path=PREFERENCES.data_root,
-        train_file=PREFERENCES.data_train,
-        valid_file=PREFERENCES.data_validation,
-        test_file=PREFERENCES.data_test,
-        file_format=PREFERENCES.file_format,
-        init_token=None,
-        eos_token=None
-    )
-    dataset.load_data(dsl, verbose=False)
-    return dataset
+	dataset = Dataset(
+		task,
+		logger,
+		rc,
+		source_index=PREFERENCES.source_index,
+		target_vocab_index=PREFERENCES.target_vocab_index,
+		data_path=PREFERENCES.data_root,
+		train_file=PREFERENCES.data_train,
+		valid_file=PREFERENCES.data_validation,
+		test_file=PREFERENCES.data_test,
+		file_format=PREFERENCES.file_format,
+		init_token=None,
+		eos_token=None
+	)
+	dataset.load_data(dsl, verbose=False)
+	return dataset
 
 def produce_test_gold_labels(iterator: torchtext.data.Iterator, dataset: Dataset, filename='gold_labels.xml'):
 
-    fields = dataset.fields
-    with torch.no_grad():
-        iterator.init_epoch()
-        
-        tree = ET.ElementTree()
-        root = ET.Element('Documents')
+	fields = dataset.fields
+	with torch.no_grad():
+		iterator.init_epoch()
+		
+		tree = ET.ElementTree()
+		root = ET.Element('Documents')
 
-        for batch in iterator:
-            doc_id, comment, relevance, aspect_sentiment, general_sentiment = batch.id, batch.comments, batch.relevance, batch.aspect_sentiments, batch.general_sentiments
-            doc_id = fields['id'].reverse(doc_id.unsqueeze(1))
-            comment = fields['comments'].reverse(comment)
-            relevance = ['false' if r == 0 else 'true' for r in relevance]
-            general_sentiment = fields['general_sentiments'].reverse(general_sentiment.unsqueeze(1))
-            aspect_sentiment = fields['aspect_sentiments'].reverse(aspect_sentiment, detokenize=False)
+		for batch in iterator:
+			doc_id, comment, relevance, aspect_sentiment, general_sentiment = batch.id, batch.comments, batch.relevance, batch.aspect_sentiments, batch.general_sentiments
+			doc_id = fields['id'].reverse(doc_id.unsqueeze(1))
+			comment = fields['comments'].reverse(comment)
+			relevance = ['false' if r == 0 else 'true' for r in relevance]
+			general_sentiment = fields['general_sentiments'].reverse(general_sentiment.unsqueeze(1))
+			aspect_sentiment = fields['aspect_sentiments'].reverse(aspect_sentiment, detokenize=False)
 
-            for i in range(len(doc_id)):
-                docuement_elem = ET.SubElement(root, 'Document', {'id': doc_id[i]})
+			for i in range(len(doc_id)):
+				docuement_elem = ET.SubElement(root, 'Document', {'id': doc_id[i]})
 
-                rel_field = ET.SubElement(docuement_elem, 'relevance')
-                rel_field.text = relevance[i]
+				rel_field = ET.SubElement(docuement_elem, 'relevance')
+				rel_field.text = relevance[i]
 
-                sen_field = ET.SubElement(docuement_elem, 'sentiment')
-                sen_field.text = general_sentiment[i]
+				sen_field = ET.SubElement(docuement_elem, 'sentiment')
+				sen_field.text = general_sentiment[i]
 
-                text_field = ET.SubElement(docuement_elem, 'text')
-                text_field.text = comment[i]
+				text_field = ET.SubElement(docuement_elem, 'text')
+				text_field.text = comment[i]
 
-                # don't add aspects if field not relevant
-                if relevance[i] == 'false':
-                    continue
-                options_elem = ET.SubElement(docuement_elem, 'Opinions')
+				# don't add aspects if field not relevant
+				if relevance[i] == 'false':
+					continue
+				options_elem = ET.SubElement(docuement_elem, 'Opinions')
 
-                # add aspects
-                for sentiment, a_name in zip(aspect_sentiment[i], dataset.target_names):
-                    if sentiment == 'n/a':
-                        continue
+				# add aspects
+				for sentiment, a_name in zip(aspect_sentiment[i], dataset.target_names):
+					if sentiment == 'n/a':
+						continue
 
-                    asp_field = ET.SubElement(options_elem, 'Opinion', {
-                        'category': a_name,
-                        'target': sentiment
-                    })
+					asp_field = ET.SubElement(options_elem, 'Opinion', {
+						'category': a_name,
+						'target': sentiment
+					})
 
-        #print(BeautifulSoup(ET.tostring(tree), "xml").prettify())
-        tree._setroot(root)
-        tree.write(filename, encoding='utf-8')
+		#print(BeautifulSoup(ET.tostring(tree), "xml").prettify())
+		tree._setroot(root)
+		tree.write(filename, encoding='utf-8')
 
 def write_evaluation_file(iterator: torchtext.data.Iterator, dataset: Dataset, trainer: Trainer, filename='prediction.xml'):
-    fields = dataset.fields
-    with torch.no_grad():
-        iterator.init_epoch()
-        
-        tree = ET.ElementTree()
-        root = ET.Element('Documents')
+	fields = dataset.fields
+	with torch.no_grad():
+		iterator.init_epoch()
+		
+		tree = ET.ElementTree()
+		root = ET.Element('Documents')
 
-        for batch in iterator:
-            doc_id, comment, relevance, target_aspect_sentiment, general_sentiment, padding = batch.id, batch.comments, batch.relevance, batch.aspect_sentiments, batch.general_sentiments, batch.padding
-            doc_id = fields['id'].reverse(doc_id.unsqueeze(1))
-            comment_decoded = fields['comments'].reverse(comment)
-            relevance = ['false' if r == 0 else 'true' for r in relevance]
-            general_sentiment = fields['general_sentiments'].reverse(general_sentiment.unsqueeze(1))
+		tp = 0
+		fp = 0
+		fn = 0
 
-            source_mask = create_padding_masks(padding, 1)
-            prediction = trainer.model.predict(comment, source_mask)
-            aspect_sentiment = fields['aspect_sentiments'].reverse(prediction, detokenize=False)
+		for batch in iterator:
+			doc_id, comment, relevance, target_aspect_sentiment, general_sentiment, padding = batch.id, batch.comments, batch.relevance, batch.aspect_sentiments, batch.general_sentiments, batch.padding
+			doc_id = fields['id'].reverse(doc_id.unsqueeze(1))
+			comment_decoded = fields['comments'].reverse(comment)
+			relevance = ['false' if r == 0 else 'true' for r in relevance]
+			general_sentiment = fields['general_sentiments'].reverse(general_sentiment.unsqueeze(1))
 
-            for i in range(len(doc_id)):
-                docuement_elem = ET.SubElement(root, 'Document', {'id': doc_id[i]})
+			source_mask = create_padding_masks(padding, 1)
+			prediction = trainer.model.predict(comment, source_mask)
 
-                rel_field = ET.SubElement(docuement_elem, 'relevance')
-                rel_field.text = relevance[i]
+			p = torch.t(p)
+			t = torch.t(t)
 
-                sen_field = ET.SubElement(docuement_elem, 'sentiment')
-                sen_field.text = general_sentiment[i]
+			for a_i in range(20):
+				for s_i in range(4):
+					if s_i == 0:
+						continue
+					p_mask = p[a_i] == s_i
+					t_mask = t[a_i] == s_i
+					c_matrix = confusion_matrix(t_mask, p_mask, labels=[1, 0])
+					tp += c_matrix[0,0]
+					fp += c_matrix[0,1]
+					fn += c_matrix[1,0]
 
-                text_field = ET.SubElement(docuement_elem, 'text')
-                text_field.text = comment_decoded[i]
+			aspect_sentiment = fields['aspect_sentiments'].reverse(prediction, detokenize=False)
 
-                # don't add aspects if field not relevant
-                if relevance[i] == 'false':
-                    continue
-                options_elem = ET.SubElement(docuement_elem, 'Opinions')
+			for i in range(len(doc_id)):
+				docuement_elem = ET.SubElement(root, 'Document', {'id': doc_id[i]})
 
-                # add aspects
-                for sentiment, a_name in zip(aspect_sentiment[i], dataset.target_names):
-                    if sentiment == 'n/a':
-                        continue
+				rel_field = ET.SubElement(docuement_elem, 'relevance')
+				rel_field.text = relevance[i]
 
-                    asp_field = ET.SubElement(options_elem, 'Opinion', {
-                        'category': a_name,
-                        'polarity': sentiment
-                    })
+				sen_field = ET.SubElement(docuement_elem, 'sentiment')
+				sen_field.text = general_sentiment[i]
 
-        #print(BeautifulSoup(ET.tostring(tree), "xml").prettify())
-        tree._setroot(root)
-        tree.write(filename, encoding='utf-8')
+				text_field = ET.SubElement(docuement_elem, 'text')
+				text_field.text = comment_decoded[i]
 
+				# don't add aspects if field not relevant
+				if relevance[i] == 'false':
+					continue
+				options_elem = ET.SubElement(docuement_elem, 'Opinions')
 
+				# add aspects
+				for sentiment, a_name in zip(aspect_sentiment[i], dataset.target_names):
+					if sentiment == 'n/a':
+						continue
 
+					asp_field = ET.SubElement(options_elem, 'Opinion', {
+						'category': a_name,
+						'polarity': sentiment
+					})
 
+		#print(BeautifulSoup(ET.tostring(tree), "xml").prettify())
+		tree._setroot(root)
+		tree.write(filename, encoding='utf-8')
 
+		print(f'TP: {tp}')
+		print(f'FP: {fp}')
+		print(f'FN: {fn}')
 
-
-
-
-
+		precision = float(tp) / (tp + fp)
+		recall = float(tp) / (tp + fn)
+		f1 = 2.0 * precision * recall / (precision + recall)
+		print(f'F1: {f1}')
 
 # experiment_name = utils.create_loggers(experiment_name='testing')
 # logger = logging.getLogger(__name__)
