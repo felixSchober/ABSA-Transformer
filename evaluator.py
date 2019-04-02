@@ -13,7 +13,7 @@ from criterion import NllLoss, LossCombiner
 
 from models.transformer.encoder import TransformerEncoder
 from models.jointAspectTagger import JointAspectTagger
-from trainer.train import Trainer
+from trainer.train import Trainer, create_padding_masks
 import pprint
 
 import torchtext
@@ -29,40 +29,41 @@ PREFERENCES.defaults(
 	target_vocab_index=2,
 	file_format='csv'
 )
-def load(hp, logger):
-	dataset = Dataset(
-		hp.task,
-		logger,
-		hp,
-		source_index=PREFERENCES.source_index,
-		target_vocab_index=PREFERENCES.target_vocab_index,
-		data_path=PREFERENCES.data_root,
-		train_file=PREFERENCES.data_train,
-		valid_file=PREFERENCES.data_validation,
-		test_file=PREFERENCES.data_test,
-		file_format=PREFERENCES.file_format,
-		init_token=None,
-		eos_token=None
-	)
-	dataset.load_data(dsl, verbose=True)
-	return dataset
 
-def load_model(dataset, hp, experiment_name):
-	loss = LossCombiner(4, dataset.class_weights, NllLoss)
-	transformer = TransformerEncoder(dataset.source_embedding,
-									 hyperparameters=hp)
-	model = JointAspectTagger(transformer, hp, 4, 20, dataset.target_names)
-	optimizer = get_optimizer(model, hp)
-	trainer = Trainer(
-						model,
-						loss,
-						optimizer,
-						hp,
-						dataset,
-						experiment_name,
-						enable_tensorboard=False,
-						verbose=True)
-	return trainer
+def load_model(dataset, rc, experiment_name):
+    loss = LossCombiner(4, dataset.class_weights, NllLoss)
+    transformer = TransformerEncoder(dataset.source_embedding,
+                                     hyperparameters=rc)
+    model = JointAspectTagger(transformer, rc, 4, 20, dataset.target_names)
+    optimizer = get_optimizer(model, rc)
+    trainer = Trainer(
+                        model,
+                        loss,
+                        optimizer,
+                        rc,
+                        dataset,
+                        experiment_name,
+                        enable_tensorboard=False,
+                        verbose=False)
+    return trainer
+
+def load_dataset(rc, logger, task):
+    dataset = Dataset(
+        task,
+        logger,
+        rc,
+        source_index=PREFERENCES.source_index,
+        target_vocab_index=PREFERENCES.target_vocab_index,
+        data_path=PREFERENCES.data_root,
+        train_file=PREFERENCES.data_train,
+        valid_file=PREFERENCES.data_validation,
+        test_file=PREFERENCES.data_test,
+        file_format=PREFERENCES.file_format,
+        init_token=None,
+        eos_token=None
+    )
+    dataset.load_data(dsl, verbose=False)
+    return dataset
 
 def produce_test_gold_labels(iterator: torchtext.data.Iterator, dataset: Dataset, filename='gold_labels.xml'):
 
@@ -121,13 +122,13 @@ def write_evaluation_file(iterator: torchtext.data.Iterator, dataset: Dataset, t
         root = ET.Element('Documents')
 
         for batch in iterator:
-            doc_id, comment, relevance, aspect_sentiment, general_sentiment, padding = batch.id, batch.comments, batch.relevance, batch.aspect_sentiments, batch.general_sentiments, batch.padding
+            doc_id, comment, relevance, target_aspect_sentiment, general_sentiment, padding = batch.id, batch.comments, batch.relevance, batch.aspect_sentiments, batch.general_sentiments, batch.padding
             doc_id = fields['id'].reverse(doc_id.unsqueeze(1))
             comment_decoded = fields['comments'].reverse(comment)
             relevance = ['false' if r == 0 else 'true' for r in relevance]
             general_sentiment = fields['general_sentiments'].reverse(general_sentiment.unsqueeze(1))
 
-            source_mask = trainer.create_padding_masks(padding, 1)
+            source_mask = create_padding_masks(padding, 1)
             prediction = trainer.model.predict(comment, source_mask)
             aspect_sentiment = fields['aspect_sentiments'].reverse(prediction, detokenize=False)
 
@@ -155,7 +156,7 @@ def write_evaluation_file(iterator: torchtext.data.Iterator, dataset: Dataset, t
 
                     asp_field = ET.SubElement(options_elem, 'Opinion', {
                         'category': a_name,
-                        'target': sentiment
+                        'polarity': sentiment
                     })
 
         #print(BeautifulSoup(ET.tostring(tree), "xml").prettify())
@@ -190,13 +191,21 @@ logger = logging.getLogger(__name__)
 
 baseline = {**default_params, **hyperOpt_goodParams}
 rc = get_default_params(use_cuda=True, overwrite={}, from_default=baseline)
+logger = logging.getLogger(__name__)
 
-
+dataset_logger = logging.getLogger('data_loader')
+logger.debug('Load dataset')
 dataset = load_dataset(rc, dataset_logger, rc.task)
+
+logger.debug('dataset loaded')
+logger.debug('Load model')
+trainer = load_model(dataset, rc, experiment_name)
+logger.debug('model loaded')
+
 
 trainer.load_model(custom_path='C:\\Users\\felix\\OneDrive\\Studium\\Studium\\6. Semester\\MA\\Project\\ABSA-Transformer\\logs\\GermEval7_Experiments\\20190401\\0\\checkpoints')
 trainer.set_cuda(True)
-result = trainer.perform_final_evaluation(use_test_set=True, verbose=False)
+#result = trainer.perform_final_evaluation(use_test_set=True, verbose=False)
 
 # import os
 # path = os.path.join(os.getcwd(), 'logs', 'GoodResults')
