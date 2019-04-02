@@ -371,8 +371,12 @@ class OrganicDataset(Dataset):
 
 		# process the aspect sentiment
 		if len(self.aspects) == 0:
-			#aspect_sentiment_categories.add('QR-Code')
+
 			self.aspects = list(aspect_sentiment_categories)
+
+			# make sure the list is sorted. Otherwise we'll have a different
+			# order every time and can not transfer models
+			self.aspects = sorted(self.aspects)
 
 			# construct the fields
 			fields = self._construct_fields(fields)
