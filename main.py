@@ -17,29 +17,29 @@ from trainer.train import Trainer
 
 import pprint
 
-# PREFERENCES.defaults(
-# 	data_root='./data/data/germeval2017',
-# 	data_train='train_v1.4.tsv',    
-# 	data_validation='dev_v1.4.tsv',
-# 	data_test='test_TIMESTAMP1.tsv',
-	# source_index=0,
-	# target_vocab_index=2,
-	# file_format='csv'
-# )
-# from data.germeval2017 import germeval2017_dataset as dsl
-
-
-from data.organic2019 import organic_dataset as dsl
-from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ENTITIES_COMBINE, ORGANIC_TASK_COARSE
 PREFERENCES.defaults(
-    data_root='./data/data/organic2019',
-    data_train='train.csv',    
-    data_validation='validation.csv',
-    data_test='test.csv',
+	data_root='./data/data/germeval2017',
+	data_train='train_v1.4.tsv',    
+	data_validation='dev_v1.4.tsv',
+	data_test='test_TIMESTAMP1.tsv',
 	source_index=0,
-	target_vocab_index=1,
+	target_vocab_index=2,
 	file_format='csv'
 )
+from data.germeval2017 import germeval2017_dataset as dsl
+
+
+# from data.organic2019 import organic_dataset as dsl
+# from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ENTITIES_COMBINE, ORGANIC_TASK_COARSE
+# PREFERENCES.defaults(
+#     data_root='./data/data/organic2019',
+#     data_train='train.csv',    
+#     data_validation='validation.csv',
+#     data_test='test.csv',
+# 	source_index=0,
+# 	target_vocab_index=1,
+# 	file_format='csv'
+# )
 
 def load(hp, logger):
 	dataset = Dataset(
@@ -82,18 +82,18 @@ experiment_name = utils.create_loggers(experiment_name=experiment_name)
 logger = logging.getLogger(__name__)
 logger.info('Current commit: ' + utils.get_current_git_commit())
 
-hp = get_default_params(use_cuda=True, overwrite={'use_stop_words': True, 'clip_comments_to': 80, 'task': ORGANIC_TASK_ATTRIBUTES, 'organic_text_cleaning': True, }, from_default=good_organic_hp_params)
+hp = get_default_params(use_cuda=True, overwrite=hyperOpt_goodParams)
 
 
 #hp.num_epochs = 35
-#hp.log_every_xth_iteration = -1
+hp.log_every_xth_iteration = 10
 #hp.language = 'de'
 # hp.adam_weight_decay = 1e-4
 # hp.pointwise_layer_size = 256
 # hp.n_enc_blocks = 2
 #hp.embedding_type = 'glove'
 #hp.language = 'en'
-#hp.use_spell_checkers = True
+hp.use_spell_checkers = True
 #hp.clip_comments_to = 300
 #hp.embedding_type = 'fasttext'
 logger.info(hp)
