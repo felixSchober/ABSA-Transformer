@@ -186,6 +186,8 @@ class OrganicDataset(Dataset):
 		self.aspect_sentiment_fields = []
 		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
 		self.dataset_name = name
+		self.stats = defaultdict(get_stats_dd)
+
 
 		# add spellChecked if spell checker is active
 		if hp.use_spell_checkers:
@@ -242,7 +244,7 @@ class OrganicDataset(Dataset):
 			organic_text_cleaning_dict = get_organic_words_replacement()
 
 		if hp.use_spell_checkers:
-			spell = initialize_spellchecker(hp.language)
+			spell = self.initialize_spellchecker(hp.language)
 		else:
 			spell = None
 
@@ -311,7 +313,9 @@ class OrganicDataset(Dataset):
 					
 					s_k = columns[7].strip()
 					if s_k != '':
-						aspect_sentiment = od_sentiment_mapping[columns[7].strip()]		
+						aspect_sentiment = od_sentiment_mapping[columns[7].strip()]	
+						self.stats[aspect_category][aspect_sentiment] += 1
+	
 
 					crnt_sentence_number = columns[5]
 					crnt_comment_number = columns[4]
@@ -440,7 +444,7 @@ class OrganicDataset(Dataset):
 			comment = fix_organic_spelling(comment, organic_text_cleaning_dict)
 
 		if hp.use_spell_checkers:
-			comment = fix_spellings(comment, spell)
+			comment = self.fix_spellings(comment, spell)
 
 		comment = ' '.join(comment)
 		if hp.use_text_cleaner:

@@ -59,7 +59,7 @@ def germeval2017_dataset(
 							stop_words=stop_words,
 							preprocessing=data.Pipeline(preprocess_word))
 	else:
-		comment_field = ReversibleField(
+		comment_field = data.Field(
 								batch_first=True,    # produce tensors with batch dimension first
 								lower=True,
 								fix_length=hyperparameters.clip_comments_to,
@@ -168,6 +168,7 @@ def germeval2017_dataset(
 
 	return {
 		'task': task,
+		'stats': (train.stats, val.stats, test.stats),
 		'split_length': (len(train), len(val), len(test)),
 		'iters': (train_iter, val_iter, test_iter), 
 		'vocabs': (comment_field.vocab, general_sentiment_field.vocab, aspect_sentiment_field.vocab),

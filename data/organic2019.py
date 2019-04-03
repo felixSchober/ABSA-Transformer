@@ -174,6 +174,7 @@ def organic_dataset(
 
 	return {
 		'task': 'organic19_' + task,
+		'stats': (train.stats, val.stats, test.stats),
 		'split_length': (len(train), len(val), len(test)),
 		'iters': (train_iter, val_iter, test_iter), 
 		'vocabs': (comment_field.vocab, aspect_sentiment_field.vocab),
