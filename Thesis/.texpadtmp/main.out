@@ -5,25 +5,46 @@
 \BOOKMARK [1][-]{section.1.2}{Outline}{chapter.1}% 5
 \BOOKMARK [0][-]{chapter.2}{Related Work}{}% 6
 \BOOKMARK [0][-]{chapter.3}{Theoretical Background}{}% 7
-\BOOKMARK [1][-]{section.3.1}{Methodology}{chapter.3}% 8
-\BOOKMARK [2][-]{subsection.3.1.1}{Performance Measurements}{section.3.1}% 9
-\BOOKMARK [2][-]{subsection.3.1.2}{Cross Validation}{section.3.1}% 10
-\BOOKMARK [0][-]{chapter.4}{Method}{}% 11
-\BOOKMARK [0][-]{chapter.5}{Experimental Setup}{}% 12
-\BOOKMARK [1][-]{section.5.1}{Data}{chapter.5}% 13
-\BOOKMARK [2][-]{subsection.5.1.1}{Conll-2003 - Named Entity Recognition}{section.5.1}% 14
-\BOOKMARK [2][-]{subsection.5.1.2}{SemEval-2016 - Restaurants and Laptops}{section.5.1}% 15
-\BOOKMARK [2][-]{subsection.5.1.3}{GermEval-2017 - Deutsche Bahn Tweets}{section.5.1}% 16
-\BOOKMARK [2][-]{subsection.5.1.4}{Organic-2019 - Organic Comments}{section.5.1}% 17
-\BOOKMARK [0][-]{chapter.6}{Discussion of Results}{}% 18
-\BOOKMARK [1][-]{section.6.1}{Hyper Parameter Optimization}{chapter.6}% 19
-\BOOKMARK [1][-]{section.6.2}{Results for Named Entity Recognition}{chapter.6}% 20
-\BOOKMARK [1][-]{section.6.3}{Results for Aspect-Based Sentiment Analysis}{chapter.6}% 21
-\BOOKMARK [2][-]{subsection.6.3.1}{GermEval-2017}{section.6.3}% 22
-\BOOKMARK [2][-]{subsection.6.3.2}{GermEval-2017}{section.6.3}% 23
-\BOOKMARK [2][-]{subsection.6.3.3}{Organic-2019}{section.6.3}% 24
-\BOOKMARK [0][-]{chapter.7}{Conclusion}{}% 25
-\BOOKMARK [1][-]{section.7.1}{Future Work}{chapter.7}% 26
-\BOOKMARK [0][-]{section*.8}{Acronyms}{}% 27
-\BOOKMARK [0][-]{chapter*.10}{List of Figures}{}% 28
-\BOOKMARK [0][-]{chapter*.11}{List of Tables}{}% 29
+\BOOKMARK [1][-]{section.3.1}{Word Representations}{chapter.3}% 8
+\BOOKMARK [2][-]{subsection.3.1.1}{Glove}{section.3.1}% 9
+\BOOKMARK [2][-]{subsection.3.1.2}{FastText}{section.3.1}% 10
+\BOOKMARK [2][-]{subsection.3.1.3}{Elmo}{section.3.1}% 11
+\BOOKMARK [1][-]{section.3.2}{Google Transformer Architecture}{chapter.3}% 12
+\BOOKMARK [2][-]{subsection.3.2.1}{Positional Encoding}{section.3.2}% 13
+\BOOKMARK [2][-]{subsection.3.2.2}{Attention Mechanism}{section.3.2}% 14
+\BOOKMARK [2][-]{subsection.3.2.3}{Pointwise Layer}{section.3.2}% 15
+\BOOKMARK [1][-]{section.3.3}{Multi-Task Learning}{chapter.3}% 16
+\BOOKMARK [2][-]{subsection.3.3.1}{Motivation}{section.3.3}% 17
+\BOOKMARK [2][-]{subsection.3.3.2}{Architectures}{section.3.3}% 18
+\BOOKMARK [1][-]{section.3.4}{Transfer Learning}{chapter.3}% 19
+\BOOKMARK [1][-]{section.3.5}{Methodology}{chapter.3}% 20
+\BOOKMARK [2][-]{subsection.3.5.1}{Performance Measurements}{section.3.5}% 21
+\BOOKMARK [2][-]{subsection.3.5.2}{Cross Validation}{section.3.5}% 22
+\BOOKMARK [0][-]{chapter.4}{Method}{}% 23
+\BOOKMARK [1][-]{section.4.1}{Architecture}{chapter.4}% 24
+\BOOKMARK [2][-]{subsection.4.1.1}{Pointwise Layers}{section.4.1}% 25
+\BOOKMARK [0][-]{chapter.5}{Experimental Setup}{}% 26
+\BOOKMARK [1][-]{section.5.1}{Data}{chapter.5}% 27
+\BOOKMARK [2][-]{subsection.5.1.1}{Data Preprocessing}{section.5.1}% 28
+\BOOKMARK [2][-]{subsection.5.1.2}{Conll-2003 - Named Entity Recognition}{section.5.1}% 29
+\BOOKMARK [2][-]{subsection.5.1.3}{SemEval-2016 - Restaurants and Laptops}{section.5.1}% 30
+\BOOKMARK [2][-]{subsection.5.1.4}{GermEval-2017 - Deutsche Bahn Tweets}{section.5.1}% 31
+\BOOKMARK [2][-]{subsection.5.1.5}{Organic-2019 - Organic Comments}{section.5.1}% 32
+\BOOKMARK [0][-]{chapter.6}{Discussion of Results}{}% 33
+\BOOKMARK [1][-]{section.6.1}{Hyper Parameter Optimization}{chapter.6}% 34
+\BOOKMARK [2][-]{subsection.6.1.1}{Pointwise Layer Size}{section.6.1}% 35
+\BOOKMARK [2][-]{subsection.6.1.2}{Spell Checker}{section.6.1}% 36
+\BOOKMARK [1][-]{section.6.2}{Results for Named Entity Recognition}{chapter.6}% 37
+\BOOKMARK [1][-]{section.6.3}{Results for Aspect-Based Sentiment Analysis}{chapter.6}% 38
+\BOOKMARK [2][-]{subsection.6.3.1}{GermEval-2017}{section.6.3}% 39
+\BOOKMARK [2][-]{subsection.6.3.2}{GermEval-2017}{section.6.3}% 40
+\BOOKMARK [2][-]{subsection.6.3.3}{Organic-2019}{section.6.3}% 41
+\BOOKMARK [1][-]{section.6.4}{Impact of Multitask Learning}{chapter.6}% 42
+\BOOKMARK [2][-]{subsection.6.4.1}{Impact of Aspect heads on performance}{section.6.4}% 43
+\BOOKMARK [1][-]{section.6.5}{Impact of Transfer Learning}{chapter.6}% 44
+\BOOKMARK [0][-]{chapter.7}{Conclusion}{}% 45
+\BOOKMARK [1][-]{section.7.1}{Future Work}{chapter.7}% 46
+\BOOKMARK [0][-]{section*.14}{Acronyms}{}% 47
+\BOOKMARK [0][-]{chapter*.16}{List of Figures}{}% 48
+\BOOKMARK [0][-]{chapter*.17}{List of Tables}{}% 49
+\BOOKMARK [0][-]{chapter*.18}{Bibliography}{}% 50

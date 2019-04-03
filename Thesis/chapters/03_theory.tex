@@ -1,6 +1,107 @@
 \chapter{Theoretical Background}
 \label{ch:theory}
 
+This chapter attends to the theoretical background for the technologies used in this thesis.
+
+\section{Word Representations}
+
+\subsection{Glove}
+
+\subsection{FastText}
+
+\subsection{Elmo}
+
+\section{Google Transformer Architecture}
+\subsection{Positional Encoding}
+\subsection{Attention Mechanism}
+\subsection{Pointwise Layer}
+
+
+\section{Multi-Task Learning}
+
+Rich Caruana first introduced \acrful{mtl} in 1993. Conventional machine learning approaches break a problem down in smaller tasks and solve one task at a time (e.g., word \gls{pos}-tagging, word \gls{ner}, image classification). Caruana shows that combining multiple related tasks improves model performance \cite{Caruana1993}\cite{Caruana1997a}. 
+
+In \gls{mtl} multiple related tasks are learned in parallel and share a common representation. Generally speaking every machine learning model which optimizes multiple objectives for a single sample can be considered as Multitask Learning. This includes multi-label classification where one sample can have multiple labels as well as instances where different sample distributions or datasets are used for different tasks. 
+By using information from related tasks
+
+
+
+
+\subsection{Motivation}
+
+\gls{mtl} is similar to how humans learn. Generally, humans learn new tasks by applying knowledge from previous experiences and activities. For instance, it is easier to learn ice skating when someone previously learned inline skating. This is because the tasks are very similar.
+
+When tasks are related this also holds true for machine learning. When learning these tasks in parallel model performance is improved compared to learning them individually since the additional knowledge that the related task carries, can be used to improve on the original task \cite{Caruana1997a}. 
+
+Training samples from one task can help improve the other task and vice versa. This is important for the differentiation against transfer learning \cite{Pratt1993} described in section \ref{sec:TransferLearning}. In \gls{mtl} each task is equally important whereas in transfer learning the target task is more important than the source task \cite{Zhang2017a}.
+
+
+
+
+
+
+Generalization error is lower on shared tasks \cite{Caruana1993}
+
+MultiTask Learning NLP \cite{Søgaard2016}
+
+Has been shown that learning more tasks instead of single tasks always improves performance see \cite{Ramsundar2015}
+
+Predicting POS-tags along with word frequencies \cite{Plank}
+
+Good when there is insufficient data for the problem but multiple related tasks that each have a limited amount of data \cite{Zhang2017a} 
+
+When does it make sense to use multi task learning:
+
+1 shared lower level features (word embeddings + attention)
+2 amount of data for each task is somewhat similar
+3 neural network has to be big enough to do well on all the tasks. It can hurt performance if it is to small \cite{Caruana1997a}
+
+
+The most common architecture for 
+
+\subsubsection{Data Augmentation}
+
+used multiple tasks as well as word prediction to increase performance \cite{Rei2017}
+
+
+\subsection{Architectures}
+
+\subsubsection{Hard Parameter Sharing}
+
+Share hidden layers. Have several (one or more) layers per task 
+
+\subsubsection{Soft Parameter Sharing}
+
+\section{Transfer Learning}
+\label{sec:TransferLearning}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \section{Methodology}
 \subsection{Performance Measurements}
 

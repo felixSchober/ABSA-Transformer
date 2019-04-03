@@ -16,5 +16,313 @@
   {}
 \endgroup
 
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{Caruana1997a}{thesis}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,uniquepart=base,hash=599c5251d489b92dc7856277d56cb1a9}{%
+           family={Caruana},
+           familyi={C\bibinitperiod},
+           given={Rich},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{institution}{1}{%
+        {Carnegie Melon University}%
+      }
+      \strng{namehash}{599c5251d489b92dc7856277d56cb1a9}
+      \strng{fullhash}{599c5251d489b92dc7856277d56cb1a9}
+      \strng{bibnamehash}{599c5251d489b92dc7856277d56cb1a9}
+      \strng{authorbibnamehash}{599c5251d489b92dc7856277d56cb1a9}
+      \strng{authornamehash}{599c5251d489b92dc7856277d56cb1a9}
+      \strng{authorfullhash}{599c5251d489b92dc7856277d56cb1a9}
+      \field{sortinit}{C}
+      \field{sortinithash}{963e9d84a3da2344e8833203de5aed05}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{Multitask Learning}}
+      \field{type}{Ph.D thesis}
+      \field{year}{1997}
+      \verb{file}
+      \verb :Users/felix/Library/Application Support/Mendeley Desktop/Downloaded/Unknown - Unknown - full-text(3).pdf:pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://www8.cs.umu.se/research/ifor/dl/LEARNING/multitask learning.pdf
+      \endverb
+      \verb{url}
+      \verb http://www8.cs.umu.se/research/ifor/dl/LEARNING/multitask%20learning.pdf
+      \endverb
+    \endentry
+    \entry{Caruana1993}{article}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,uniquepart=base,hash=2965a10236a9abe0c21d7d05358c7a2d}{%
+           family={Caruana},
+           familyi={C\bibinitperiod},
+           given={Richard},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{2965a10236a9abe0c21d7d05358c7a2d}
+      \strng{fullhash}{2965a10236a9abe0c21d7d05358c7a2d}
+      \strng{bibnamehash}{2965a10236a9abe0c21d7d05358c7a2d}
+      \strng{authorbibnamehash}{2965a10236a9abe0c21d7d05358c7a2d}
+      \strng{authornamehash}{2965a10236a9abe0c21d7d05358c7a2d}
+      \strng{authorfullhash}{2965a10236a9abe0c21d7d05358c7a2d}
+      \field{sortinit}{C}
+      \field{sortinithash}{963e9d84a3da2344e8833203de5aed05}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{PROCEEDINGS OF THE TENTH INTERNATIONAL CONFERENCE ON MACHINE LEARNING}
+      \field{title}{{Multitask Learning: A Knowledge-Based Source of Inductive Bias}}
+      \field{year}{1993}
+      \field{pages}{41\bibrangedash 48}
+      \range{pages}{8}
+      \verb{file}
+      \verb :Users/felix/Downloads/10.1.1.57.3196.pdf:pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.57.3196
+      \endverb
+      \verb{url}
+      \verb http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.57.3196
+      \endverb
+    \endentry
+    \entry{Plank}{report}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,uniquepart=base,hash=63bd895d4fbba2d503bc308d763e44d4}{%
+           family={Plank},
+           familyi={P\bibinitperiod},
+           given={Barbara},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=b874f93d29ad9151e52501b113f21077}{%
+           family={S{ø}gaard},
+           familyi={S\bibinitperiod},
+           given={Anders},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=33b00f3e2f4f1bb310f1cf8d4a4c500a}{%
+           family={Goldberg},
+           familyi={G\bibinitperiod},
+           given={Yoav},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{ffcd48d9d479b2df55f8a166126f031d}
+      \strng{fullhash}{ffcd48d9d479b2df55f8a166126f031d}
+      \strng{bibnamehash}{ffcd48d9d479b2df55f8a166126f031d}
+      \strng{authorbibnamehash}{ffcd48d9d479b2df55f8a166126f031d}
+      \strng{authornamehash}{ffcd48d9d479b2df55f8a166126f031d}
+      \strng{authorfullhash}{ffcd48d9d479b2df55f8a166126f031d}
+      \field{sortinit}{P}
+      \field{sortinithash}{8d51b3d5b78d75b54308d706b9bbe285}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Bidirectional long short-term memory (bi-LSTM) networks have recently proven successful for various NLP sequence mod-eling tasks, but little is known about their reliance to input representations, target languages, data set size, and label noise. We address these issues and evaluate bi-LSTMs with word, character, and unicode byte embeddings for POS tagging. We compare bi-LSTMs to traditional POS taggers across languages and data sizes. We also present a novel bi-LSTM model, which combines the POS tagging loss function with an auxiliary loss function that accounts for rare words. The model obtains state-of-the-art performance across 22 languages, and works especially well for morphologically complex languages. Our analysis suggests that bi-LSTMs are less sensitive to training data size and label corruptions (at small noise levels) than previously assumed.}
+      \field{annotation}{Predicting POS-tags along with word frequencies}
+      \field{eprinttype}{arXiv}
+      \field{title}{{Multilingual Part-of-Speech Tagging with Bidirectional Long Short-Term Memory Models and Auxiliary Loss}}
+      \field{type}{techreport}
+      \verb{eprint}
+      \verb 1604.05529v3
+      \endverb
+      \verb{file}
+      \verb ::
+      \endverb
+      \verb{urlraw}
+      \verb https://github.com/clab/cnn
+      \endverb
+      \verb{url}
+      \verb https://github.com/clab/cnn
+      \endverb
+    \endentry
+    \entry{Pratt1993}{article}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,uniquepart=base,hash=940038165be71c04e157c5a41f5dc09b}{%
+           family={Pratt},
+           familyi={P\bibinitperiod},
+           given={L\bibnamedelima Y},
+           giveni={L\bibinitperiod\bibinitdelim Y\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{940038165be71c04e157c5a41f5dc09b}
+      \strng{fullhash}{940038165be71c04e157c5a41f5dc09b}
+      \strng{bibnamehash}{940038165be71c04e157c5a41f5dc09b}
+      \strng{authorbibnamehash}{940038165be71c04e157c5a41f5dc09b}
+      \strng{authornamehash}{940038165be71c04e157c5a41f5dc09b}
+      \strng{authorfullhash}{940038165be71c04e157c5a41f5dc09b}
+      \field{sortinit}{P}
+      \field{sortinithash}{8d51b3d5b78d75b54308d706b9bbe285}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Previously, we have introduced the idea of neural network transfer, where learning on a target problem is sped up by using the weights obtained from a network trained for a related source task. Here, we present a new algorithm. called Discriminability-Based Transfer (DBT), which uses an information measure to estimate the utility of hyperplanes defined by source weights in the target network, and rescales transferred weight magnitudes accordingly. Several experiments demonstrate that target networks initialized via DBT learn significantly faster than networks initialized randomly.}
+      \field{journaltitle}{Advances in neural information processing systems}
+      \field{title}{{Discriminability-Based Transfer between Neural Networks}}
+      \field{year}{1993}
+      \field{pages}{204\bibrangedash 211}
+      \range{pages}{8}
+      \verb{file}
+      \verb :Users/felix/Library/Application Support/Mendeley Desktop/Downloaded/Pratt - Unknown - Discriminability-Based Transfer between Neural Networks.pdf:pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://papers.nips.cc/paper/641-discriminability-based-transfer-between-neural-networks.pdf
+      \endverb
+      \verb{url}
+      \verb http://papers.nips.cc/paper/641-discriminability-based-transfer-between-neural-networks.pdf
+      \endverb
+    \endentry
+    \entry{Ramsundar2015}{unpublished}{}
+      \name{author}{6}{}{%
+        {{uniquename=0,uniquepart=base,hash=6846cc99295752b57e920fdc36e377f2}{%
+           family={Ramsundar},
+           familyi={R\bibinitperiod},
+           given={Bharath},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=6b69d0b1ec0a3e7eab2f9f716a2f1b52}{%
+           family={Kearnes},
+           familyi={K\bibinitperiod},
+           given={Steven},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=875f84466ebe1e6693e13c1aff3f4f42}{%
+           family={Riley},
+           familyi={R\bibinitperiod},
+           given={Patrick},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=814593e049561ed80f4209a83b937bda}{%
+           family={Webster},
+           familyi={W\bibinitperiod},
+           given={Dale},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=327b53d3391f639f85cf99daac339c6a}{%
+           family={Konerding},
+           familyi={K\bibinitperiod},
+           given={David},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=8b199ddaf6c3a6930287f84fc29a82dd}{%
+           family={Pande},
+           familyi={P\bibinitperiod},
+           given={Vijay},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{7ceed5b76a1fd26aaaf2620b7ee60ece}
+      \strng{fullhash}{c2f5e5e022ac7f20d1298b841cad0993}
+      \strng{bibnamehash}{c2f5e5e022ac7f20d1298b841cad0993}
+      \strng{authorbibnamehash}{c2f5e5e022ac7f20d1298b841cad0993}
+      \strng{authornamehash}{7ceed5b76a1fd26aaaf2620b7ee60ece}
+      \strng{authorfullhash}{c2f5e5e022ac7f20d1298b841cad0993}
+      \field{sortinit}{R}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Massively multitask neural architectures provide a learning framework for drug discovery that synthesizes information from many distinct biological sources. To train these architectures at scale, we gather large amounts of data from public sources to create a dataset of nearly 40 million measurements across more than 200 biological targets. We investigate several aspects of the multitask framework by performing a series of empirical studies and obtain some interesting results: (1) massively multitask networks obtain predictive accuracies significantly better than single-task methods, (2) the predictive power of multitask networks improves as additional tasks and data are added, (3) the total amount of data and the total number of tasks both contribute significantly to multitask improvement, and (4) multitask networks afford limited transferability to tasks not in the training set. Our results underscore the need for greater data sharing and further algorithmic innovation to accelerate the drug discovery process.}
+      \field{annotation}{more tasks -{>} better performance compared to single}
+      \field{eprinttype}{arXiv}
+      \field{month}{2}
+      \field{title}{{Massively Multitask Networks for Drug Discovery}}
+      \field{year}{2015}
+      \verb{eprint}
+      \verb 1502.02072
+      \endverb
+      \verb{file}
+      \verb :Users/felix/Library/Application Support/Mendeley Desktop/Downloaded/Ramsundar et al. - 2015 - Massively Multitask Networks for Drug Discovery.pdf:pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1502.02072
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/1502.02072
+      \endverb
+    \endentry
+    \entry{Rei2017}{article}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,uniquepart=base,hash=bd651b0a99d219fbbcf0b23d89a85e2e}{%
+           family={Rei},
+           familyi={R\bibinitperiod},
+           given={Marek},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{bd651b0a99d219fbbcf0b23d89a85e2e}
+      \strng{fullhash}{bd651b0a99d219fbbcf0b23d89a85e2e}
+      \strng{bibnamehash}{bd651b0a99d219fbbcf0b23d89a85e2e}
+      \strng{authorbibnamehash}{bd651b0a99d219fbbcf0b23d89a85e2e}
+      \strng{authornamehash}{bd651b0a99d219fbbcf0b23d89a85e2e}
+      \strng{authorfullhash}{bd651b0a99d219fbbcf0b23d89a85e2e}
+      \field{sortinit}{R}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{We propose a sequence labeling framework with a secondary training objective, learning to predict surrounding words for every word in the dataset. This language modeling objective incentivises the system to learn general-purpose patterns of semantic and syntactic composition, which are also useful for improving accuracy on different sequence labeling tasks. The architecture was evaluated on a range of datasets, covering the tasks of error detection in learner texts, named entity recognition, chunking and POS-tagging. The novel language modeling objective provided consistent performance improvements on every benchmark, without requiring any additional annotated or unannotated data.}
+      \field{annotation}{used multiple tasks and word prediction to improve performance. LSTM}
+      \field{eprinttype}{arXiv}
+      \field{month}{4}
+      \field{title}{{Semi-supervised Multitask Learning for Sequence Labeling}}
+      \field{year}{2017}
+      \verb{eprint}
+      \verb 1704.07156
+      \endverb
+      \verb{file}
+      \verb :Users/felix/Library/Application Support/Mendeley Desktop/Downloaded/Rei - 2017 - Semi-supervised Multitask Learning for Sequence Labeling.pdf:pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1704.07156
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/1704.07156
+      \endverb
+    \endentry
+    \entry{Zhang2017a}{article}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,uniquepart=base,hash=9a4f4a1ff661cd600eb26523a5ba8bb4}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Yu},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=55242d2a60270145342841e4d4238da0}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Qiang},
+           giveni={Q\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6cd6b62eb7a185a0d85f22af0ef449f2}
+      \strng{fullhash}{6cd6b62eb7a185a0d85f22af0ef449f2}
+      \strng{bibnamehash}{6cd6b62eb7a185a0d85f22af0ef449f2}
+      \strng{authorbibnamehash}{6cd6b62eb7a185a0d85f22af0ef449f2}
+      \strng{authornamehash}{6cd6b62eb7a185a0d85f22af0ef449f2}
+      \strng{authorfullhash}{6cd6b62eb7a185a0d85f22af0ef449f2}
+      \field{sortinit}{Z}
+      \field{sortinithash}{156173bd08b075d7295bc3e0f4735a04}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Multi-Task Learning (MTL) is a learning paradigm in machine learning and its aim is to leverage useful information contained in multiple related tasks to help improve the generalization performance of all the tasks. In this paper, we give a survey for MTL. First, we classify different MTL algorithms into several categories, including feature learning approach, low-rank approach, task clustering approach, task relation learning approach, and decomposition approach, and then discuss the characteristics of each approach. In order to improve the performance of learning tasks further, MTL can be combined with other learning paradigms including semi-supervised learning, active learning, unsupervised learning, reinforcement learning, multi-view learning and graphical models. When the number of tasks is large or the data dimensionality is high, batch MTL models are difficult to handle this situation and online, parallel and distributed MTL models as well as dimensionality reduction and feature hashing are reviewed to reveal their computational and storage advantages. Many real-world applications use MTL to boost their performance and we review representative works. Finally, we present theoretical analyses and discuss several future directions for MTL.}
+      \field{eprinttype}{arXiv}
+      \field{title}{{A Survey on Multi-Task Learning}}
+      \field{year}{2017}
+      \verb{eprint}
+      \verb 1707.08114
+      \endverb
+      \verb{file}
+      \verb :Users/felix/Library/Application Support/Mendeley Desktop/Downloaded/Zhang, Yang - Unknown - A Survey on Multi-Task Learning.pdf:pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/pdf/1707.08114.pdf http://arxiv.org/abs/1707.08114
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/pdf/1707.08114.pdf%20http://arxiv.org/abs/1707.08114
+      \endverb
+      \keyw{Artificial Intelligence !,Index Terms-Multi-Task Learning,Machine Learning}
+    \endentry
+  \enddatalist
+  \missing{S\IeC {\o }gaard2016}
+\endrefsection
 \endinput
 

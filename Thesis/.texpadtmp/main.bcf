@@ -1974,6 +1974,20 @@
     <bcf:datasource type="file" datatype="bibtex">bibliography/library.bib</bcf:datasource>
   </bcf:bibdata>
   <bcf:section number="0">
+    <bcf:citekey order="1">Caruana1993</bcf:citekey>
+    <bcf:citekey order="2">Caruana1997a</bcf:citekey>
+    <bcf:citekey order="3">Caruana1997a</bcf:citekey>
+    <bcf:citekey order="4">Pratt1993</bcf:citekey>
+    <bcf:citekey order="5">Zhang2017a</bcf:citekey>
+    <bcf:citekey order="6">Caruana1993</bcf:citekey>
+    <bcf:citekey order="7">S\IeC {\o }gaard2016</bcf:citekey>
+    <bcf:citekey order="8">Ramsundar2015</bcf:citekey>
+    <bcf:citekey order="9">Plank</bcf:citekey>
+    <bcf:citekey order="10">Zhang2017a</bcf:citekey>
+    <bcf:citekey order="11">Caruana1997a</bcf:citekey>
+    <bcf:citekey order="12">Rei2017</bcf:citekey>
+    <bcf:citekey order="13">Ramsundar2015</bcf:citekey>
+    <bcf:citekey order="14">Ramsundar2015</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">

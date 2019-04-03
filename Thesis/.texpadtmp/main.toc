@@ -15,46 +15,100 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {chapter}{\numberline {3}Theoretical Background}{3}{chapter.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {3.1}Methodology}{3}{section.3.1}
+\contentsline {section}{\numberline {3.1}Word Representations}{3}{section.3.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.1.1}Performance Measurements}{3}{subsection.3.1.1}
+\contentsline {subsection}{\numberline {3.1.1}Glove}{3}{subsection.3.1.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.1.2}Cross Validation}{4}{subsection.3.1.2}
+\contentsline {subsection}{\numberline {3.1.2}FastText}{3}{subsection.3.1.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\numberline {4}Method}{6}{chapter.4}
+\contentsline {subsection}{\numberline {3.1.3}Elmo}{3}{subsection.3.1.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\numberline {5}Experimental Setup}{7}{chapter.5}
+\contentsline {section}{\numberline {3.2}Google Transformer Architecture}{3}{section.3.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5.1}Data}{7}{section.5.1}
+\contentsline {subsection}{\numberline {3.2.1}Positional Encoding}{3}{subsection.3.2.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {5.1.1}Conll-2003 - Named Entity Recognition}{7}{subsection.5.1.1}
+\contentsline {subsection}{\numberline {3.2.2}Attention Mechanism}{3}{subsection.3.2.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {5.1.2}SemEval-2016 - Restaurants and Laptops}{7}{subsection.5.1.2}
+\contentsline {subsection}{\numberline {3.2.3}Pointwise Layer}{3}{subsection.3.2.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {5.1.3}GermEval-2017 - Deutsche Bahn Tweets}{7}{subsection.5.1.3}
+\contentsline {section}{\numberline {3.3}Multi-Task Learning}{3}{section.3.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {5.1.4}Organic-2019 - Organic Comments}{7}{subsection.5.1.4}
+\contentsline {subsection}{\numberline {3.3.1}Motivation}{4}{subsection.3.3.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\numberline {6}Discussion of Results}{8}{chapter.6}
+\contentsline {subsubsection}{\nonumberline Data Augmentation}{4}{section*.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6.1}Hyper Parameter Optimization}{8}{section.6.1}
+\contentsline {subsection}{\numberline {3.3.2}Architectures}{4}{subsection.3.3.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6.2}Results for Named Entity Recognition}{8}{section.6.2}
+\contentsline {subsubsection}{\nonumberline Hard Parameter Sharing}{4}{section*.4}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6.3}Results for Aspect-Based Sentiment Analysis}{8}{section.6.3}
+\contentsline {subsubsection}{\nonumberline Soft Parameter Sharing}{5}{section*.5}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {6.3.1}GermEval-2017}{8}{subsection.6.3.1}
+\contentsline {section}{\numberline {3.4}Transfer Learning}{5}{section.3.4}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {6.3.2}GermEval-2017}{8}{subsection.6.3.2}
+\contentsline {section}{\numberline {3.5}Methodology}{5}{section.3.5}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {6.3.3}Organic-2019}{8}{subsection.6.3.3}
+\contentsline {subsection}{\numberline {3.5.1}Performance Measurements}{5}{subsection.3.5.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\numberline {7}Conclusion}{9}{chapter.7}
+\contentsline {subsection}{\numberline {3.5.2}Cross Validation}{6}{subsection.3.5.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {7.1}Future Work}{9}{section.7.1}
+\contentsline {chapter}{\numberline {4}Method}{8}{chapter.4}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{Acronyms}{10}{section*.8}
+\contentsline {section}{\numberline {4.1}Architecture}{8}{section.4.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\nonumberline List of Figures}{13}{chapter*.10}
+\contentsline {subsection}{\numberline {4.1.1}Pointwise Layers}{8}{subsection.4.1.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\nonumberline List of Tables}{14}{chapter*.11}
+\contentsline {chapter}{\numberline {5}Experimental Setup}{9}{chapter.5}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {5.1}Data}{9}{section.5.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {5.1.1}Data Preprocessing}{9}{subsection.5.1.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\nonumberline Comment Clipping}{9}{section*.11}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\nonumberline Text Cleaning}{9}{section*.12}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\nonumberline Comment Clipping}{9}{section*.13}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {5.1.2}Conll-2003 - Named Entity Recognition}{9}{subsection.5.1.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {5.1.3}SemEval-2016 - Restaurants and Laptops}{9}{subsection.5.1.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {5.1.4}GermEval-2017 - Deutsche Bahn Tweets}{9}{subsection.5.1.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {5.1.5}Organic-2019 - Organic Comments}{9}{subsection.5.1.5}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {6}Discussion of Results}{10}{chapter.6}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {6.1}Hyper Parameter Optimization}{10}{section.6.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.1.1}Pointwise Layer Size}{10}{subsection.6.1.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.1.2}Spell Checker}{10}{subsection.6.1.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {6.2}Results for Named Entity Recognition}{10}{section.6.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {6.3}Results for Aspect-Based Sentiment Analysis}{10}{section.6.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.3.1}GermEval-2017}{10}{subsection.6.3.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.3.2}GermEval-2017}{10}{subsection.6.3.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.3.3}Organic-2019}{10}{subsection.6.3.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {6.4}Impact of Multitask Learning}{10}{section.6.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.4.1}Impact of Aspect heads on performance}{10}{subsection.6.4.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {6.5}Impact of Transfer Learning}{10}{section.6.5}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {7}Conclusion}{11}{chapter.7}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {7.1}Future Work}{11}{section.7.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{Acronyms}{12}{section*.14}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\nonumberline List of Figures}{14}{chapter*.16}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\nonumberline List of Tables}{15}{chapter*.17}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\nonumberline Bibliography}{16}{chapter*.18}
