@@ -11,6 +11,7 @@ import shutil
 from functools import partial
 import string
 from typing import Dict, List, Tuple, Union
+from collections import defaultdict
 
 import torch.utils.data
 
@@ -19,10 +20,16 @@ from torchtext.utils import download_from_url, unicode_csv_reader
 import spacy
 from spellchecker import SpellChecker
 
+from misc.utils import check_if_file_exists
+
 logger = logging.getLogger(__name__)
 
 # remove punctuation
 punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "–" + "„")
+url_regex = r'(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&\(\)\*\+,;=.]+'
+
+def get_stats_dd():
+			return {'positive': 0, 'neutral': 0, 'negative': 0}
 
 class Dataset(torch.utils.data.Dataset):
 	"""Defines a dataset composed of Examples along with its Fields.
@@ -222,6 +229,76 @@ class Dataset(torch.utils.data.Dataset):
 				setattr(example, field_name, example_part)
 			self.examples[i] = example
 
+	
+	def fix_spellings(self, text_tokens: List[str], spell: SpellChecker, language='en') -> List[str]:
+		for i, w in enumerate(text_tokens):
+			if w == ' ' or w == '':
+				continue
+
+			# don't replace if all caps
+			if w.isupper():
+				continue
+
+			# check if it was already replaced
+			if w in self.spellCheckerReplaced:
+				text_tokens[i] = self.spellCheckerReplaced[w]
+				continue
+			
+			if w not in spell:
+				c = spell.correction(w)
+
+				if c == w:
+					continue
+				text_tokens[i] = c
+				self.spellCheckerReplaced[w] = c
+
+		
+		self.save_spellchecker_cache(language)
+		return text_tokens
+
+	def save_spellchecker_cache(self, language):
+		path = os.path.join(os.getcwd(), 'data', 'spellchecker', language + '_cache.pkl')
+		with open(path, "wb") as f:
+				pickle.dump(self.spellCheckerReplaced, f)
+
+	def load_spellchecker_cache(self, language):
+		path = os.path.join(os.getcwd(), 'data', 'spellchecker', language + '_cache.pkl')
+		if check_if_file_exists(path):
+			with open(path, 'rb') as f:
+				loaded = pickle.load(f)
+				self.spellCheckerReplaced = loaded
+
+
+	def initialize_spellchecker(self, language: str) -> SpellChecker:
+
+		#try to initialize cache
+		self.load_spellchecker_cache(language)
+
+		if language != 'en':
+			if language == 'de':
+				spell = SpellChecker(language=None)
+
+				from data.spellchecker.spellchecker import get_de_dictionary
+				spell.word_frequency.load_words(germeval_words)
+				spell.word_frequency.load_words(get_de_dictionary())
+			else:
+				spell = SpellChecker(language=language)
+
+			return spell
+
+		spell = SpellChecker(language='en')
+
+		# load word from additional dictionary
+		from data.spellchecker.spellchecker import get_en_dictionary, get_organic_dictionary
+		d = get_en_dictionary()
+		spell.word_frequency.load_words(d)
+
+		# load organic specific entities
+		d = get_organic_dictionary()
+		spell.word_frequency.load_words(d)
+
+		return spell
+
 
 def check_split_ratio(split_ratio):
 	"""Check that the split ratio argument is not malformed"""
@@ -284,8 +361,7 @@ def rationed_split(examples, train_ratio, test_ratio, val_ratio, rnd):
 
 	return data
 
-def text_cleaner(text: str, language: str, spellChecker):
-
+def text_cleaner(text: str, language: str):
 	spacy_nlp = spacy.load(language)
 	parsed = spacy_nlp(text)
 	final_tokens = []
@@ -366,41 +442,12 @@ def en_contraction_removal(text: str) -> str:
 	expanded = ' '.join([contraction_mapping[t.lower()] if t.lower() in contraction_mapping else t for t in apostrophe_handled.split(" ")])
 	return expanded
 
+def replace_urls_regex(sentence: str, url_token: str = '<URL>') -> str:
+	return re.sub(url_regex, url_token, sentence)
 
 def replace_urls(words: List[str], url_token: str = '<URL>') -> List[str]:
 	return [url_token if (w.lower().startswith('www') or w.lower().startswith('http')) else w for w in words]
 
-def fix_spellings(text_tokens: List[str], spell: SpellChecker) -> List[str]:
-	for i, w in enumerate(text_tokens):
-		if w == ' ' or w == '':
-			continue
-		
-		if w not in spell:
-			c = spell.correction(w)
-
-			if c == w:
-				continue
-			text_tokens[i] = c
-			spellCheckerReplaced.append((w, c))
-
-	return text_tokens
-
-def initialize_spellchecker(language: str) -> SpellChecker:
-	if language != 'en':
-		return SpellChecker(language=language)
-
-	spell = SpellChecker(language='en')
-
-	# load word from additional dictionary
-	from data.spellchecker.spellchecker import get_en_dictionary, get_organic_dictionary
-	d = get_en_dictionary()
-	spell.word_frequency.load_words(d)
-
-	# load organic specific entities
-	d = get_organic_dictionary()
-	spell.word_frequency.load_words(d)
-
-	return spell
 
 def intelligent_sentences_clipping(s1: str, s2: str, clip_to: int):
 	# first clip s1 at the front.
@@ -470,4 +517,8 @@ def intelligent_sentence_clipping(s: str, clip_to: int) -> str:
 
 	return ' '.join(clipped)
 
-spellCheckerReplaced = []
+germeval_words = [
+	'db',
+	'KVB',
+	'ITB'
+]

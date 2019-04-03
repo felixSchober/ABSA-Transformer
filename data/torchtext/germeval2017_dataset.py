@@ -3,6 +3,9 @@ import os
 import string
 from typing import Dict, List, Tuple, Union
 import pickle
+from collections import defaultdict
+import re
+from unidecode import unidecode
 
 import torchtext.data as data
 from data.torchtext.custom_fields import ReversibleField
@@ -12,7 +15,7 @@ from tqdm import tqdm
 import spacy
 
 from misc.utils import create_dir_if_necessary, check_if_file_exists
-from data.torchtext.custom_datasets import Dataset, text_cleaner, replace_urls, fix_spellings, initialize_spellchecker
+from data.torchtext.custom_datasets import *
 
 class GermEval2017Dataset(Dataset):
 
@@ -64,6 +67,9 @@ class GermEval2017Dataset(Dataset):
 	def __init__(self, path, fields, a_sentiment=[], separator='\t', **kwargs):
 		self.aspect_sentiment_fields = []
 		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
+		self.stats = defaultdict(get_stats_dd)
+		self.na_labels = 0
+		self.hp = None
 
 		# first, try to load all models from cache
 		filename = path.split("\\")[-1]
@@ -79,9 +85,10 @@ class GermEval2017Dataset(Dataset):
 
 	def _load(self, path, filename, fields, a_sentiment=[], separator='\t', verbose=True, hp=None, **kwargs):
 		examples = []
+		self.hp = hp
 		
 		# remove punctuation
-		punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "–" + "„")
+		punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "„" + "‘")
 
 		# In the end, those are the fields
 		# The file has the aspect sentiment at the first aspect sentiment position
@@ -113,7 +120,7 @@ class GermEval2017Dataset(Dataset):
 		# 25: aspect Sentiment 20/20
 
 		if hp.use_spell_checkers:
-			spell = SpellChecker(language='de')  # German dictionary
+			spell = self.initialize_spellchecker('de')
 		else:
 			spell = None
 
@@ -149,6 +156,7 @@ class GermEval2017Dataset(Dataset):
 					sentiments = sentiments.split(' ')
 
 					sentiment_dict = dict()
+
 					for s in sentiments:
 						category = ''
 						sentiment = ''
@@ -166,6 +174,7 @@ class GermEval2017Dataset(Dataset):
 							sentiment = kv[1]
 
 						sentiment_dict[category] = sentiment
+						self.stats[category][sentiment] += 1
 					 
 					# add all new potential keys to set
 					for s_category in sentiment_dict.keys():
@@ -175,18 +184,43 @@ class GermEval2017Dataset(Dataset):
 				# remove punctuation and clean text
 				comment = columns[1]
 
+				# remove » and fix encoding issues
+				comment = comment.replace('»', ' ')
+				comment = comment.replace("ã¼", 'ü')
+				comment = comment.replace("ã¤", "ä")
+				comment = comment.replace("ø", "ö")
+				comment = comment.replace("ű", "ü")
+				comment = comment.replace("..", " ")
+
+
+				# replace urls with regex
+				comment = replace_urls_regex(comment)
+
+
+				# remove non ascii characters with empty space
+				# comment = re.sub(r'[^\x00-\x7f]',r' ', comment)
+				#comment = unidecode(str(comment))
+				
+				# remove any non-word characters with empty space
+				comment = re.sub(r'[^\w\säöüß]', r' ', comment)
+
 				comment = comment.split(' ')
+
+				# remove all empty entries
+				comment = [w for w in comment if w.strip() != '']
+
 				if hp.harmonize_bahn:
 					comment = harmonize_bahn_names(comment)
 
 				if hp.replace_url_tokens:
 					comment = replace_urls(comment)
 
-				comment = ' '.join(comment)
 
 				if hp.use_spell_checkers:
-					comment = text_cleaner(comment, 'de', spell)
-				comment = comment.translate(punctuation_remover)
+					comment = self.fix_spellings(comment, spell, 'de')
+
+				comment = ' '.join(comment)
+				#comment = comment.translate(punctuation_remover)
 
 				columns[1] = comment
 
@@ -217,10 +251,13 @@ class GermEval2017Dataset(Dataset):
 		for raw_example in raw_examples:
 			# go through each aspect sentiment and add it at the corresponding position
 			ss = ['n/a'] * len(self.aspects)
+			nas = len(self.aspects)
 			for s_category, s in raw_example[-3].items():
 				pos = self.aspects.index(s_category)
 				ss[pos] = s
+				nas -= 1
 
+			self.na_labels += nas
 			raw_example[6] = ss
 			
 			# construct example and add it
@@ -284,6 +321,7 @@ class GermEval2017Dataset(Dataset):
 
 		with open(aspects_path, "wb") as f:
 			pickle.dump(self.aspects, f)
+
 
 def harmonize_bahn_names(text_tokens: List[str]) -> List[str]:
 	bahn_syn = [
