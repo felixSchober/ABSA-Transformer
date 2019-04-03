@@ -121,9 +121,15 @@ def write_evaluation_file(iterator: torchtext.data.Iterator, dataset: Dataset, t
 		tree = ET.ElementTree()
 		root = ET.Element('Documents')
 
+		# metrics for aspect + sentiment
 		tp = 0
 		fp = 0
 		fn = 0
+
+		# metrics for aspect
+		tp_a = 0
+		fp_a = 0
+		fn_a = 0
 
 		for batch in iterator:
 			doc_id, comment, relevance, target_aspect_sentiment, general_sentiment, padding = batch.id, batch.comments, batch.relevance, batch.aspect_sentiments, batch.general_sentiments, batch.padding
@@ -135,16 +141,26 @@ def write_evaluation_file(iterator: torchtext.data.Iterator, dataset: Dataset, t
 			source_mask = create_padding_masks(padding, 1)
 			prediction = trainer.model.predict(comment, source_mask)
 
-			p = torch.t(p)
-			t = torch.t(t)
+			p = torch.t(prediction)
+			t = torch.t(target_aspect_sentiment)
 
 			for a_i in range(20):
+
+				# for aspect match it only has to predict "some" sentiment
+				p_mask = p[a_i] > 0
+				t_mask = t[a_i] > 0
+				c_matrix = confusion_matrix(t_mask.cpu(), p_mask.cpu(), labels=[1, 0])
+				tp_a += c_matrix[0,0]
+				fp_a += c_matrix[0,1]
+				fn_a += c_matrix[1,0]
+
 				for s_i in range(4):
+
 					if s_i == 0:
 						continue
 					p_mask = p[a_i] == s_i
 					t_mask = t[a_i] == s_i
-					c_matrix = confusion_matrix(t_mask, p_mask, labels=[1, 0])
+					c_matrix = confusion_matrix(t_mask.cpu(), p_mask.cpu(), labels=[1, 0])
 					tp += c_matrix[0,0]
 					fp += c_matrix[0,1]
 					fn += c_matrix[1,0]
@@ -182,14 +198,23 @@ def write_evaluation_file(iterator: torchtext.data.Iterator, dataset: Dataset, t
 		tree._setroot(root)
 		tree.write(filename, encoding='utf-8')
 
-		print(f'TP: {tp}')
-		print(f'FP: {fp}')
-		print(f'FN: {fn}')
+		print(f'TP - Sentiment + Aspect: {tp}')
+		print(f'FP - Sentiment + Aspect: {fp}')
+		print(f'FN - Sentiment + Aspect: {fn}')
 
 		precision = float(tp) / (tp + fp)
 		recall = float(tp) / (tp + fn)
 		f1 = 2.0 * precision * recall / (precision + recall)
-		print(f'F1: {f1}')
+		print(f'F1 - Sentiment + Aspect: {f1}')
+
+		print(f'TP - Aspect: {tp_a}')
+		print(f'FP - Aspect: {fp_a}')
+		print(f'FN - Aspect: {fn_a}')
+
+		precision = float(tp_a) / (tp_a + fp_a)
+		recall = float(tp_a) / (tp_a + fn_a)
+		f1 = 2.0 * precision * recall / (precision + recall)
+		print(f'F1 - Aspect: {f1}')
 
 # experiment_name = utils.create_loggers(experiment_name='testing')
 # logger = logging.getLogger(__name__)
