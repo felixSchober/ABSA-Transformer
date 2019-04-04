@@ -88,6 +88,80 @@
       \verb http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.57.3196
       \endverb
     \endentry
+    \entry{LeCun;1990}{article}{}
+      \name{author}{6}{}{%
+        {{uniquename=0,uniquepart=base,hash=769a6bb10ee7c5d8025d7ded064e2a29}{%
+           family={LeCun;},
+           familyi={L\bibinitperiod},
+           given={Y},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=7eacb03f7d28612977f50d8cb1be0bad}{%
+           family={Boser},
+           familyi={B\bibinitperiod},
+           given={B},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=4f138434f743ff4d54b0b36a04662329}{%
+           family={Denker},
+           familyi={D\bibinitperiod},
+           given={John\bibnamedelima S},
+           giveni={J\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=bda766234c11a6558f113fbc70b3a162}{%
+           family={Howard},
+           familyi={H\bibinitperiod},
+           given={R\bibnamedelima E},
+           giveni={R\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=4ac80f1eb17df2440de877aa4f54e932}{%
+           family={Habbard},
+           familyi={H\bibinitperiod},
+           given={W},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=9789716909ac1531cb255742d7b1068b}{%
+           family={Jackel},
+           familyi={J\bibinitperiod},
+           given={L\bibnamedelima D},
+           giveni={L\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1e02fea53989bdfc1c5cb28b1803f3ae}
+      \strng{fullhash}{94294e2ffdfbef05c4a8c40eaa4fddae}
+      \strng{bibnamehash}{94294e2ffdfbef05c4a8c40eaa4fddae}
+      \strng{authorbibnamehash}{94294e2ffdfbef05c4a8c40eaa4fddae}
+      \strng{authornamehash}{1e02fea53989bdfc1c5cb28b1803f3ae}
+      \strng{authorfullhash}{94294e2ffdfbef05c4a8c40eaa4fddae}
+      \field{sortinit}{L}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{We present an application of back-propagation networks to handwritten digit recognition. Minimal preprocessing of the data was required, but architecture of the network was highly constrained and specifically designed for the task. The input of the network consists of normalized images of isolated digits. The method has 1{\%} error rate and about a 9{\%} reject rate on zipcode digits provided by the U.S. Postal Service.}
+      \field{eprinttype}{arXiv}
+      \field{isbn}{1-55860-100-7}
+      \field{issn}{1524-4725}
+      \field{journaltitle}{Advances in Neural Information Processing Systems}
+      \field{title}{{Handwritten Digit Recognition with a Back-Propagation Network}}
+      \field{year}{1990}
+      \field{pages}{396\bibrangedash 404}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.1111/dsu.12130
+      \endverb
+      \verb{eprint}
+      \verb 1004.3732
+      \endverb
+      \verb{file}
+      \verb ::
+      \endverb
+      \verb{urlraw}
+      \verb http://papers.nips.cc/paper/293-handwritten-digit-recognition-with-a-back-propagation-network.pdf http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.32.5076{\%}5Cnhttp://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.32.5076{\&}rep=rep1{\&}type=pdf
+      \endverb
+      \verb{url}
+      \verb http://papers.nips.cc/paper/293-handwritten-digit-recognition-with-a-back-propagation-network.pdf%20http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.32.5076%7B%5C%%7D5Cnhttp://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.32.5076%7B%5C&%7Drep=rep1%7B%5C&%7Dtype=pdf
+      \endverb
+    \endentry
     \entry{Plank}{report}{}
       \name{author}{3}{}{%
         {{uniquename=0,uniquepart=base,hash=63bd895d4fbba2d503bc308d763e44d4}{%
@@ -276,6 +350,141 @@
       \endverb
       \verb{url}
       \verb http://arxiv.org/abs/1704.07156
+      \endverb
+    \endentry
+    \entry{Ruder2017}{article}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,uniquepart=base,hash=b468248a20d75c52ee742f4592c2569f}{%
+           family={Ruder},
+           familyi={R\bibinitperiod},
+           given={Sebastian},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b468248a20d75c52ee742f4592c2569f}
+      \strng{fullhash}{b468248a20d75c52ee742f4592c2569f}
+      \strng{bibnamehash}{b468248a20d75c52ee742f4592c2569f}
+      \strng{authorbibnamehash}{b468248a20d75c52ee742f4592c2569f}
+      \strng{authornamehash}{b468248a20d75c52ee742f4592c2569f}
+      \strng{authorfullhash}{b468248a20d75c52ee742f4592c2569f}
+      \field{sortinit}{R}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Multi-task learning (MTL) has led to successes in many applications of machine learning, from natural language processing and speech recognition to computer vision and drug discovery. This article aims to give a general overview of MTL, particularly in deep neural networks. It introduces the two most common methods for MTL in Deep Learning, gives an overview of the literature, and discusses recent advances. In particular, it seeks to help ML practitioners apply MTL by shedding light on how MTL works and providing guidelines for choosing appropriate auxiliary tasks.}
+      \field{eprinttype}{arXiv}
+      \field{month}{6}
+      \field{title}{{An Overview of Multi-Task Learning in Deep Neural Networks}}
+      \field{year}{2017}
+      \verb{eprint}
+      \verb 1706.05098
+      \endverb
+      \verb{file}
+      \verb :Users/felix/Library/Application Support/Mendeley Desktop/Downloaded/Ruder - 2017 - An Overview of Multi-Task Learning in Deep Neural Networks.pdf:pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1706.05098
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/1706.05098
+      \endverb
+    \endentry
+    \entry{Sang2003}{article}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,uniquepart=base,hash=78af0c309adbb2a1b1a0099e4e58e30a}{%
+           family={Sang},
+           familyi={S\bibinitperiod},
+           given={Erik\bibnamedelimb F.\bibnamedelimi Tjong\bibnamedelima Kim},
+           giveni={E\bibinitperiod\bibinitdelim F\bibinitperiod\bibinitdelim T\bibinitperiod\bibinitdelim K\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=d76edcbb6f4130ac14c37bf980191905}{%
+           family={{De Meulder}},
+           familyi={D\bibinitperiod},
+           given={Fien},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{ad6b60b5c2cb86783ba02c559cfadcea}
+      \strng{fullhash}{ad6b60b5c2cb86783ba02c559cfadcea}
+      \strng{bibnamehash}{ad6b60b5c2cb86783ba02c559cfadcea}
+      \strng{authorbibnamehash}{ad6b60b5c2cb86783ba02c559cfadcea}
+      \strng{authornamehash}{ad6b60b5c2cb86783ba02c559cfadcea}
+      \strng{authorfullhash}{ad6b60b5c2cb86783ba02c559cfadcea}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{We describe the CoNLL-2003 shared task: language-independent named entity recognition. We give background information on the data sets (English and German) and the evaluation method, present a general overview of the systems that have taken part in the task and discuss their performance.}
+      \field{eprintclass}{cs}
+      \field{eprinttype}{arXiv}
+      \field{title}{{Introduction to the CoNLL-2003 Shared Task: Language-Independent Named Entity Recognition}}
+      \field{year}{2003}
+      \verb{eprint}
+      \verb 0306050
+      \endverb
+      \verb{file}
+      \verb ::
+      \endverb
+      \verb{urlraw}
+      \verb http://lcg-www.uia.ac.be/conll2003/ner/ http://arxiv.org/abs/cs/0306050
+      \endverb
+      \verb{url}
+      \verb http://lcg-www.uia.ac.be/conll2003/ner/%20http://arxiv.org/abs/cs/0306050
+      \endverb
+    \endentry
+    \entry{Toutanova2007}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{uniquename=0,uniquepart=base,hash=b92aa283415413bb8d2a1548716d0c7d}{%
+           family={Toutanova},
+           familyi={T\bibinitperiod},
+           given={Kristina},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=9fb237891a1517d36109c68767dd6fae}{%
+           family={Klein},
+           familyi={K\bibinitperiod},
+           given={Dan},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=1261894eaefc186bfeabf336e05e6294}{%
+           family={Manning},
+           familyi={M\bibinitperiod},
+           given={Christopher\bibnamedelima D},
+           giveni={C\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=300d4990e626d975e0c28630444f63c3}{%
+           family={Singer},
+           familyi={S\bibinitperiod},
+           given={Yoram},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{5782462bc6938878547f0c49c6bb7261}
+      \strng{fullhash}{5782462bc6938878547f0c49c6bb7261}
+      \strng{bibnamehash}{5782462bc6938878547f0c49c6bb7261}
+      \strng{authorbibnamehash}{5782462bc6938878547f0c49c6bb7261}
+      \strng{authornamehash}{5782462bc6938878547f0c49c6bb7261}
+      \strng{authorfullhash}{5782462bc6938878547f0c49c6bb7261}
+      \field{sortinit}{T}
+      \field{sortinithash}{6f7aff9db9dcfeb7f95fd5bbd2f78df9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{We present a new part-of-speech tagger that demonstrates the following ideas: (i) explicit use of both preceding and following tag contexts via a dependency network representation, (ii) broad use of lexical features, including jointly conditioning on multiple consecutive words, (iii) effective use of priors in conditional loglinear models, and (iv) ﬁne-grained modeling of unknown word features. Using these ideas together, the resulting tagger gives a 97.24{\%} accuracy on the Penn Treebank WSJ, an error reduction of 4.4{\%} on the best previous single automatically learned tagging result}
+      \field{title}{{Feature-rich part-of-speech tagging with a cyclic dependency network}}
+      \field{year}{2007}
+      \field{pages}{173\bibrangedash 180}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.3115/1073445.1073478
+      \endverb
+      \verb{file}
+      \verb ::
+      \endverb
+      \verb{urlraw}
+      \verb https://nlp.stanford.edu/{~}manning/papers/tagging.pdf
+      \endverb
+      \verb{url}
+      \verb https://nlp.stanford.edu/%7B~%7Dmanning/papers/tagging.pdf
       \endverb
     \endentry
     \entry{Zhang2017a}{article}{}

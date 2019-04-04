@@ -19,34 +19,40 @@ This chapter attends to the theoretical background for the technologies used in 
 
 \section{Multi-Task Learning}
 
-Rich Caruana first introduced \acrful{mtl} in 1993. Conventional machine learning approaches break a problem down in smaller tasks and solve one task at a time (e.g., word \gls{pos}-tagging, word \gls{ner}, image classification). Caruana shows that combining multiple related tasks improves model performance \cite{Caruana1993}\cite{Caruana1997a}. 
+Rich Caruana first introduced \acrfull{mtl} in 1993. Conventional machine learning approaches break a problem down in smaller tasks and solve one task at a time (e.g., word-by-word \gls{pos}-tagging \cite{Toutanova2007}, word-by-word \gls{ner} \cite{Sang2003} or handwritten image classification \cite{LeCun;1990}). In each of these tasks a classification algorithm solves exactly one task (Assigning a 'part-of-speech' or entity type to a word, or the classification of handwritten digits). Caruana shows that combining multiple related tasks improves model performance \cite{Caruana1993}\cite{Caruana1997a}. 
 
-In \gls{mtl} multiple related tasks are learned in parallel and share a common representation. Generally speaking every machine learning model which optimizes multiple objectives for a single sample can be considered as Multitask Learning. This includes multi-label classification where one sample can have multiple labels as well as instances where different sample distributions or datasets are used for different tasks. 
-By using information from related tasks
-
-
-
-
-\subsection{Motivation}
+In \gls{mtl}, multiple related tasks are learned in parallel and share a common representation. Generally speaking every machine learning model which optimizes multiple objectives for a single sample can be considered as Multitask Learning. This includes multi-label classification where one sample can have multiple labels as well as instances where different sample distributions or datasets are used for different tasks.
 
 \gls{mtl} is similar to how humans learn. Generally, humans learn new tasks by applying knowledge from previous experiences and activities. For instance, it is easier to learn ice skating when someone previously learned inline skating. This is because the tasks are very similar.
 
 When tasks are related this also holds true for machine learning. When learning these tasks in parallel model performance is improved compared to learning them individually since the additional knowledge that the related task carries, can be used to improve on the original task \cite{Caruana1997a}. 
 
-Training samples from one task can help improve the other task and vice versa. This is important for the differentiation against transfer learning \cite{Pratt1993} described in section \ref{sec:TransferLearning}. In \gls{mtl} each task is equally important whereas in transfer learning the target task is more important than the source task \cite{Zhang2017a}.
+Training samples from one task can help improve the other task and vice versa. This is important for the differentiation against transfer learning \cite{Pratt1993}. In \gls{mtl} each task is equally important. In transfer learning the source task is only used to improve the target task so the target task is more important than the source task \cite{Zhang2017a}.
+
+
+\subsection{Generalization}
+
+There are several reasons why the \gls{mtl} paradigm performs so well. For instance, the generalization error is lower on shared tasks \cite{Caruana1993}. \gls{mtl} acts as a regularization method and encourages the model to accept hypothesis that explain more than one task at the same time \cite{Ruder2017}. The model is forced to develop a representation that fits the data distributions for all tasks. In the end this creates a model that generalizes better because it must attend to different objectives.
 
 
 
 
+\subsection{Data Augmentation}
 
 
-Generalization error is lower on shared tasks \cite{Caruana1993}
+Secondly, \acrfull{mtl} increases the number of available data points for training. All tasks share a common representation. While training one task all other tasks are also implicitly trained through the common representation. Furthermore, each new task also introduces new noise. Traditionally, a model tries to learn by ignoring the noise from its data. However, if the noise is learned instead this noise leads to overfitting. By introducing additional tasks, new data and therefore new noise is introduced which the model has to try and ignore \cite{Ruder2017}.
+
+Rei proposed a sequence labeling framework which uses a secondary unsupervised word prediction task to augment other tasks such as \gls{ner} or chunking. They show that by including the auxiliary task performance is improved for all sequence labeling benchmarks \cite{Rei2017}.
+
+Plank et al. show that \gls{mtl} the prediction of word frequencies along with \gls{pos}-tagging can also improve the model performance \cite{Plank}.
+
+
+While it has been shown multiple times that 
 
 MultiTask Learning NLP \cite{Søgaard2016}
 
 Has been shown that learning more tasks instead of single tasks always improves performance see \cite{Ramsundar2015}
 
-Predicting POS-tags along with word frequencies \cite{Plank}
 
 Good when there is insufficient data for the problem but multiple related tasks that each have a limited amount of data \cite{Zhang2017a} 
 
@@ -61,7 +67,6 @@ The most common architecture for
 
 \subsubsection{Data Augmentation}
 
-used multiple tasks as well as word prediction to increase performance \cite{Rei2017}
 
 
 \subsection{Architectures}

@@ -33,13 +33,15 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {3.3}Multi-Task Learning}{3}{section.3.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.3.1}Motivation}{4}{subsection.3.3.1}
+\contentsline {subsection}{\numberline {3.3.1}Generalization}{4}{subsection.3.3.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Data Augmentation}{4}{section*.3}
+\contentsline {subsection}{\numberline {3.3.2}Data Augmentation}{4}{subsection.3.3.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.3.2}Architectures}{4}{subsection.3.3.2}
+\contentsline {subsubsection}{\nonumberline Data Augmentation}{5}{section*.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Hard Parameter Sharing}{4}{section*.4}
+\contentsline {subsection}{\numberline {3.3.3}Architectures}{5}{subsection.3.3.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\nonumberline Hard Parameter Sharing}{5}{section*.4}
 \defcounter {refsection}{0}\relax 
 \contentsline {subsubsection}{\nonumberline Soft Parameter Sharing}{5}{section*.5}
 \defcounter {refsection}{0}\relax 
@@ -49,7 +51,7 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {3.5.1}Performance Measurements}{5}{subsection.3.5.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.5.2}Cross Validation}{6}{subsection.3.5.2}
+\contentsline {subsection}{\numberline {3.5.2}Cross Validation}{7}{subsection.3.5.2}
 \defcounter {refsection}{0}\relax 
 \contentsline {chapter}{\numberline {4}Method}{8}{chapter.4}
 \defcounter {refsection}{0}\relax 
