@@ -153,7 +153,7 @@
       \verb 1004.3732
       \endverb
       \verb{file}
-      \verb ::
+      \verb :Users/felix/Library/Application Support/Mendeley Desktop/Downloaded/LeCun et al. - 1990 - Handwritten Digit Recognition with a Back-Propagation Network.pdf:pdf
       \endverb
       \verb{urlraw}
       \verb http://papers.nips.cc/paper/293-handwritten-digit-recognition-with-a-back-propagation-network.pdf http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.32.5076{\%}5Cnhttp://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.32.5076{\&}rep=rep1{\&}type=pdf
@@ -202,7 +202,7 @@
       \verb 1604.05529v3
       \endverb
       \verb{file}
-      \verb ::
+      \verb :Users/felix/Library/Application Support/Mendeley Desktop/Downloaded/Plank, S{\o}gaard, Goldberg - Unknown - Multilingual Part-of-Speech Tagging with Bidirectional Long Short-Term Memory Models and Auxiliary.pdf:pdf
       \endverb
       \verb{urlraw}
       \verb https://github.com/clab/cnn
@@ -531,7 +531,6 @@
       \keyw{Artificial Intelligence !,Index Terms-Multi-Task Learning,Machine Learning}
     \endentry
   \enddatalist
-  \missing{S\IeC {\o }gaard2016}
 \endrefsection
 \endinput
 

@@ -1980,19 +1980,20 @@
     <bcf:citekey order="4">Caruana1993</bcf:citekey>
     <bcf:citekey order="5">Caruana1997a</bcf:citekey>
     <bcf:citekey order="6">Caruana1997a</bcf:citekey>
-    <bcf:citekey order="7">Pratt1993</bcf:citekey>
+    <bcf:citekey order="7">Ramsundar2015</bcf:citekey>
     <bcf:citekey order="8">Zhang2017a</bcf:citekey>
-    <bcf:citekey order="9">Caruana1993</bcf:citekey>
-    <bcf:citekey order="10">Ruder2017</bcf:citekey>
-    <bcf:citekey order="11">Ruder2017</bcf:citekey>
-    <bcf:citekey order="12">Rei2017</bcf:citekey>
-    <bcf:citekey order="13">Plank</bcf:citekey>
-    <bcf:citekey order="14">S\IeC {\o }gaard2016</bcf:citekey>
-    <bcf:citekey order="15">Ramsundar2015</bcf:citekey>
-    <bcf:citekey order="16">Zhang2017a</bcf:citekey>
-    <bcf:citekey order="17">Caruana1997a</bcf:citekey>
-    <bcf:citekey order="18">Ramsundar2015</bcf:citekey>
+    <bcf:citekey order="9">Caruana1997a</bcf:citekey>
+    <bcf:citekey order="10">Pratt1993</bcf:citekey>
+    <bcf:citekey order="11">Zhang2017a</bcf:citekey>
+    <bcf:citekey order="12">Caruana1993</bcf:citekey>
+    <bcf:citekey order="13">Ruder2017</bcf:citekey>
+    <bcf:citekey order="14">Ruder2017</bcf:citekey>
+    <bcf:citekey order="15">Rei2017</bcf:citekey>
+    <bcf:citekey order="16">Plank</bcf:citekey>
+    <bcf:citekey order="17">Ruder2017</bcf:citekey>
+    <bcf:citekey order="18">Ruder2017</bcf:citekey>
     <bcf:citekey order="19">Ramsundar2015</bcf:citekey>
+    <bcf:citekey order="20">Ramsundar2015</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">

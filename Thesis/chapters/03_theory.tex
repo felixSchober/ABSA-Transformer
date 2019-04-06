@@ -3,6 +3,8 @@
 
 This chapter attends to the theoretical background for the technologies used in this thesis.
 
+\section{Convolutional Neural Networks}
+
 \section{Word Representations}
 
 \subsection{Glove}
@@ -16,6 +18,11 @@ This chapter attends to the theoretical background for the technologies used in 
 \subsection{Attention Mechanism}
 \subsection{Pointwise Layer}
 
+\subsection{Xavier Initialization}
+
+\subsection{Adam}
+
+\subsection{NOAM}
 
 \section{Multi-Task Learning}
 
@@ -23,62 +30,63 @@ Rich Caruana first introduced \acrfull{mtl} in 1993. Conventional machine learni
 
 In \gls{mtl}, multiple related tasks are learned in parallel and share a common representation. Generally speaking every machine learning model which optimizes multiple objectives for a single sample can be considered as Multitask Learning. This includes multi-label classification where one sample can have multiple labels as well as instances where different sample distributions or datasets are used for different tasks.
 
-\gls{mtl} is similar to how humans learn. Generally, humans learn new tasks by applying knowledge from previous experiences and activities. For instance, it is easier to learn ice skating when someone previously learned inline skating. This is because the tasks are very similar.
+\gls{mtl} is similar to how humans learn. Generally, humans learn new tasks by applying knowledge from previous experiences and activities. For instance, it is easier to learn ice skating when someone previously learned inline skating. This is because all the underlying important aspects of the tasks are very similar.
 
-When tasks are related this also holds true for machine learning. When learning these tasks in parallel model performance is improved compared to learning them individually since the additional knowledge that the related task carries, can be used to improve on the original task \cite{Caruana1997a}. 
+When tasks are related this also holds true for machine learning. When learning these tasks in parallel model performance is improved compared to learning them individually since the additional knowledge that a related task carries, can be used to improve on the original task \cite{Caruana1997a}. 
 
-Training samples from one task can help improve the other task and vice versa. This is important for the differentiation against transfer learning \cite{Pratt1993}. In \gls{mtl} each task is equally important. In transfer learning the source task is only used to improve the target task so the target task is more important than the source task \cite{Zhang2017a}.
+There are four important aspects one can use to determine if \gls{mtl} can bring performance boosts for a specific objective:
+\begin{enumerate}
+	\item Multi Label Task: Multi Label classification task where one sample can have more than one label are almost always inherintly solved using \gls{mtl} if labels are predicted by one model. Multiple authors show that adding tasks always improves performance compared to a separate model for each task as an alternative \cite{Ramsundar2015}. %TODO: More citations
+	\item Shared low-level features: \gls{mtl} only makes sense if the tasks share low level features. For instance, image classification and \gls{nlp} do not share common features. In this case the model would not benefit from \gls{mtl} because one task can not help to improve the other task. Therefore, it is important to choose tasks that are related to each other \cite{Zhang2017a}. In most cases \gls{mtl} will work with \gls{nlp} tasks because they usually share at least some kind of sentence or word embedding as a common layer.   % citation to do
+	\item Task Data Amount: Several authors have suggested that it is important for the success of \gls{mtl} training that the amount of data for the tasks is similar. Otherwise the model will mainly optimize for the task with most training samples.
+	\item Model Size: Finally, the multi-task model needs to have enough parameters to support all tasks \cite{Caruana1997a}. 
+	\end{enumerate}
 
 
-\subsection{Generalization}
+\subsection{Differentiation against Transfer Learning}
+
+Training samples from one task can help improve the other task and vice versa. This is important for the differentiation against transfer learning \cite{Pratt1993}. In \gls{mtl} each task is equally important. In transfer learning the source task is only used to improve the target task so the target task is more important than the source task \cite{Zhang2017a}. In addition, Transfer Learning uses a linear training timeline. First, the source task is learned and then after learning is completed this knowledge is applied to boost the learning process of the target task. \gls{mtl}, in contrast, is learning both tasks jointly together instead of one after the other.
+
+
+\subsection{Improvements through Generalization}
 
 There are several reasons why the \gls{mtl} paradigm performs so well. For instance, the generalization error is lower on shared tasks \cite{Caruana1993}. \gls{mtl} acts as a regularization method and encourages the model to accept hypothesis that explain more than one task at the same time \cite{Ruder2017}. The model is forced to develop a representation that fits the data distributions for all tasks. In the end this creates a model that generalizes better because it must attend to different objectives.
 
+\subsection{Improvements through Data Augmentation}
+
+Secondly, Multi-Task Learning increases the number of available data points for training. All tasks share a common representation. While training one task all other tasks are also implicitly trained through the common representation. Furthermore, each new task also introduces new noise. Traditionally, a model tries to learn by ignoring the noise from its data. However, if the model does not have enough training samples it will overfit because it focuses too much on the noise to explain the data. By introducing additional tasks, new data and therefore new noise is introduced which the model has to try and ignore \cite{Ruder2017}.
+
+Rei makes use of this aspect and proposed a sequence labeling framework which uses a secondary, unsupervised word prediction task to augment other tasks such as \gls{ner} or chunking. They show that by including the word prediction the auxiliary task performance is improved for all sequence labeling benchmarks they tried \cite{Rei2017}.
+
+Similarily, Plank et al. show that learning to predict word-frequencies along with \gls{pos}-tagging also improves the total model performance \cite{Plank}. They argue that predicting word frequencies helps to learn the differentiation between rare and common words.
 
 
+\subsection{Architecture}
+The most common architecture for multitask learning is shown in figure \ref{fig:03_mtl_architecture}. It is called hard parameter sharing and consists of at least one layer which is shared among all tasks. In addition, each task has at least one separate layer. This approach is also the one we used for our model which is described in chapter \ref{ch:method}. 
 
-\subsection{Data Augmentation}
+The easiest way to compute the loss for a hard parameter sharing \gls{mtl} architecture is to take the sum of all losses for the individual tasks which is shown in equation ...
 
+%TODO: add Equation for MTL losses
 
-Secondly, \acrfull{mtl} increases the number of available data points for training. All tasks share a common representation. While training one task all other tasks are also implicitly trained through the common representation. Furthermore, each new task also introduces new noise. Traditionally, a model tries to learn by ignoring the noise from its data. However, if the noise is learned instead this noise leads to overfitting. By introducing additional tasks, new data and therefore new noise is introduced which the model has to try and ignore \cite{Ruder2017}.
-
-Rei proposed a sequence labeling framework which uses a secondary unsupervised word prediction task to augment other tasks such as \gls{ner} or chunking. They show that by including the auxiliary task performance is improved for all sequence labeling benchmarks \cite{Rei2017}.
-
-Plank et al. show that \gls{mtl} the prediction of word frequencies along with \gls{pos}-tagging can also improve the model performance \cite{Plank}.
-
-
-While it has been shown multiple times that 
-
-MultiTask Learning NLP \cite{Søgaard2016}
-
-Has been shown that learning more tasks instead of single tasks always improves performance see \cite{Ramsundar2015}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[scale=0.5]{figures/03_theory/03_mtl_architecture}
+	\caption{Hard parameter sharing. The first three layers are shared among tasks A, B and C. Each task also has one or more layers. Source: Ruder 2017 \cite{Ruder2017}}
+	\label{fig:03_mtl_architecture}
+\end{figure}
 
 
-Good when there is insufficient data for the problem but multiple related tasks that each have a limited amount of data \cite{Zhang2017a} 
-
-When does it make sense to use multi task learning:
-
-1 shared lower level features (word embeddings + attention)
-2 amount of data for each task is somewhat similar
-3 neural network has to be big enough to do well on all the tasks. It can hurt performance if it is to small \cite{Caruana1997a}
-
-
-The most common architecture for 
-
-\subsubsection{Data Augmentation}
-
-
-
-\subsection{Architectures}
-
-\subsubsection{Hard Parameter Sharing}
-
-Share hidden layers. Have several (one or more) layers per task 
-
-\subsubsection{Soft Parameter Sharing}
 
 \section{Transfer Learning}
 \label{sec:TransferLearning}
+
+\section{Optimization}
+
+\subsection{Grid Search}
+
+\subsection{Random Search}
+
+\subsection{HyperOpt}
 
 
 
@@ -151,3 +159,5 @@ For most tasks it is sufficient to divide the dataset into a training and a test
 
 \subsubsection*{k-fold Cross Validation}
 To make the classification evaluation even more robust, $k$-fold cross validation is used. By applying $k$-fold cross validation the dataset is randomly partitioned into $k$ different parts. $k-2$ parts are used for training and two parts are used for the evaluation. This process is repeated $k$-times and after each iteration the parts are exchanged so that at the end, each sample was used for training and for validation. Calculating the mean of the $k$ evaluations gives a much more robust measurement because the evaluation does not depend on the difficulty of the test partitions.
+
+\subsection{Early Stopping}

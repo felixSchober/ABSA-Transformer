@@ -1,16 +1,53 @@
 \chapter{Experimental Setup}
 \label{ch:setup}
 
+\section{Data Preprocessing}
+The following section describes the general data preprocessing steps which were taken for all datasets described in section \ref{sec:Data}. Some of the preprocessing steps are specific to certain datasets and will be described there. All data preprocessing steps can be enabled or disabled to evaluate the impact on the performance of these preprocessing steps. Some of those results will be discussed in section \ref{subsec:06_dataPreprocessing} in chapter \ref{ch:discussion}.
+
+\subsection{Text Cleaning}
+The main goal of the text cleaning step is 
+\begin{enumerate}
+	\item Reduce the number of words which are out of vocabulary
+	\item Keep the vocabulary size as small as possible.
+\end{enumerate}
+
+
+The first step of the data preprocessing pipeline is the removal of all unknown characters which are not UTF-8 compatible. Those characters can occur because of encoding issues or words outside of the target language. 
+\subsubsection*{Contraction removal}
+
+Before we remove any special characters all contractions are removed with the goal of reducing the vocabulary size and harmonizing language. Especially in social media a lot of contractions are used. '\textit{I'll've}' and '\textit{I will have}' have the same meaning but if they are not harmonized they produce a completely different embedding. '\textit{I'll've}' will produce a (300)-dimensional vector (for glove and fasttext) whereas '\textit{I will have}' will be interpreted as 3 300-dimensional vectors. 
+
+
+
+In addition any special characters are completely removed. Dashes ('-') are kept because there are some compound words wich rely on dashes (e.g. non-organic).
+
+
+\subsubsection*{Spell Checking}
+
+
+\subsection{Comment Clipping}
+
+stemming
+spacey 
+url replacement
+mail replacement
+incorrect unicode character remova
+
+
+
 \section{Data}
-\subsection{Data Preprocessing}
-
-\subsubsection{Comment Clipping}
-\subsubsection{Text Cleaning}
-\subsubsection{Comment Clipping}
-
+\label{sec:Data}
 
 
 \subsection{Conll-2003 - Named Entity Recognition}
-\subsection{SemEval-2016 - Restaurants and Laptops}
 \subsection{GermEval-2017 - Deutsche Bahn Tweets}
+\subsubsection*{Bahn Name Harmonization}
 \subsection{Organic-2019 - Organic Comments}
+\subsection{Amazon Product Reviews}
+
+
+
+
+
+
+\section{Training and Evaluation}
