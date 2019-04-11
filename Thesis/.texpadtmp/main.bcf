@@ -1992,8 +1992,11 @@
     <bcf:citekey order="16">Plank</bcf:citekey>
     <bcf:citekey order="17">Ruder2017</bcf:citekey>
     <bcf:citekey order="18">Ruder2017</bcf:citekey>
-    <bcf:citekey order="19">Ramsundar2015</bcf:citekey>
-    <bcf:citekey order="20">Ramsundar2015</bcf:citekey>
+    <bcf:citekey order="19">Levenshtein1966</bcf:citekey>
+    <bcf:citekey order="20">Blitzer2007</bcf:citekey>
+    <bcf:citekey order="21">Blitzer2008</bcf:citekey>
+    <bcf:citekey order="22">Ramsundar2015</bcf:citekey>
+    <bcf:citekey order="23">Ramsundar2015</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">

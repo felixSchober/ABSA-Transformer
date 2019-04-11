@@ -19,6 +19,129 @@
 
 \refsection{0}
   \datalist[entry]{nty/global//global/global}
+    \entry{Blitzer2008}{inproceedings}{}
+      \name{author}{5}{}{%
+        {{uniquename=0,uniquepart=base,hash=4cf8cf8b1e08936da7cbd269f4327216}{%
+           family={Blitzer},
+           familyi={B\bibinitperiod},
+           given={John},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=16e0c91cca40e2931e13a4c18e98530b}{%
+           family={Crammer},
+           familyi={C\bibinitperiod},
+           given={Koby},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=ed45112f884bd28f8284073833f32f19}{%
+           family={Kulesza},
+           familyi={K\bibinitperiod},
+           given={Alex},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=3ef139cfd819ad7d3af54f3d2e9507b9}{%
+           family={Pereira},
+           familyi={P\bibinitperiod},
+           given={Fernando},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=33eae076507ec8b54b3f37a1d31e5391}{%
+           family={Wortman},
+           familyi={W\bibinitperiod},
+           given={Jennifer},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \name{editor}{1}{}{%
+        {{hash=7e4cab19d5209bb2fa2693a633399e67}{%
+           family={{J. C. Platt and D. Koller and Y. Singer and S. T. Roweis}},
+           familyi={J\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Curran Associates, Inc.}%
+      }
+      \strng{namehash}{58c5be84d7f115dde6280a76dbb9337f}
+      \strng{fullhash}{a06535fb7881e347360da845dfd3c3f8}
+      \strng{bibnamehash}{a06535fb7881e347360da845dfd3c3f8}
+      \strng{authorbibnamehash}{a06535fb7881e347360da845dfd3c3f8}
+      \strng{authornamehash}{58c5be84d7f115dde6280a76dbb9337f}
+      \strng{authorfullhash}{a06535fb7881e347360da845dfd3c3f8}
+      \strng{editorbibnamehash}{7e4cab19d5209bb2fa2693a633399e67}
+      \strng{editornamehash}{7e4cab19d5209bb2fa2693a633399e67}
+      \strng{editorfullhash}{7e4cab19d5209bb2fa2693a633399e67}
+      \field{sortinit}{B}
+      \field{sortinithash}{276475738cc058478c1677046f857703}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Empirical risk minimization offers well-known learning guarantees when training and test data come from the same domain. In the real world, though, we often wish to adapt a classifier from a source domain with a large amount of training data to different target domain with very little training data. In this work we give uniform convergence bounds for algorithms that minimize a convex combination of source and target empirical risk. The bounds explicitly model the inherent trade-off between training on a large but inaccurate source data set and a small but accurate target training set. Our theory also gives results when we have multiple source domains, each of which may have a different number of instances, and we exhibit cases in which minimizing a non-uniform combination of source risks can achieve much lower target error than standard empirical risk minimization.}
+      \field{booktitle}{Advances in Neural Information Processing Systems 20 (NIPS 2007)}
+      \field{title}{{Learning Bounds for Domain Adaptation}}
+      \field{year}{2008}
+      \field{pages}{129\bibrangedash 136}
+      \range{pages}{8}
+      \verb{file}
+      \verb :Users/felix/Library/Application Support/Mendeley Desktop/Downloaded/Blitzer et al. - 2008 - Learning Bounds for Domain Adaptation.pdf:pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://papers.nips.cc/paper/3212-learning-bounds-for-domain-adaptation.pdf
+      \endverb
+      \verb{url}
+      \verb https://papers.nips.cc/paper/3212-learning-bounds-for-domain-adaptation.pdf
+      \endverb
+    \endentry
+    \entry{Blitzer2007}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,uniquepart=base,hash=4cf8cf8b1e08936da7cbd269f4327216}{%
+           family={Blitzer},
+           familyi={B\bibinitperiod},
+           given={John},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=fad798cd3972b70e217b653e07abc99d}{%
+           family={Dredze},
+           familyi={D\bibinitperiod},
+           given={Mark},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=3ef139cfd819ad7d3af54f3d2e9507b9}{%
+           family={Pereira},
+           familyi={P\bibinitperiod},
+           given={Fernando},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Prague, Czech Republic}%
+      }
+      \list{publisher}{1}{%
+        {Association for Computational Linguistics}%
+      }
+      \strng{namehash}{2a209d9caa4702f4911fe2bbf586a95c}
+      \strng{fullhash}{2a209d9caa4702f4911fe2bbf586a95c}
+      \strng{bibnamehash}{2a209d9caa4702f4911fe2bbf586a95c}
+      \strng{authorbibnamehash}{2a209d9caa4702f4911fe2bbf586a95c}
+      \strng{authornamehash}{2a209d9caa4702f4911fe2bbf586a95c}
+      \strng{authorfullhash}{2a209d9caa4702f4911fe2bbf586a95c}
+      \field{sortinit}{B}
+      \field{sortinithash}{276475738cc058478c1677046f857703}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Automatic sentiment classification has been extensively studied and applied in recent years. However, sentiment is expressed differently in different domains, and annotating corpora for every possible domain of interest is impractical. We investigate domain adaptation for sentiment classifiers, focusing on online reviews for different types of products. First, we extend to sentiment classification the recently-proposed structural correspondence learning (SCL) algorithm, reducing the relative error due to adaptation between domains by an average of 30{\%} over the original SCL algorithm and 46{\%} over a supervised baseline. Second, we identify a measure of domain similarity that correlates well with the potential for adaptation of a classifier from one domain to another. This measure could for instance be used to select a small set of domains to annotate whose trained classifiers would transfer well to many other domains.}
+      \field{booktitle}{Proceedings of the 45th Annual Meeting of the Association of Computational Linguistics}
+      \field{title}{{Biographies, Bollywood, Boom-boxes and Blenders: Domain Adaptation for Sentiment Classification}}
+      \field{year}{2007}
+      \field{pages}{440\bibrangedash 447}
+      \range{pages}{8}
+      \verb{file}
+      \verb :Users/felix/Library/Application Support/Mendeley Desktop/Downloaded/Blitzer, Dredze, Pereira - Unknown - Biographies, Bollywood, Boom-boxes and Blenders Domain Adaptation for Sentiment Classification(2).pdf:pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://ida.
+      \endverb
+      \verb{url}
+      \verb http://ida.
+      \endverb
+    \endentry
     \entry{Caruana1997a}{thesis}{}
       \name{author}{1}{}{%
         {{uniquename=0,uniquepart=base,hash=599c5251d489b92dc7856277d56cb1a9}{%
@@ -160,6 +283,41 @@
       \endverb
       \verb{url}
       \verb http://papers.nips.cc/paper/293-handwritten-digit-recognition-with-a-back-propagation-network.pdf%20http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.32.5076%7B%5C%%7D5Cnhttp://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.32.5076%7B%5C&%7Drep=rep1%7B%5C&%7Dtype=pdf
+      \endverb
+    \endentry
+    \entry{Levenshtein1966}{article}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,uniquepart=base,hash=245f012ddc9a48f0cfc990bd487f595c}{%
+           family={Levenshtein},
+           familyi={L\bibinitperiod},
+           given={V.I.},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{245f012ddc9a48f0cfc990bd487f595c}
+      \strng{fullhash}{245f012ddc9a48f0cfc990bd487f595c}
+      \strng{bibnamehash}{245f012ddc9a48f0cfc990bd487f595c}
+      \strng{authorbibnamehash}{245f012ddc9a48f0cfc990bd487f595c}
+      \strng{authornamehash}{245f012ddc9a48f0cfc990bd487f595c}
+      \strng{authorfullhash}{245f012ddc9a48f0cfc990bd487f595c}
+      \field{sortinit}{L}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Insertions and Reversals. Sov}
+      \field{title}{{Binary Codes Capable of Correcting Deletions, Insertions and Reversals}}
+      \field{volume}{6}
+      \field{year}{1966}
+      \field{pages}{707\bibrangedash 710}
+      \range{pages}{4}
+      \verb{file}
+      \verb :Users/felix/Library/Application Support/Mendeley Desktop/Downloaded/Levenshtein - 1966 - Binary codes capable of correcting deletions.pdf:pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://nymity.ch/sybilhunting/pdf/Levenshtein1966a.pdf
+      \endverb
+      \verb{url}
+      \verb https://nymity.ch/sybilhunting/pdf/Levenshtein1966a.pdf
       \endverb
     \endentry
     \entry{Plank}{report}{}
