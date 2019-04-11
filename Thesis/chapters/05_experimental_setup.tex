@@ -1,0 +1,127 @@
+\chapter{Experimental Setup}
+\label{ch:setup}
+
+The following chapter describes the experimental setup for the discussion of results in chapter \ref{ch:discussion}. The first section of the chapter deals with data preprocessing. Section \ref{sec:05_Data} lists all datasets used for evaluations of the models and finally section \ref{sec:05_TrainingAndEvaluation} provides detail about the training and evaluation process used to generate the results.
+
+\section{Data Preprocessing}
+The following section describes the general data preprocessing steps which were taken for all datasets described in section \ref{sec:Data}. Some of the preprocessing steps are specific to certain datasets and will be described there. All data preprocessing steps can be enabled or disabled to evaluate the impact on the performance of these preprocessing steps. Some of those results will be discussed in section \ref{subsec:06_dataPreprocessing} in chapter \ref{ch:discussion}.
+
+\subsection{Text Cleaning}
+The main goal of the text cleaning step is 
+\begin{enumerate}
+	\item Reduce the number of words which are out of vocabulary
+	\item Keep the vocabulary size as small as possible.
+\end{enumerate}
+
+without changing the semantics of the text.
+
+
+The first step of the data preprocessing pipeline is the removal of all unknown characters which are not UTF-8 compatible. Those characters can occur because of encoding issues or words outside of the target language. 
+\subsubsection*{Contraction Expansion}
+
+Before we remove any special characters all contractions are expanded with the goal of reducing the vocabulary size and language normalization. Contractions are shortened versions of several words or syllables. In the English language, vowels are often replaced by an apostrophe.  Especially in social media and spoken language a lot of contractions are used. '\textit{I'll've}' and '\textit{I will have}' have the same meaning but if they are not expanded they produce a completely different embedding. '\textit{I'll've}' will produce a (300)-dimensional vector (for glove and fasttext) whereas '\textit{I will have}' will be interpreted as 3 300-dimensional vectors.
+
+% TODO: Cite and/or check fasttext and glove naming
+
+The contraction expansion is followed by the replacement of \glspl{url} with the token '<URL>' and e-mail addresses with the token '<MAIL>'. E-Mails and URLs are always out-of vocabulary and contain very little information that is worth encoding. 
+
+
+In addition any special characters are completely removed. Dashes ('-') are kept because there are compound-words which rely on dashes (e.g. non-organic).
+
+\subsubsection*{Spell Checking}
+When writing comments in social media people tend to make spelling mistakes. Unfortunately, each spelling mistake is an out-of vocabulary word which we want to reduce as much as possible.
+Therefore, a spell checker is used to prevent these mistakes. The spell checker which is used for this step relies on the Levenshtein Distance \cite{Levenshtein1966} and a dictionary to determine if a word is spelled incorrectly and to make suggestions which word was meant originally. 
+
+slow
+
+not good
+
+edit distnace not good measure
+lot of false positives
+
+
+Show table with results: out of vocabulary words before and after
+
+\subsubsection*{Stemming and Lemmatization}
+
+% TODO: cite and explain Stemming and Lemmatization
+Stemming were also briefly explored, however, they did not provide a significant performance improvement.
+
+\subsection{Comment Clipping}
+
+% TODO: Show how many comments are very long in dataset
+
+The transformer works with different input sequence lengths within one batch. Therefore, it is possible to group similar sequence lengths together and have arbitrary sequence lengths. Unfortunately, in each dataset there is a small percentage of sequences which are longer than other sequences. Due to the limited computational resources a batch of those long sequences  does not fit into \gls{gpu} memory. Therefore, all sentences are either padded or clipped to a fixed length. This is also a requirement for the CNN-based transformer aspect head since CNN-layers need a fixed number of input channels.
+
+\subsection{Sentence Combination}
+
+Some datasets feature sentence annotations instead of comment annotations. In this case important information for the aspect and sentiment classification could be encoded in previous sentences. Refer to figure XX for an example.
+
+Therefore, $n$ previous sentences are prepended to the current sentence where $n$ is a hyper parameter which can be optimized. Similar to the clipping of comment wise annotations described in the previous section, these sentence combinations are also clipped and padded. 
+
+The process starts by repeatedly adding sentences to a stack. All $n-1$ sentences which are too long are cut at the front. The $n$-th sentence is cut in the back instead. This is done so that in the case of $n=2$ 
+
+% TODO: Show where sentiment is: analyise per word predictions and see if it makes sense to cut at the front or the back 
+
+See section \ref{subsec:06_CommentClipping} for the evaluation of this preprocessing step.
+
+\section{Data}
+\label{sec:05_Data}
+
+
+\subsection{Conll-2003 - Named Entity Recognition}
+\subsection{GermEval-2017 - Deutsche Bahn Tweets}
+\subsubsection*{Bahn Name Harmonization}
+\subsection{Organic-2019 - Organic Comments}
+\subsection{Multi-Domain Sentiment Dataset}
+\cite{Blitzer2007}
+
+The Multi-Domain Sentiment Dataset contains product reviews taken from Amazon.com from many product types (domains). Some domains (books and dvds) have hundreds of thousands of reviews. Others (musical instruments) have only a few hundred. Reviews contain star ratings (1 to 5 stars) that can be converted into binary labels if needed. This page contains some descriptions about the data. If you have questions, please email Mark Dredze or John Blitzer. 
+
+
+other applicatiosn:
+\cite{Blitzer2008}
+
+
+
+\section{Training and Evaluation}
+\label{sec:05_TrainingAndEvaluation}
+
+\subsection{Evaluation}
+
+
+
+\subsection{Hardware}
+
+% TODO: Add hardware details
+Training and evaluation of the models was done on four different machines. One of the servers belongs to the faculty of applied informatics, one is a local desktop machine and the last two are cloud instances. One is an Azure virtual compute instance with 8 \gls{cpu} cores and 28 \gls{gb} of \gls{ram} and the other is a Google Cloud \gls{gpu} compute instance instance with an Intel Xeon E5-2670 processor, 15 \gls{gb} of \gls{ram} and a NVIDIA Grid K520 \gls{gpu}. See table \ref{tab:05_usedHardware} for more details.
+\begin{table}[hbt]
+	\centering
+	\caption{Hardware used for model training}
+	\label{tab:05_usedHardware}
+	\begin{tabular}{@{}ccccc@{}}
+		\toprule
+		\multicolumn{1}{c}{\textbf{}}    & \multicolumn{1}{c}{\textbf{OS}} & \multicolumn{1}{c}{\textbf{CPU}}                    & \multicolumn{1}{c}{\textbf{RAM}} & \multicolumn{1}{c}{\textbf{GPU}}     \\ \midrule
+		Schlichter 2 & Ubuntu 12.04              & Intel Core i7-3930K @ 3.20GHz   & 63 GB        & NVIDIA Titan X \\ \midrule
+		Schlichter 4 & Ubuntu 14.04              & Intel Xeon E5-2620 @ 2.00GHz    & 28 GB        & -                \\ \midrule
+		Azure        & Ubuntu 15.10              & Intel Xeon E5-2673 v3 @ 2.40GHz & 28 GB        & -                \\ \midrule
+		Amazon AWS   & Ubuntu 14.04              & Intel Xeon E5-2670              & 15 GB        & NVIDIA K520 \\ \bottomrule
+	\end{tabular}
+\end{table}
+
+
+\subsection{Docker}
+% TODO: Cite docker
+
+% TODO: Explain Docker
+Docker is a virtualization framework ...
+
+% Add link to Docker Hub and image as footnote
+
+Since training was performed on four different environments a Docker image was created which automates the installation of all required frameworks, environments, drivers and versions. An automated build pipeline builds a new image as soon as a new code version is pushed to the repository. Users can install or update an image directly from Docker Hub without rebuilding it every time locally.
+
+The main concern of using docker for resource intensive task is the loss of performance due to the virtualization overhead. To evaluate this epoch training time was measured with and without docker. As one can observe in figure XX 
+
+% TODO: measure epoch time with and without docker and report differences.
+
+

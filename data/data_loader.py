@@ -131,6 +131,7 @@ class Dataset(object):
 
 		self.vocabs = self.dataset['vocabs']
 		self.task = self.dataset['task']
+		self.ds_stats = self.dataset['stats']
 		self.split_length = self.dataset['split_length']
 		self.train_iter, self.valid_iter, self.test_iter = self.dataset['iters']
 		self.fields = self.dataset['fields']
@@ -176,6 +177,10 @@ class Dataset(object):
 		self.logger.info('\n' + stats)
 		print(stats)
 
+		stats = self._show_ds_split_stats()
+		self.logger.info('\n' + stats)
+		print(stats)
+
 	def _show_split_stats(self) -> str:
 		t = PrettyTable(['Split', 'Size'])
 		t.add_row(['train', self.split_length[0]])
@@ -183,6 +188,26 @@ class Dataset(object):
 		t.add_row(['test', self.split_length[2]])
 
 		result = t.get_string(title='GERM EVAL 2017 DATASET')
+		return result
+
+	def _show_ds_split_stats(self):
+
+		result = ''
+		split_names = ('Train', 'Validation', 'Test')
+
+		for iter_stats, split_name in zip(self.ds_stats, split_names):
+			pos = 0
+			neg = 0
+			neu = 0
+			t = PrettyTable(['Category', 'POS', 'NEG', 'NEU', 'Sum'])
+			for cat_name, sentiments in iter_stats.items():
+				pos += sentiments['positive']
+				neg += sentiments['negative']
+				neu += sentiments['neutral']
+				t.add_row([cat_name, sentiments['positive'], sentiments['negative'], sentiments['neutral'], sum(sentiments.values())])
+			t.add_row(['Total', pos, neg, neu, (pos + neg + neu)])
+			result += t.get_string(title=split_name) + '\n\n'
+
 		return result
 
 	def _show_field_stats(self):

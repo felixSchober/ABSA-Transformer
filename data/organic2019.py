@@ -8,18 +8,11 @@ from torchtext import data
 from stop_words import get_stop_words
 
 from data.torchtext.custom_fields import ReversibleField
-from data.torchtext.custom_datasets import CustomSentenceWiseBioDataset, CustomCommentWiseBioDataset
+from data.torchtext.organic_dataset import *
 from data.data_loader import get_embedding
 
 from misc.run_configuration import RunConfiguration
 
-ORGANIC_TASK_ALL = 'all'
-ORGANIC_TASK_ENTITIES = 'entities'
-ORGANIC_TASK_ATTRIBUTES = 'attributes'
-
-ORGANIC_TASK_ALL_COMBINE = 'all_combine'
-ORGANIC_TASK_ENTITIES_COMBINE = 'entities_combine'
-ORGANIC_TASK_ATTRIBUTES_COMBINE = 'attributes_combine'
 
 def preprocess_word(word: str) -> str:
 	# TODO: Actual processing
@@ -42,7 +35,7 @@ def organic_dataset(
 				use_cuda=False,
 				verbose=True):
 
-	assert task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ALL_COMBINE, ORGANIC_TASK_ATTRIBUTES_COMBINE, ORGANIC_TASK_ENTITIES_COMBINE]
+	assert task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ALL_COMBINE, ORGANIC_TASK_ATTRIBUTES_COMBINE, ORGANIC_TASK_ENTITIES_COMBINE, ORGANIC_TASK_COARSE, ORGANIC_TASK_COARSE_COMBINE]
 	assert hyperparameters.language == 'en'
 
 	if hyperparameters.use_stop_words:
@@ -106,7 +99,7 @@ def organic_dataset(
 							unk_token=None,
 							is_target=False)
 
-	comment_field = ReversibleField(
+	comment_field = data.Field(
 							batch_first=True,    # produce tensors with batch dimension first
 							lower=True,
 							fix_length=hyperparameters.clip_comments_to,
@@ -115,8 +108,7 @@ def organic_dataset(
 							init_token=None,
 							eos_token=None,
 							is_target=False,
-							stop_words=stop_words,
-							preprocessing=data.Pipeline(preprocess_word))
+							stop_words=stop_words)
 
 	fields = [
 		(None, None), 										# sq_number
@@ -133,7 +125,7 @@ def organic_dataset(
 	]
 
 	if task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES]:
-		train, val, test = CustomSentenceWiseBioDataset.splits(
+		train, val, test = SingleSentenceOrganicDataset.splits(
 									path=root,
 									root='.data',
 									train=train_file,
@@ -145,7 +137,7 @@ def organic_dataset(
 									hp=hyperparameters,
 									task=task)
 	else:
-		train, val, test = CustomCommentWiseBioDataset.splits(
+		train, val, test = DoubleSentenceOrganicDataset.splits(
 									path=root,
 									root='.data',
 									train=train_file,
@@ -182,6 +174,7 @@ def organic_dataset(
 
 	return {
 		'task': 'organic19_' + task,
+		'stats': (train.stats, val.stats, test.stats),
 		'split_length': (len(train), len(val), len(test)),
 		'iters': (train_iter, val_iter, test_iter), 
 		'vocabs': (comment_field.vocab, aspect_sentiment_field.vocab),

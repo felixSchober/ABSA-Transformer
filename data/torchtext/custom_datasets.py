@@ -11,20 +11,25 @@ import shutil
 from functools import partial
 import string
 from typing import Dict, List, Tuple, Union
+from collections import defaultdict
 
 import torch.utils.data
 
 from torchtext.data.utils import RandomShuffler
 from torchtext.utils import download_from_url, unicode_csv_reader
-from data.torchtext.custom_fields import ReversibleField
-#from tqdm.autonotebook import tqdm
-from tqdm import tqdm
 import spacy
 from spellchecker import SpellChecker
-from misc.utils import create_dir_if_necessary, check_if_file_exists
+
+from misc.utils import check_if_file_exists
 
 logger = logging.getLogger(__name__)
 
+# remove punctuation
+punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "–" + "„")
+url_regex = r'(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&\(\)\*\+,;=.]+'
+
+def get_stats_dd():
+			return {'positive': 0, 'neutral': 0, 'negative': 0}
 
 class Dataset(torch.utils.data.Dataset):
 	"""Defines a dataset composed of Examples along with its Fields.
@@ -224,1033 +229,76 @@ class Dataset(torch.utils.data.Dataset):
 				setattr(example, field_name, example_part)
 			self.examples[i] = example
 
-class CustomSequenceTaggingDataSet(Dataset):
-	"""Defines a dataset for sequence tagging. Examples in this dataset
-	contain paired lists -- paired list of words and tags.
-
-	For example, in the case of part-of-speech tagging, an example is of the
-	form
-	[I, love, PyTorch, .] paired with [PRON, VERB, PROPN, PUNCT]
-
-	See torchtext/test/sequence_tagging.py on how to use this class.
-	"""
-
-	@staticmethod
-	def sort_key(example):
-		for attr in dir(example):
-			if not callable(getattr(example, attr)) and \
-					not attr.startswith("__"):
-				return len(getattr(example, attr))
-		return 0
-
-	def __init__(self, path, fields, separator="\t", **kwargs):
-		examples = []
-		columns = []
-
-		with open(path) as input_file:
-			for line in input_file:
-				if line.startswith("-DOCSTART-"):
-					continue
-				
-				line = line.strip()
-				if line == "":
-					if columns:
-						# copy first column as a complete sentence that is not tokenized
-						#sentence = columns[0].copy()
-						#columns.append(sentence)
-						examples.append(data.Example.fromlist(columns, fields))
-					columns = []
-				else:
-					for i, column in enumerate(line.split(separator)):
-						if len(columns) < i + 1:
-							columns.append([])
-						columns[i].append(column)
-
-			if columns:
-				examples.append(data.Example.fromlist(columns, fields))
-		super(CustomSequenceTaggingDataSet, self).__init__(examples, fields,
-													 **kwargs)
-
-class CustomGermEval2017Dataset(Dataset):
-
-	@staticmethod
-	def sort_key(example):
-		for attr in dir(example):
-			if not callable(getattr(example, attr)) and \
-					not attr.startswith("__"):
-				return len(getattr(example, attr))
-		return 0
-
-	@classmethod
-	def splits(cls, path=None, root='.data', train=None, validation=None,
-			   test=None, **kwargs) -> Tuple[Dataset]:
-		"""Create Dataset objects for multiple splits of a dataset.
-		Arguments:
-			path (str): Common prefix of the splits' file paths, or None to use
-				the result of cls.download(root).
-			root (str): Root dataset storage directory. Default is '.data'.
-			train (str): Suffix to add to path for the train set, or None for no
-				train set. Default is None.
-			validation (str): Suffix to add to path for the validation set, or None
-				for no validation set. Default is None.
-			test (str): Suffix to add to path for the test set, or None for no test
-				set. Default is None.
-			Remaining keyword arguments: Passed to the constructor of the
-				Dataset (sub)class being used.
-		Returns:
-			Tuple[Dataset]: Datasets for train, validation, and
-			test splits in that order, if provided.
-		"""
-		if path is None:
-			path = cls.download(root)
-
-		train_data = None if train is None else cls(
-			os.path.join(path, train), **kwargs)
-		# make sure, we use exactly the same fields across all splits
-		train_aspects = train_data.aspects
-
-		val_data = None if validation is None else cls(
-			os.path.join(path, validation), a_sentiment=train_aspects, **kwargs)
-
-		test_data = None if test is None else cls(
-			os.path.join(path, test), a_sentiment=train_aspects, **kwargs)
-
-		return tuple(d for d in (train_data, val_data, test_data)
-					 if d is not None)
 	
-	def __init__(self, path, fields, a_sentiment=[], separator='\t', **kwargs):
-		self.aspect_sentiment_fields = []
-		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
+	def fix_spellings(self, text_tokens: List[str], spell: SpellChecker, language='en') -> List[str]:
+		for i, w in enumerate(text_tokens):
+			if w == ' ' or w == '':
+				continue
 
-		# first, try to load all models from cache
-		filename = path.split("\\")[-1]
-		examples, loaded_fields = self._try_load(filename.split(".")[0], fields)
+			# don't replace if all caps
+			if w.isupper():
+				continue
 
-		if not examples:
-			examples, fields = self._load(path, filename, fields, a_sentiment, separator, **kwargs)
-			self._save(filename.split(".")[0], examples)
-		else:
-			fields = loaded_fields
+			# check if it was already replaced
+			if w in self.spellCheckerReplaced:
+				text_tokens[i] = self.spellCheckerReplaced[w]
+				continue
 			
-		super(CustomGermEval2017Dataset, self).__init__(examples, tuple(fields))    
+			if w not in spell:
+				c = spell.correction(w)
 
-	def _load(self, path, filename, fields, a_sentiment=[], separator='\t', verbose=True, hp=None, **kwargs):
-		examples = []
+				if c == w:
+					continue
+				text_tokens[i] = c
+				self.spellCheckerReplaced[w] = c
+
 		
-		# remove punctuation
-		punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "–" + "„")
+		self.save_spellchecker_cache(language)
+		return text_tokens
 
-		# In the end, those are the fields
-		# The file has the aspect sentiment at the first aspect sentiment position
-		# 0: link (id)
-		# 1: Comment
-		# 2: Is Relevant
-		# 3: General Sentiment
-		# 4: Apsect Specific sentiment List
-		# 5: Padding Field
-		# 6: aspect Sentiment 1/20
-		# 7: aspect Sentiment 2/20
-		# 8: aspect Sentiment 3/20
-		# 9: aspect Sentiment 4/20
-		# 10: aspect Sentiment 5/20
-		# 11: aspect Sentiment 6/20
-		# 12: aspect Sentiment 7/20
-		# 13: aspect Sentiment 8/20
-		# 14: aspect Sentiment 9/20
-		# 15: aspect Sentiment 10/20
-		# 16: aspect Sentiment 11/20
-		# 17: aspect Sentiment 12/20
-		# 18: aspect Sentiment 13/20
-		# 19: aspect Sentiment 14/20
-		# 20: aspect Sentiment 15/20
-		# 21: aspect Sentiment 16/20
-		# 22: aspect Sentiment 17/20
-		# 23: aspect Sentiment 18/20
-		# 24: aspect Sentiment 19/20
-		# 25: aspect Sentiment 20/20
-		if hp.use_spell_checkers:
-			spell = SpellChecker(language='de')  # German dictionary
-		else:
-			spell = None
+	def save_spellchecker_cache(self, language):
+		path = os.path.join(os.getcwd(), 'data', 'spellchecker', language + '_cache.pkl')
+		with open(path, "wb") as f:
+				pickle.dump(self.spellCheckerReplaced, f)
 
-		with open(path, encoding="utf8") as input_file:
-			aspect_sentiment_categories = set()
-			aspect_sentiments: List[Dict[str, str]] = []
+	def load_spellchecker_cache(self, language):
+		path = os.path.join(os.getcwd(), 'data', 'spellchecker', language + '_cache.pkl')
+		if check_if_file_exists(path):
+			with open(path, 'rb') as f:
+				loaded = pickle.load(f)
+				self.spellCheckerReplaced = loaded
 
-			raw_examples: List[List[Union[str, List[Dict[str, str]]]]] = []
 
-			if verbose:
-				iterator = tqdm(input_file, desc=f'Load {filename[0:7]}', leave=False)
+	def initialize_spellchecker(self, language: str) -> SpellChecker:
+
+		#try to initialize cache
+		self.load_spellchecker_cache(language)
+
+		if language != 'en':
+			if language == 'de':
+				spell = SpellChecker(language=None)
+
+				from data.spellchecker.spellchecker import get_de_dictionary
+				spell.word_frequency.load_words(germeval_words)
+				spell.word_frequency.load_words(get_de_dictionary())
 			else:
-				iterator = input_file
+				spell = SpellChecker(language=language)
 
-			for line in iterator:
-				columns = []
-				line = line.strip()
-				if line == '':
-					continue
-				columns = line.split(separator)
+			return spell
 
-				# aspect sentiment is missing
-				if len(columns) == 4:
-					columns.append('')
-					columns.append(dict())
-				else:
-					# handle aspect sentiment which comes in a form of 
-					# PART#Allgemein:negative PART#Allgemein:negative PART#Sicherheit:negative 
+		spell = SpellChecker(language='en')
 
-					# list of category - sentiment pair (Allgemein:negative)
-					sentiments = columns[4]
-					sentiments = sentiments.strip()
-					sentiments = sentiments.split(' ')
+		# load word from additional dictionary
+		from data.spellchecker.spellchecker import get_en_dictionary, get_organic_dictionary
+		d = get_en_dictionary()
+		spell.word_frequency.load_words(d)
 
-					sentiment_dict = dict()
-					for s in sentiments:
-						category = ''
-						sentiment = ''
-						# remove #part
-						s = s.split('#')
+		# load organic specific entities
+		d = get_organic_dictionary()
+		spell.word_frequency.load_words(d)
 
-						if len(s) == 1:
-							s = s[0]
-							kv = s.split(':')
-							category = kv[0]
-							sentiment = kv[1]
-						else:
-							category = s[0]
-							kv = s[1].split(':')
-							sentiment = kv[1]
+		return spell
 
-						sentiment_dict[category] = sentiment
-					 
-					# add all new potential keys to set
-					for s_category in sentiment_dict.keys():
-						aspect_sentiment_categories.add(s_category)
-					columns.append(sentiment_dict) 
-
-				# remove punctuation and clean text
-				comment = columns[1]
-
-				comment = comment.split(' ')
-				if hp.harmonize_bahn:
-					comment = harmonize_bahn_names(comment)
-
-				if hp.replace_url_tokens:
-					comment = replace_urls(comment)
-
-				comment = ' '.join(comment)
-
-				if hp.use_spell_checkers:
-					comment = text_cleaner(comment, 'de', spell)
-				comment = comment.translate(punctuation_remover)
-
-				columns[1] = comment
-				# comment is not relevant
-				if columns[2] == 'false':
-					# skip for now
-					# pass
-					continue
-				# add aspect sentiment field
-				columns.append('')
-
-				# add padding field
-				columns.append('')
-				raw_examples.append(columns)
-
-		# process the aspect sentiment
-		if len(self.aspects) == 0:
-			aspect_sentiment_categories.add('QR-Code')
-			self.aspects = list(aspect_sentiment_categories)
-
-			# make sure the list is sorted. Otherwise we'll have a different
-			# order every time and can not transfer models
-			self.aspects = sorted(self.aspects)
-
-			# construct the fields
-			fields = self._construct_fields(fields)
-
-		for raw_example in raw_examples:
-			# go through each aspect sentiment and add it at the corresponding position
-			ss = ['n/a'] * len(self.aspects)
-			for s_category, s in raw_example[-3].items():
-				pos = self.aspects.index(s_category)
-				ss[pos] = s
-
-			raw_example[6] = ss
-			
-			# construct example and add it
-			example = raw_example[0:5] + [raw_example[6]] + [raw_example[7]] + ss
-			examples.append(data.Example.fromlist(example, tuple(fields)))
-
-		# clip comments
-		for example in examples:
-			comment_length: int = len(example.comments)
-			if comment_length > hp.clip_comments_to:
-				example.comments = example.comments[0:hp.clip_comments_to]
-				comment_length = hp.clip_comments_to
-
-			example.padding = ['0'] * comment_length
-		return examples, fields
-		
-	def _construct_fields(self, fields):
-		for s_cat in self.aspects:
-
-				f = ReversibleField(
-								batch_first=True,
-								is_target=True,
-								sequential=False,
-								init_token=None,
-								eos_token=None,
-								unk_token=None,
-								use_vocab=True)
-				self.aspect_sentiment_fields.append((s_cat, f))
-				fields.append((s_cat, f))
-		return fields
-
-	def _try_load(self, name, fields):
-		path = os.path.join(os.getcwd(), 'data', 'data', 'cache')
-		create_dir_if_necessary(path)
-		samples_path = os.path.join(path, name + "2.pkl")
-		aspects_path = os.path.join(path, name + "_2aspects.pkl")
-
-		if not check_if_file_exists(samples_path) or not check_if_file_exists(aspects_path):
-			return [], None
-
-		with open(samples_path, 'rb') as f:
-			examples = pickle.load(f)
-
-		with open(aspects_path, 'rb') as f:
-			self.aspects = pickle.load(f)
-
-		# get all fields
-		fields = self._construct_fields(fields)
-		return examples, fields
-
-	def _save(self, name, samples):
-		path = os.path.join(os.getcwd(), 'data', 'data', 'cache')
-		create_dir_if_necessary(path)
-		samples_path = os.path.join(path, name + ".pkl")
-		aspects_path = os.path.join(path, name + "_aspects.pkl")
-
-		# print(f'Trying to save loaded dataset to {samples_path}.')
-		with open(samples_path, 'wb') as f:
-			pickle.dump(samples, f)
-			# print(f'Model {name} successfully saved.')
-
-		with open(aspects_path, "wb") as f:
-			pickle.dump(self.aspects, f)
-
-# mapping for organic dataset aspects
-od_entity_mapping = {
-	'g': 'organic general',
-	'p': 'organic products',
-	'f': 'organic farmers',
-	'c': 'organic companies',
-	'cg': 'conventional general',
-	'cp': 'conventional products',
-	'cf': 'conventional farming',
-	'cc': 'conventional companies',
-	'gg': 'GMOs genetic engineering general'
-}
-
-od_attribute_mapping = {
-	'g': 'general',
-	'p': 'price',
-	't': 'taste',
-	'q': 'Nutr. quality & freshness',
-	's': 'safety',
-	'h': 'healthiness',
-	'c': 'chemicals pesticides',
-	'll': 'label',
-	'or': 'origin source',
-	'l': 'local',
-	'av': 'availability',
-	'a': 'animal welfare',
-	'pp': 'productivity'
-}
-
-od_sentiment_mapping = {
-	'0': 'neutral',
-	'p': 'positive',
-	'n': 'negative'
-}
-
-def get_all_mapping():
-	result = {}
-	for entity_key, entity in od_entity_mapping:
-		for attribute_key, attribute in od_attribute_mapping:
-			compound_key = f'{entity_key}-{attribute_key}'
-			result[compound_key] = f'{entity}: {attribute}'
-	return result
-
-class CustomSentenceWiseBioDataset(Dataset):
-
-	@staticmethod
-	def sort_key(example):
-		for attr in dir(example):
-			if not callable(getattr(example, attr)) and \
-					not attr.startswith("__"):
-				return len(getattr(example, attr))
-		return 0
-
-	@classmethod
-	def splits(cls, path=None, root='.data', train=None, validation=None,
-			   test=None, **kwargs) -> Tuple[Dataset]:
-		"""Create Dataset objects for multiple splits of a dataset.
-		Arguments:
-			path (str): Common prefix of the splits' file paths, or None to use
-				the result of cls.download(root).
-			root (str): Root dataset storage directory. Default is '.data'.
-			train (str): Suffix to add to path for the train set, or None for no
-				train set. Default is None.
-			validation (str): Suffix to add to path for the validation set, or None
-				for no validation set. Default is None.
-			test (str): Suffix to add to path for the test set, or None for no test
-				set. Default is None.
-			Remaining keyword arguments: Passed to the constructor of the
-				Dataset (sub)class being used.
-		Returns:
-			Tuple[Dataset]: Datasets for train, validation, and
-			test splits in that order, if provided.
-		"""
-		if path is None:
-			path = cls.download(root)
-
-		# lines for splits
-		lengths = (8918, 786, 738)
-
-		train_data = None if train is None else cls(
-			os.path.join(path, train), length=lengths[0], **kwargs)
-		# make sure, we use exactly the same fields across all splits
-		train_aspects = train_data.aspects
-
-		val_data = None if validation is None else cls(
-			os.path.join(path, validation), a_sentiment=train_aspects, length=lengths[1], **kwargs)
-
-		test_data = None if test is None else cls(
-			os.path.join(path, test), a_sentiment=train_aspects, length=lengths[2], **kwargs)
-
-		return tuple(d for d in (train_data, val_data, test_data)
-					 if d is not None)
-	
-	def __init__(self, path, fields, a_sentiment=[], separator='\t', task=None, **kwargs):
-		self.aspect_sentiment_fields = []
-		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
-		self.dataset_name = 'organic2019Sentences'
-
-		# first, try to load all models from cache
-		_, filename = os.path.split(path)
-		filename = f'{filename.split(".")[0]}_{task}'
-
-		examples, loaded_fields = self._try_load(filename, fields)
-
-		if not examples:
-			examples, fields = self._load(path, filename, fields, a_sentiment, separator, task=task, **kwargs)
-			self._save(filename, examples)
-		else:
-			fields = loaded_fields
-			
-		super(CustomSentenceWiseBioDataset, self).__init__(examples, tuple(fields))    
-
-	def _load(self, path, filename, fields, a_sentiment=[], separator='|', verbose=True, hp=None, task=None, length=None, **kwargs):
-		examples = []
-		
-		# remove punctuation
-		punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "–" + "„")
-
-		# 0: Sequence number
-		# 1: Index
-		# 2: Author_Id
-		# 3: Comment number
-		# 4: Sentence number
-		# 5: Domain Relevance
-		# 6: Sentiment
-		# 7: Entity
-		# 8: Attribute
-		# 9: Sentence
-		# 10: Source File
-		# 11: Apsect Specific sentiment List
-		# 12: Padding Field
-		# 13+: aspect Sentiment 1/n
-
-		if hp.use_spell_checkers:
-			spell = initialize_spellchecker(hp.language)
-
-		else:
-			spell = None
-
-		if task == 'all':
-			aspect_example_index = -1
-			mapping = get_all_mapping()
-		elif task == 'entities':
-			aspect_example_index = -5
-			mapping = od_entity_mapping
-		elif task == 'attributes':
-			mapping = od_attribute_mapping
-			aspect_example_index = - 4
-
-		with open(path, 'rb') as input_file:
-			aspect_sentiment_categories = set()
-			aspect_sentiments: List[Dict[str, str]] = []
-
-			raw_examples: List[List[Union[str, List[Dict[str, str]]]]] = []
-
-			if verbose:
-				iterator = tqdm(input_file, desc=f'Load {filename[0:7]}', leave=False, total=length)
-			else:
-				iterator = input_file
-
-			last_sentence_number = None
-			last_comment_number = None
-			last_sample = None
-
-			# skip the first line
-			skip_line = True
-
-			for line in iterator:
-				line = line.decode(errors='ignore')
-				columns = []
-				line = line.strip()
-				if skip_line or line == '':
-					skip_line = False
-					continue
-				columns = line.split(separator)
-
-				if columns[-1] == 'Entity-Attribute':
-					continue
-
-				# comment is not relevant
-				if columns[6] == '0' or columns[-1] == '':
-					# skip for now
-					# pass
-					continue
-
-				# aspect sentiment is missing
-				if len(columns) == 12:
-					columns.append('')
-					columns.append(dict())
-					last_sample = columns
-				else:
-					# based on aspect task select columns
-					aspect_category = columns[aspect_example_index].strip()
-
-					# use mapping to get a more human readable name
-					aspect_category = mapping[aspect_category]
-					
-					aspect_sentiment = od_sentiment_mapping[columns[7].strip()]		
-
-					crnt_sentence_number = columns[5]
-					crnt_comment_number = columns[4]
-					# if last_sentence_number and last_comment are set and equal this means we need to add to the sentiment dict
-					# otherwise we add the last sample and move on
-					
-					# case 1: not set 
-					#	-> first comment
-					if last_sentence_number is None or last_comment_number is None:
-						last_sentence_number = crnt_sentence_number
-						last_comment_number = crnt_comment_number
-						comment_sentiment_dict = dict()
-						last_sample = columns
-
-
-					# case 2: last and current do not numbers match
-					# new sample -> add to new dict
-					elif last_sentence_number != crnt_sentence_number or last_comment_number != crnt_comment_number:
-						# add last sample
-						# add all new potential keys to set
-						for s_category in comment_sentiment_dict.keys():
-							aspect_sentiment_categories.add(s_category)
-						last_sample.append(comment_sentiment_dict) 
-
-						comment_sentiment_dict = dict()
-						last_sentence_number = crnt_sentence_number
-						last_comment_number = crnt_comment_number
-						
-						raw_examples.append(last_sample)
-						last_sample = columns
-
-					# case 3: last and current match
-					# 		-> add to last sample
-					elif last_sentence_number == crnt_sentence_number and last_comment_number == crnt_comment_number:
-						comment_sentiment_dict[aspect_category] = aspect_sentiment
-						continue	
-
-					comment_sentiment_dict[aspect_category] = aspect_sentiment
-					
-								
-
-				# remove punctuation and clean text
-				comment = last_sample[-3]
-				comment = comment.translate(punctuation_remover)
-
-				# remove non ascii characters with empty space
-				comment = re.sub(r'[^\x00-\x7f]',r' ', comment)
-				
-				if hp.language == 'en':
-					comment = en_contraction_removal(comment)
-
-				comment = comment.split(' ')
-
-				if hp.replace_url_tokens:
-					comment = replace_urls(comment)
-
-				if hp.use_spell_checkers:
-					comment = fix_spellings(comment, spell)
-
-				comment = ' '.join(comment)
-				if hp.use_text_cleaner:
-					comment = text_cleaner(comment, hp.language, spell)
-
-				last_sample[-3] = comment
-				
-				# add aspect sentiment field
-				last_sample.append('')
-
-				# add padding field
-				last_sample.append('')
-
-		# process the aspect sentiment
-		if len(self.aspects) == 0:
-			#aspect_sentiment_categories.add('QR-Code')
-			self.aspects = list(aspect_sentiment_categories)
-
-			# construct the fields
-			fields = self._construct_fields(fields)
-
-		for raw_example in raw_examples:
-			# go through each aspect sentiment and add it at the corresponding position
-			ss = ['n/a'] * len(self.aspects)
-			for s_category, s in raw_example[-1].items():
-				pos = self.aspects.index(s_category)
-				ss[pos] = s
-
-			raw_example[6] = ss
-
-
-			# 0: Sequence number
-			# 1: Index
-			# 2: Author_Id
-			# 3: Comment number
-			# 4: Sentence number
-			# 5: Domain Relevance
-			# 6: Sentiment
-			# 7: Sentence
-			# 8: Padding
-			# 9: Source File
-			# 10+: aspect Sentiment 1/n
-			
-			# construct example and add it
-			example = raw_example[0:6] + [raw_example[6]] + [raw_example[10], '', ''] + ss
-			examples.append(data.Example.fromlist(example, tuple(fields)))
-
-		# clip comments
-		for example in examples:
-			comment_length: int = len(example.comments)
-			if comment_length > hp.clip_comments_to:
-				example.comments = intelligent_sentence_clipping(example.comments, hp.clip_comments_to)
-				comment_length = len(example.comments)
-
-			example.padding = ['0'] * comment_length
-		return examples, fields
-		
-	def _construct_fields(self, fields):
-		for s_cat in self.aspects:
-
-				f = ReversibleField(
-								batch_first=True,
-								is_target=True,
-								sequential=False,
-								init_token=None,
-								eos_token=None,
-								unk_token=None,
-								use_vocab=True)
-				self.aspect_sentiment_fields.append((s_cat, f))
-				fields.append((s_cat, f))
-		return fields
-
-	def _try_load(self, name, fields):
-		path = os.path.join(os.getcwd(), 'data', 'data', 'cache', self.dataset_name)
-		create_dir_if_necessary(path)
-		samples_path = os.path.join(path, name + ".pkl")
-		aspects_path = os.path.join(path, name + "_aspects.pkl")
-
-		if not check_if_file_exists(samples_path) or not check_if_file_exists(aspects_path):
-			return [], None
-
-		with open(samples_path, 'rb') as f:
-			examples = pickle.load(f)
-
-		with open(aspects_path, 'rb') as f:
-			self.aspects = pickle.load(f)
-
-		# get all fields
-		fields = self._construct_fields(fields)
-		return examples, fields
-
-	def _save(self, name, samples):
-		path = os.path.join(os.getcwd(), 'data', 'cache', self.dataset_name)
-		create_dir_if_necessary(path)
-		samples_path = os.path.join(path, name + ".pkl")
-		aspects_path = os.path.join(path, name + "_aspects.pkl")
-
-		# print(f'Trying to save loaded dataset to {samples_path}.')
-		with open(samples_path, 'wb') as f:
-			pickle.dump(samples, f)
-			# print(f'Model {name} successfully saved.')
-
-		with open(aspects_path, "wb") as f:
-			pickle.dump(self.aspects, f) 
-
-class CustomCommentWiseBioDataset(Dataset):
-	@staticmethod
-	def sort_key(example):
-		for attr in dir(example):
-			if not callable(getattr(example, attr)) and \
-					not attr.startswith("__"):
-				return len(getattr(example, attr))
-		return 0
-
-	@classmethod
-	def splits(cls, path=None, root='.data', train=None, validation=None,
-			   test=None, **kwargs) -> Tuple[Dataset]:
-		"""Create Dataset objects for multiple splits of a dataset.
-		Arguments:
-			path (str): Common prefix of the splits' file paths, or None to use
-				the result of cls.download(root).
-			root (str): Root dataset storage directory. Default is '.data'.
-			train (str): Suffix to add to path for the train set, or None for no
-				train set. Default is None.
-			validation (str): Suffix to add to path for the validation set, or None
-				for no validation set. Default is None.
-			test (str): Suffix to add to path for the test set, or None for no test
-				set. Default is None.
-			Remaining keyword arguments: Passed to the constructor of the
-				Dataset (sub)class being used.
-		Returns:
-			Tuple[Dataset]: Datasets for train, validation, and
-			test splits in that order, if provided.
-		"""
-		if path is None:
-			path = cls.download(root)
-
-		# lines for splits
-		lengths = (8918, 786, 738)
-
-		train_data = None if train is None else cls(
-			os.path.join(path, train), length=lengths[0], **kwargs)
-		# make sure, we use exactly the same fields across all splits
-		train_aspects = train_data.aspects
-
-		val_data = None if validation is None else cls(
-			os.path.join(path, validation), a_sentiment=train_aspects, length=lengths[1], **kwargs)
-
-		test_data = None if test is None else cls(
-			os.path.join(path, test), a_sentiment=train_aspects, length=lengths[2], **kwargs)
-
-		return tuple(d for d in (train_data, val_data, test_data)
-					 if d is not None)
-	
-	def __init__(self, path, fields, a_sentiment=[], separator='\t', task=None, hp=None, **kwargs):
-		self.aspect_sentiment_fields = []
-		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
-		self.dataset_name = 'organic2019Comments'
-
-		# add spellChecked if spell checker is active
-		if hp.use_spell_checkers:
-			self.dataset_name += '_SP'
-
-		if hp.use_text_cleaner:
-			self.dataset_name += '_TC'
-
-		# first, try to load all models from cache
-		_, filename = os.path.split(path)
-		filename = f'{filename.split(".")[0]}_{task}'
-
-		examples, loaded_fields = self._try_load(filename, fields)
-
-		if not examples:
-			examples, fields = self._load(path, filename, fields, a_sentiment, separator, hp=hp, task=task, **kwargs)
-			self._save(filename, examples)
-		else:
-			fields = loaded_fields
-			
-		super(CustomCommentWiseBioDataset, self).__init__(examples, tuple(fields))    
-
-	def _load(self, path, filename, fields, a_sentiment=[], separator='|', verbose=True, hp=None, task=None, length=None, **kwargs):
-		examples = []
-		
-		# remove punctuation
-		punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "–" + "„")
-
-		# 0: Sequence number
-		# 1: Index
-		# 2: Author_Id
-		# 3: Comment number
-		# 4: Sentence number
-		# 5: Domain Relevance
-		# 6: Sentiment
-		# 7: Entity
-		# 8: Attribute
-		# 9: Sentence
-		# 10: Source File
-		# 11: Apsect Specific sentiment List
-		# 12: Padding Field
-		# 13+: aspect Sentiment 1/n
-
-		if hp.use_spell_checkers:
-			spell = initialize_spellchecker(hp.language)
-
-		else:
-			spell = None
-
-		if task == 'all_combine':
-			aspect_example_index = -1
-			mapping = get_all_mapping()
-		elif task == 'entities_combine':
-			aspect_example_index = -5
-			mapping = od_entity_mapping
-		elif task == 'attributes_combine':
-			mapping = od_attribute_mapping
-			aspect_example_index = - 4
-
-		comments = {}
-		with open(path, 'rb') as input_file:
-			aspect_sentiment_categories = set()
-			aspect_sentiments: List[Dict[str, str]] = []
-
-			raw_examples: List[List[Union[str, List[Dict[str, str]]]]] = []
-
-			if verbose:
-				iterator = tqdm(input_file, desc=f'Load {filename[0:7]}', leave=False, total=length)
-			else:
-				iterator = input_file
-
-			last_sentence_number = None
-			last_comment_number = None
-			last_sample = None
-
-			# skip the first line
-			skip_line = True
-
-			for line in iterator:
-				line = line.decode(errors='ignore')
-				columns = []
-				line = line.strip()
-				if skip_line or line == '':
-					skip_line = False
-					continue
-				columns = line.split(separator)
-
-				if columns[-1] == 'Entity-Attribute':
-					continue
-
-				# comment is not relevant
-				if columns[6] == '0' or columns[-1] == '':
-					# skip for now
-					# pass
-					continue
-
-				# aspect sentiment is missing
-				if len(columns) == 12:
-					columns.append('')
-					columns.append(dict())
-					last_sample = columns
-				else:
-					# based on aspect task select columns
-					aspect_category = columns[aspect_example_index].strip()
-
-					# use mapping to get a more human readable name
-					aspect_category = mapping[aspect_category]
-					
-					aspect_sentiment = od_sentiment_mapping[columns[7].strip()]		
-
-					crnt_sentence_number = columns[5]
-					crnt_comment_number = columns[4]
-					# if last_sentence_number and last_comment are set and equal this means we need to add to the sentiment dict
-					# otherwise we add the last sample and move on
-					
-					# case 1: not set 
-					#	-> first comment
-					if last_sentence_number is None or last_comment_number is None:
-						last_sentence_number = crnt_sentence_number
-						last_comment_number = crnt_comment_number
-						comment_sentiment_dict = dict()
-						last_sample = columns
-
-
-					# case 2: last and current do not numbers match
-					# new sample -> add to new dict
-					elif last_sentence_number != crnt_sentence_number or last_comment_number != crnt_comment_number:
-						# add last sample
-						# add all new potential keys to set
-						for s_category in comment_sentiment_dict.keys():
-							aspect_sentiment_categories.add(s_category)
-						last_sample.append(comment_sentiment_dict) 
-
-						comment_sentiment_dict = dict()
-						last_sentence_number = crnt_sentence_number
-						last_comment_number = crnt_comment_number
-
-						if crnt_comment_number not in comments:
-							comments[crnt_comment_number] = []
-
-						comments[crnt_comment_number].append(last_sample)
-						last_sample = columns
-
-					# case 3: last and current match
-					# 		-> add to last sample
-					elif last_sentence_number == crnt_sentence_number and last_comment_number == crnt_comment_number:
-						comment_sentiment_dict[aspect_category] = aspect_sentiment
-						continue	
-
-					comment_sentiment_dict[aspect_category] = aspect_sentiment
-					
-								
-
-				# remove punctuation and clean text
-				comment = last_sample[-3]
-				comment = comment.translate(punctuation_remover)
-
-				# remove non ascii characters with empty space
-				comment = re.sub(r'[^\x00-\x7f]',r' ', comment)
-				
-				if hp.language == 'en':
-					comment = en_contraction_removal(comment)
-
-				comment = comment.split(' ')
-
-				if hp.replace_url_tokens:
-					comment = replace_urls(comment)
-
-				if hp.use_spell_checkers:
-					comment = fix_spellings(comment, spell)
-
-				comment = ' '.join(comment)
-				if hp.use_text_cleaner:
-					comment = text_cleaner(comment, hp.language, spell)
-
-				last_sample[-3] = comment
-				
-				# add aspect sentiment field
-				last_sample.append('')
-
-				# add padding field
-				last_sample.append('')
-
-		# first, find out the longest comment length (most sentences)
-		#max_sentences = max([len(c) for c in comments.items()])
-
-		max_dual_sentence_length = (hp.clip_comments_to // 2) - 1 # -1 because space between sentences
-		for comment_sentences in comments.values():
-
-			# 1st sentence per comment does not have a previous sentence
-			s = comment_sentences[0]
-			raw_examples.append(s)
-			sentences = [s[-6] for s in comment_sentences]
-			for i in range(len(comment_sentences) - 1):
-				first_comment_text = sentences[i]
-				second_comment_text = sentences[i+1]
-
-				# clip both comments. 
-				# clip the first comment at the front (since the last words are nearer at the current sentence)
-				# clip the second comment at the back.
-				# also, do not clip a word in half
-				first_comment_text, second_comment_text = intelligent_sentences_clipping(first_comment_text, second_comment_text, max_dual_sentence_length)
-
-				# prepend this text to the next comment and clip both comments
-				comment_sentences[i+1][-6] = f'{first_comment_text} {second_comment_text}'
-				raw_examples.append(comment_sentences[i+1])
-
-		# process the aspect sentiment
-		if len(self.aspects) == 0:
-			self.aspects = list(aspect_sentiment_categories)
-
-			# construct the fields
-			fields = self._construct_fields(fields)
-
-		for raw_example in raw_examples:
-			# go through each aspect sentiment and add it at the corresponding position
-			ss = ['n/a'] * len(self.aspects)
-			for s_category, s in raw_example[-1].items():
-				pos = self.aspects.index(s_category)
-				ss[pos] = s
-
-			raw_example[6] = ss
-
-
-			# 0: Sequence number
-			# 1: Index
-			# 2: Author_Id
-			# 3: Comment number
-			# 4: Sentence number
-			# 5: Domain Relevance
-			# 6: Sentiment
-			# 7: Sentence
-			# 8: Padding
-			# 9: Source File
-			# 10+: aspect Sentiment 1/n
-			
-			# construct example and add it
-			example = raw_example[0:6] + [raw_example[6]] + [raw_example[10], '', ''] + ss
-			examples.append(data.Example.fromlist(example, tuple(fields)))
-
-		# clip comments
-		for example in examples:
-			comment_length: int = len(example.comments)
-			if comment_length > hp.clip_comments_to:
-				example.comments = example.comments[0:hp.clip_comments_to]
-				comment_length = hp.clip_comments_to
-
-			example.padding = ['0'] * comment_length
-		return examples, fields
-		
-	def _construct_fields(self, fields):
-		for s_cat in self.aspects:
-
-				f = ReversibleField(
-								batch_first=True,
-								is_target=True,
-								sequential=False,
-								init_token=None,
-								eos_token=None,
-								unk_token=None,
-								use_vocab=True)
-				self.aspect_sentiment_fields.append((s_cat, f))
-				fields.append((s_cat, f))
-		return fields
-
-	def _try_load(self, name, fields):
-		path = os.path.join(os.getcwd(), 'data', 'data', 'cache', self.dataset_name)
-		create_dir_if_necessary(path)
-		samples_path = os.path.join(path, name + ".pkl")
-		aspects_path = os.path.join(path, name + "_aspects.pkl")
-
-		if not check_if_file_exists(samples_path) or not check_if_file_exists(aspects_path):
-			return [], None
-
-		with open(samples_path, 'rb') as f:
-			examples = pickle.load(f)
-
-		with open(aspects_path, 'rb') as f:
-			self.aspects = pickle.load(f)
-
-		# get all fields
-		fields = self._construct_fields(fields)
-		return examples, fields
-
-	def _save(self, name, samples):
-		path = os.path.join(os.getcwd(), 'data', 'cache', self.dataset_name)
-		create_dir_if_necessary(path)
-		samples_path = os.path.join(path, name + ".pkl")
-		aspects_path = os.path.join(path, name + "_aspects.pkl")
-
-		# print(f'Trying to save loaded dataset to {samples_path}.')
-		with open(samples_path, 'wb') as f:
-			pickle.dump(samples, f)
-			# print(f'Model {name} successfully saved.')
-
-		with open(aspects_path, "wb") as f:
-			pickle.dump(self.aspects, f) 
 
 def check_split_ratio(split_ratio):
 	"""Check that the split ratio argument is not malformed"""
@@ -1313,10 +361,7 @@ def rationed_split(examples, train_ratio, test_ratio, val_ratio, rnd):
 
 	return data
 
-def text_cleaner(text: str, language: str, spellChecker):
-
-	if language == 'en':
-		text = en_contraction_removal(text)
+def text_cleaner(text: str, language: str):
 	spacy_nlp = spacy.load(language)
 	parsed = spacy_nlp(text)
 	final_tokens = []
@@ -1324,10 +369,6 @@ def text_cleaner(text: str, language: str, spellChecker):
 
 		if t.is_punct or t.is_space or t.like_num or t.like_url or str(t).startswith('@'):
 			continue
-
-		if spellChecker is not None:
-			# test if word is spelled correctly
-			pass
 		
 		if t.lemma_ == '-PRON-':
 			final_tokens.append(str(t))
@@ -1401,198 +442,24 @@ def en_contraction_removal(text: str) -> str:
 	expanded = ' '.join([contraction_mapping[t.lower()] if t.lower() in contraction_mapping else t for t in apostrophe_handled.split(" ")])
 	return expanded
 
-def harmonize_bahn_names(text_tokens: List[str]) -> List[str]:
-	bahn_syn = [
-		'db',
-		'deutschebahn',
-		"db_bahn",
-		"bahn.de",
-		"@db_bahn",
-		"#db",
-		"@db",
-		"#db_bahn",
-		"@bahn",
-		"#bahn",
-		"@dbbahn",
-		"#dbbahn",
-		"#dbbahn"
-		"www.bahn.de",
-		"dbbahn"
-	]
-	result = []
-	for token in text_tokens:
-		if token.lower() in bahn_syn:
-			result.append('db')
-		else:
-			result.append(token)
-	return result
+def replace_urls_regex(sentence: str, url_token: str = '<URL>') -> str:
+	return re.sub(url_regex, url_token, sentence)
 
 def replace_urls(words: List[str], url_token: str = '<URL>') -> List[str]:
 	return [url_token if (w.lower().startswith('www') or w.lower().startswith('http')) else w for w in words]
 
-def fix_spellings(text_tokens: List[str], spell: SpellChecker) -> List[str]:
-	for i, w in enumerate(text_tokens):
-		if w == ' ' or w == '':
-			continue
-		
-		if w not in spell:
-			c = spell.correction(w)
-
-			if c == w:
-				continue
-			text_tokens[i] = c
-			spellCheckerReplaced.append((w, c))
-
-	return text_tokens
-
-def initialize_spellchecker(language: str) -> SpellChecker:
-	if language != 'en':
-		return SpellChecker(language=language)
-
-	spell = SpellChecker(language='en')
-
-	# load word from additional dictionary
-	from data.spellchecker.spellchecker import get_en_dictionary, get_organic_dictionary
-	d = get_en_dictionary()
-	spell.word_frequency.load_words(d)
-
-	# load organic specific entities
-	d = get_organic_dictionary()
-	spell.word_frequency.load_words(d)
-
-	return spell
-
-spellCheckerReplaced = []
-
-spell_checker_entities = [
-	'Quora',
-	'walmart',
-	'costco',
-	'kroger',
-	'HEB',
-	'Publix',
-	'NPOP',
-	'USDA',
-	'cannot',
-	'websites',
-	'website',
-	'die-offs',
-	'googling',
-	'zillions',
-	'URL',
-	'Facebook',
-	'demonetized',
-	'e. coli'
-	"aren't",
-	"ain't",
-	'superbug',
-	'superbugs'
-	"you're",
-	"don't",
-	"doesn't",
-	"Glyphosate",
-	'maceration',
-	'GMO',
-	'non-GMO',
-	'anti-GMO'
-	'Cascadian',
-	'Google',
-	'24D',
-	'odor',
-	'16th',
-	'RS10000',
-	'Rs200',
-	'reusing',
-	'beets',
-	'premade',
-	'resilient',
-	'gazillion',
-	'TLDR',
-	'to-do',
-	'grass-fed',
-	'pricy',
-	'smellier',
-	'FAQs',
-	'omega-3',
-	'non-vegetarian',
-	'gmo-free',
-	'conventionally-grown',
-	'gluten-free',
-	'manure-based',
-	'organic-natural',
-	'antibiotic-resistant',
-	'organic-approved',
-	'pesticide-free',
-	'petroleum-based',
-	'pro-organic',
-	'all-natural',
-	'environmentally-damaging',
-	'food-grade',
-	'gourmet-delight',
-	'government-approved',
-	'government-independent',
-	'guilt-free',
-	'locally-grown',
-	'multi-cropping',
-	'myth-busting',
-	'natural-organic',
-	'organically-grown',
-	'organic-farming',
-	'organic-inorganic',
-	'peer-reviewed',
-	'pesticides-herbicides',
-	'safe-unsafe',
-	'sludge-based',
-	'three-fourths',
-	'usdaac-credited',
-	'youtube',
-	'additive-free',
-	'aflatoxin-free',
-	'ago-chemical-dependent',
-	'agro-complex',
-	'agro-ecosystem',
-	'amazonfresh',
-	'animal-based',
-	'animal-byproducts',
-	'antibiotic-resistance',
-	'antibiotics-fed',
-	'antibiotics-hormones',
-	'anti-nutrient',
-	'antioxidant-rich',
-	'apartments-like',
-	'apple-strawberry-banana',
-	'artificially-produced',
-	'big-basket',
-	'big-company',
-	'big-picture',
-	'bio-intensive',
-	'blemish-free',
-	'blood-meal',
-	'brain building',
-	'bucket-load',
-	'budget-friendly',
-	'bug-resistant',
-	'carbon-footprint',
-	'certified-noncertified',
-	'chemical-free'
-]
 
 def intelligent_sentences_clipping(s1: str, s2: str, clip_to: int):
 	# first clip s1 at the front.
 	# let's add words from the back until we hit the clipping mark
 
 	clipped = []
-	current_char_count = 0
+	current_word_count = 0
 	for w in reversed(s1.split(' ')):
 		# what is the len of the current word
-		wl = len(w)
-
-		# account for spaces in finished comment
-		spaces = len(clipped)
-
-		# does it fit?
-		if current_char_count + spaces + wl <= clip_to:
-			current_char_count += wl
+		
+		if current_word_count < clip_to:
+			current_word_count += 1
 
 			# enter at front because we reversed the sentence
 			clipped.insert(0, w)
@@ -1603,16 +470,15 @@ def intelligent_sentences_clipping(s1: str, s2: str, clip_to: int):
 	s1 = ' '.join(clipped)
 
 	# try to fill with s2
-	clip_to = (clip_to - len(s1)) + clip_to
+	clip_to = (clip_to - len(clipped)) + clip_to
 	
 	# s2
 	clipped = []
-	current_char_count = 0
+	current_word_count = 0
 	for w in s2.split(' '):
-		wl = len(w)
-		spaces = len(clipped)
-		if current_char_count + spaces + wl <= clip_to:
-			current_char_count += wl
+		
+		if current_word_count < clip_to:
+			current_word_count += 1
 
 			# enter at back because sentence is not reversed
 			clipped.append(w)
@@ -1634,7 +500,7 @@ def intelligent_sentences_clipping(s1: str, s2: str, clip_to: int):
 def intelligent_sentence_clipping(s: str, clip_to: int) -> str:
 	clipped = []
 	current_char_count = 0
-	for w in s.split(' '):
+	for w in s:
 		wl = len(w)
 		spaces = len(clipped)
 		if current_char_count + spaces + wl <= clip_to:
@@ -1650,3 +516,9 @@ def intelligent_sentence_clipping(s: str, clip_to: int) -> str:
 		return s[:clip_to]
 
 	return ' '.join(clipped)
+
+germeval_words = [
+	'db',
+	'KVB',
+	'ITB'
+]

@@ -55,7 +55,8 @@ default_params = {
 		'output_conv_stride': 1,
 		'output_conv_padding': 0
 	},
-	'output_dropout_rate': 0.2
+	'output_dropout_rate': 0.2,
+	'task': 'absa'
 }
 
 hyperOpt_goodParams = {
@@ -82,7 +83,8 @@ hyperOpt_goodParams = {
 	'output_dropout_rate': 0.79602089766246,
 	'clip_comments_to': 113,
 	'harmonize_bahn': True,
-	'model_size': 300
+	'model_size': 300,
+	'organic_text_cleaning': False
 
 }
 
@@ -120,31 +122,32 @@ good_organic_hp_params = {
 	'embedding_type': 'glove',
 	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
 	'learning_rate_scheduler': {
-		'noam_learning_rate_warmup': 4631,
-		'noam_learning_rate_factor': 3.3368149482
+		'noam_learning_rate_warmup': 5499,
+		'noam_learning_rate_factor': 2.528475
 	},
 	'optimizer_type':  OptimizerType.Adam,
 	'optimizer':  {
-		'learning_rate': 0.001,
-		'adam_beta1': 0.89178641984,
-		'adam_beta2': 0.83491754824,
-		'adam_eps': 8.734158747166484e-09,		
-		'adam_weight_decay': 1e-08,
+		'learning_rate': 0.0097,
+		'adam_beta1': 0.9206513739,
+		'adam_beta2': 0.9392212929,
+		'adam_eps': 1.317166484e-05,		
+		'adam_weight_decay': 0.0001,
 	},
+	'use_bias': True,
 	'num_encoder_blocks': 2,
-	'num_heads': 3,
-	'att_d_k': 100,
-	'att_d_v': 100,
-	'dropout_rate': 0.392996573831,
-	'pointwise_layer_size': 195,
-	'output_dropout_rate': 0.7608194889605,
-	'clip_comments_to': 195,
+	'num_heads': 2,
+	'att_d_k': 150,
+	'att_d_v': 150,
+	'dropout_rate': 0.2827482,
+	'pointwise_layer_size': 129,
+	'output_dropout_rate': 0.39743837844,
+	'clip_comments_to': 169,
 	'model_size': 300,
 	'use_spell_checkers': False,
-	'batch_size': 20,
+	'batch_size': 64,
 	'language': 'en',
 	'early_stopping': 5,
-	'num_epochs': 1,
+	'num_epochs': 35,
 	'log_every_xth_iteration': -1,
 	'embedding_dim': 300,
 	'embedding_name': '6B',
@@ -257,25 +260,41 @@ class RunConfiguration(object):
 				self.output_conv_padding = self._get_default('output_conv_padding', section=p, cast_int=True)
 
 			self.log_every_xth_iteration = log_every_xth_iteration
+
+			# value can either be -1 for no intra-epoch evaluations or bigger than 0
+			assert self.log_every_xth_iteration == -1 or self.log_every_xth_iteration > 0
+
 			self.num_epochs = num_epochs
 
 			# - Embedding
-			assert kwargs['embedding_type'] in ['glove', 'fasttext', 'elmo']
+			assert kwargs['embedding_type'] in ['glove', 'fasttext', 'elmo', '']
 			self.embedding_type = kwargs['embedding_type']
-			self.embedding_name = kwargs['embedding_name']
-			self.embedding_dim = kwargs['embedding_dim']
+			self.embedding_name = self._get_default('embedding_name', '6B')
+			self.embedding_dim = self._get_default('embedding_dim', 300, cast_int=True)
 			self.clip_comments_to = self._get_default('clip_comments_to', cast_int=True)
+			self.finetune_embedding = self._get_default('finetune_embedding', True)
+
+			# finetuning can only be off if embedding is pretrained
+			assert self.embedding_type != '' or (self.embedding_type == '' and self.finetune_embedding == True)
 
 			self.language = language
 
 			# data loading
-			self.use_stop_words = self._get_default('use_stop_words', False)
+			self.use_stop_words = self._get_default('use_stop_words', True)
 			self.use_stemming = self._get_default('use_stemming', False)
 			self.harmonize_bahn = self._get_default('harmonize_bahn', False)
 			self.use_spell_checkers = self._get_default('use_spell_checkers', False)
 			self.replace_url_tokens = self._get_default('replace_url_tokens', True)
 			self.use_text_cleaner = self._get_default('use_text_cleaner', False)
-			
+			self.contraction_removal = self._get_default('contraction_removal', False)
+			self.organic_text_cleaning = self._get_default('organic_text_cleaning', True)
+
+			# contraction removal only possible for english language
+			assert self.contraction_removal == False or (self.contraction_removal == True and self.language == 'en')
+
+			# text cleaning only supported for english (organic) language
+			assert self.organic_text_cleaning == False or (self.organic_text_cleaning == True and self.language == 'en')
+
 			self.seed = 42			
 			set_seeds(self.seed)
 
