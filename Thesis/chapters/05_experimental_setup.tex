@@ -89,6 +89,89 @@ other applicatiosn:
 
 \subsection{Evaluation}
 
+\subsubsection*{GermEval 2017 - Evaluation}
+
+Wojatzki et al. \cite{Wojatzki} provide an evaluation script for their dataset GermEval-2017. All results from the GermEval 2017 challenge were evaluated using this dataset. Therefore, all results reported in this thesis also use the evaluation script to calculate the f1 score. This is done to be able to compare the results on this datasets to other approaches on this data.
+
+\begin{table}[hbt]
+	\centering
+	\label{tab:05_germevalEvaluationExample}
+	\caption{Example for GermEval-2017 evaluation. None sentiment is not shown. Document 1 is predicted correctly. Document 2 has a correct prediction for aspect A but an incorrect prediction for the sentiment of aspect B {(in bold)}.}
+	\begin{tabular}{@{}lcc}
+		\toprule 
+		& \textbf{Gold} & \textbf{Prediction} \\ 
+		\hline 
+		Document 1 & A : negative & A : negative \\ 
+		\hline 
+		\multirow{2}{*}{Document 2} & A : positive & A : positive \\ 
+		& B : \textbf{positive} & B : \textbf{negative} \\ 
+		\hline 
+	\end{tabular}
+\end{table}
+
+Unfortunately, there are irregularities in the calculation of the micro f1 score. The evaluation script first creates every possible permutation of the combination of aspect and sentiment. If there are just two aspects {(Aspect A and Aspect B)} and four sentiments {(n/a, negative, neutral, positive)} this will generate 8 combinations {(A-n/a, A-negative, ..., B-positive)}. This is used as the first input {(\textit{aspect\_sentiment\_combinations})} of the GermEval-2017 evaluation algorithm shown in \ref{algo:05_germeval}.
+
+In the next step, all gold-labels and predictions are paired together for each document based on the specific aspect-sentiment combination. The example in table \ref{tab:05_germevalEvaluationExample} will produce the following combinations where the left side represents the gold labels and the right side the predictions. This would be the second input parameter \textit{golds\_predictions} for algorithm \ref{algo:05_germeval}: 
+
+\begin{enumerate}
+	\item A:neg - A:neg (Document 1)
+	\item A:pos - A:pos (Document 2)
+	\item B:pos - B:n/a (Document 2)
+	\item B:n/a - B:neg (Document 2)
+\end{enumerate}
+
+Using these inputs the algorithm will compute the following results:
+
+\begin{itemize}
+	\item True Positives: 2
+	\item False Positives: 2
+	\item False Negatives: 2
+	\item True Negatives: 26
+\end{itemize}
+
+which results in an f1-score of $0.5$. In this example there is one misclassification where instead of predicting a pos. sentiment for aspect B the classifier predicted a neg. sentiment. When looking at the combination B:pos as the \textit{'true class'} the model predicts a negative {(NOT pos. sentiment)} when in reality this is a positive {(pos. sentiment)} which is the definition of a \textit{'False Negative'}. When looking at the combination B:neg as the \textit{'true class'} the model predicts a positive {(neg. sentiment)} when in reality this is a negative {(NOT neg. sentiment)} which is the definition of a \textit{' False Positive'}.
+
+One could therefore argue that instead of producing two False Positives and two False Negatives the correct evaluation should be one False Positive and one False Negative.
+
+\begin{algorithm}
+	
+	\SetKwInOut{Input}{Input}
+	\SetKwInOut{Output}{Output}
+	
+	\Input{$aspect\_sentiment\_combinations$: List of all possible combinations between aspects and sentiments including n/a, $golds\_predictions$ List of all comment wise pairs between gold labels and prediction labels}
+	\Output{($tp$, $fp$, $tn$ $fn$)}
+	
+	$tp$ = 0
+	$fp$ = 0
+	$tn$ = 0	
+	$fn$ = 0
+	
+	\ForEach{($aspect$, $sentiment$) in $aspect\_sentiment\_combinations$}{
+		\ForEach{($gold$), ($pred$) in  $golds\_predictions$}{
+			
+			\uIf{$gold$ matches current $aspect$ and $sentiment$}{
+				\uIf{$gold$ matches $prediction$}{
+					$tp$++
+				} \Else {
+					$fn$++
+				}
+			} \Else{
+				\uIf{$prediction$ matches current $aspect$ and $sentiment$}{
+					$fp$++
+				} \Else{
+					$tn$++
+				}
+			}
+		}
+		
+	}
+	
+	\Return{(tp, fp, tn, fn)}
+	
+	\caption{GermEval-2017 Evaluation script.}
+	\label{algo:05_germeval}
+\end{algorithm}
+
 
 
 \subsection{Hardware}
