@@ -89,6 +89,14 @@ other applicatiosn:
 
 \subsection{Evaluation}
 
+The models that are used in this thesis are stochastic models since model parameters are randomly initialized. In addition, samples within the training batches are randomly shuffled. Therefore running the model multiple times leads to different results.
+
+This means that it is necessary to collect model results multiple times. Unfortunately, k-fold cross validation is not possible for three out of the four datasets since the creators of the datasets provide a predefined split and changing the split during k-fold cross validation would prevent comparability with other results.
+
+Therefore, for each dataset-result we repeat the experiment 5-times and report the mean and standard deviation. Iyer and Rhinehart suggest to run an experiment up to a 1000 times to get an optimal result \cite{Iyer1999}. However, this is not possible for our models due to computational constraints.
+
+All experiments on hyper parameters are performed once with a fixed seed of 42. This should make sure that all experiments on hyper parameters are reproducible. There are however some cudnn functions which are non-deterministic which means that even though a random seed is set the results could differ when running the same model with the same parameters multiple times.
+
 \subsubsection*{GermEval 2017 - Evaluation}
 
 Wojatzki et al. \cite{Wojatzki} provide an evaluation script for their dataset GermEval-2017. All results from the GermEval 2017 challenge were evaluated using this dataset. Therefore, all results reported in this thesis also use the evaluation script to calculate the f1 score. This is done to be able to compare the results on this datasets to other approaches on this data.
@@ -132,6 +140,7 @@ Using these inputs the algorithm will compute the following results:
 which results in an f1-score of $0.5$. In this example there is one misclassification where instead of predicting a pos. sentiment for aspect B the classifier predicted a neg. sentiment. When looking at the combination B:pos as the \textit{'true class'} the model predicts a negative {(NOT pos. sentiment)} when in reality this is a positive {(pos. sentiment)} which is the definition of a \textit{'False Negative'}. When looking at the combination B:neg as the \textit{'true class'} the model predicts a positive {(neg. sentiment)} when in reality this is a negative {(NOT neg. sentiment)} which is the definition of a \textit{' False Positive'}.
 
 One could therefore argue that instead of producing two False Positives and two False Negatives the correct evaluation should be one False Positive and one False Negative.
+
 
 \begin{algorithm}
 	
