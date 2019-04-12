@@ -303,7 +303,7 @@ class RunConfiguration(object):
 				section = self.kwargs
 			if key in section:
 				v = section[key]
-				if cast_int:
+				if cast_int and v is not None:
 					v = int(v)
 				return v
 			return default
