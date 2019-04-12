@@ -295,7 +295,7 @@ class RunConfiguration(object):
 			# text cleaning only supported for english (organic) language
 			assert self.organic_text_cleaning == False or (self.organic_text_cleaning == True and self.language == 'en')
 
-			self.seed = 42			
+			self.seed = self._get_default('seed', 42, cast_int=True)			
 			set_seeds(self.seed)
 
 		def _get_default(self, key: str, default=None, section: Dict = None, cast_int: bool=False):
