@@ -261,8 +261,8 @@ class Experiment(object):
 		except Exception as err:
 			logger.exception('Could not pickle dataframe')
 
-		print('TEST F1 Statistics\n' + self.data_frame.test_f1.describe())
-		self.logger.info('\n' + self.data_frame.test_f1.describe())
+		print('TEST F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
+		self.logger.info('\n' + str(self.data_frame.test_f1.describe()))
 		return self.data_frame
 
 
