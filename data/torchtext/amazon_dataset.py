@@ -1,21 +1,18 @@
-
 import os
 import string
 from typing import Dict, List, Tuple, Union
 import pickle
 from collections import defaultdict
 import re
-from unidecode import unidecode
-
 import torchtext.data as data
-from data.torchtext.custom_fields import ReversibleField
 import torch.utils.data
+from misc.utils import create_dir_if_necessary, check_if_file_exists
 from tqdm import tqdm
 
-from misc.utils import create_dir_if_necessary, check_if_file_exists
 from data.torchtext.custom_datasets import *
+import pandas as pd
 
-class GermEval2017Dataset(Dataset):
+class AmazonDataset(Dataset):
 
 	@staticmethod
 	def sort_key(example):
@@ -61,8 +58,8 @@ class GermEval2017Dataset(Dataset):
 
 		return tuple(d for d in (train_data, val_data, test_data)
 					 if d is not None)
-	
-	def __init__(self, path, fields, a_sentiment=[], separator='\t', **kwargs):
+
+	def __init__(self, path, fields, a_sentiment=[], **kwargs):
 		self.aspect_sentiment_fields = []
 		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
 		self.stats = defaultdict(get_stats_dd)
@@ -74,14 +71,14 @@ class GermEval2017Dataset(Dataset):
 		examples, loaded_fields = self._try_load(filename.split(".")[0], fields)
 
 		if not examples:
-			examples, fields = self._load(path, filename, fields, a_sentiment, separator, **kwargs)
+			examples, fields = self._load(path, filename, fields, a_sentiment, **kwargs)
 			self._save(filename.split(".")[0], examples)
 		else:
 			fields = loaded_fields
 			
-		super(GermEval2017Dataset, self).__init__(examples, tuple(fields))    
+		super(AmazonDataset, self).__init__(examples, tuple(fields))    
 
-	def _load(self, path, filename, fields, a_sentiment=[], separator='\t', verbose=True, hp=None, **kwargs):
+	def _load(self, path, filename, fields, a_sentiment=[], verbose=True, hp=None, **kwargs):
 		examples = []
 		self.hp = hp
 		
@@ -90,153 +87,68 @@ class GermEval2017Dataset(Dataset):
 
 		# In the end, those are the fields
 		# The file has the aspect sentiment at the first aspect sentiment position
-		# 0: link (id)
 		# 1: Comment
-		# 2: Is Relevant
-		# 3: General Sentiment
 		# 4: Apsect Specific sentiment List
 		# 5: Padding Field
-		# 6: aspect Sentiment 1/20
-		# 7: aspect Sentiment 2/20
-		# 8: aspect Sentiment 3/20
-		# 9: aspect Sentiment 4/20
-		# 10: aspect Sentiment 5/20
-		# 11: aspect Sentiment 6/20
-		# 12: aspect Sentiment 7/20
-		# 13: aspect Sentiment 8/20
-		# 14: aspect Sentiment 9/20
-		# 15: aspect Sentiment 10/20
-		# 16: aspect Sentiment 11/20
-		# 17: aspect Sentiment 12/20
-		# 18: aspect Sentiment 13/20
-		# 19: aspect Sentiment 14/20
-		# 20: aspect Sentiment 15/20
-		# 21: aspect Sentiment 16/20
-		# 22: aspect Sentiment 17/20
-		# 23: aspect Sentiment 18/20
-		# 24: aspect Sentiment 19/20
-		# 25: aspect Sentiment 20/20
 
 		if hp.use_spell_checkers:
-			spell = self.initialize_spellchecker('de')
+			spell = self.initialize_spellchecker('en')
 		else:
 			spell = None
 
-		with open(path, encoding="utf8") as input_file:
-			aspect_sentiment_categories = set()
-			aspect_sentiments: List[Dict[str, str]] = []
 
-			raw_examples: List[List[Union[str, List[Dict[str, str]]]]] = []
+		aspect_sentiment_categories = set()
+		aspect_sentiments: List[Dict[str, str]] = []
 
-			if verbose:
-				iterator = tqdm(input_file, desc=f'Load {filename[0:7]}', leave=False)
-			else:
-				iterator = input_file
+		raw_examples: List[List[Union[str, List[Dict[str, str]]]]] = []
 
-			for line in iterator:
-				columns = []
-				line = line.strip()
-				if line == '':
-					continue
-				columns = line.split(separator)
+		# read the pickeled dataframe
+		df = pd.read_pickle(path)
 
-				# aspect sentiment is missing
-				if len(columns) == 4:
-					columns.append('')
-					columns.append(dict())
-				else:
-					# handle aspect sentiment which comes in a form of 
-					# PART#Allgemein:negative PART#Allgemein:negative PART#Sicherheit:negative 
+		# iterate over all samples
+		if verbose:
+			iterator = tqdm(df.itertuples(), desc=f'Load {filename[0:7]}', leave=False)
+		else:
+			iterator = df.itertuples()
 
-					# list of category - sentiment pair (Allgemein:negative)
-					sentiments = columns[4]
-					sentiments = sentiments.strip()
-					sentiments = sentiments.split(' ')
+		for row in iterator:
+			columns = []
 
-					sentiment_dict = dict()
-
-					for s in sentiments: 
-						category = ''
-						sentiment = ''
-						# remove #part
-						s = s.split('#')
-
-						if len(s) == 1:
-							s = s[0]
-							kv = s.split(':')
-							category = kv[0]
-							sentiment = kv[1]
-						else:
-							category = s[0]
-							kv = s[1].split(':')
-							sentiment = kv[1]
-
-						sentiment_dict[category] = sentiment
-						self.stats[category][sentiment] += 1
-					 
-					# add all new potential keys to set
-					for s_category in sentiment_dict.keys():
-						aspect_sentiment_categories.add(s_category)
-					columns.append(sentiment_dict) 
-
-				# remove punctuation and clean text
-				comment = columns[1]
-
-				# remove » and fix encoding issues
-				comment = comment.replace('»', ' ')
-				comment = comment.replace("ã¼", 'ü')
-				comment = comment.replace("ã¤", "ä")
-				comment = comment.replace("ø", "ö")
-				comment = comment.replace("ű", "ü")
-				comment = comment.replace("..", " ")
+			sentiment_dict = dict()
+			aspect_category = row.getattr(row, 'aspect')
+			aspect_sentiment = row.getattr(row, 'sentiment')
+			comment = row.getattr(row, 'reviewText')			
+			self.stats[aspect_category][aspect_sentiment] += 1					
+			aspect_sentiment_categories.add(aspect_category)
+			sentiment_dict[category] = aspect_sentiment
 
 
-				# replace urls with regex
-				comment = replace_urls_regex(comment)
+			# replace urls with regex
+			comment = replace_urls_regex(comment)
 
+			comment = comment.split(' ')
 
-				# remove non ascii characters with empty space
-				# comment = re.sub(r'[^\x00-\x7f]',r' ', comment)
-				#comment = unidecode(str(comment))
-				
-				# remove any non-word characters with empty space
-				comment = re.sub(r'[^\w\säöüß]', r' ', comment)
+			# remove all empty entries
+			comment = [w for w in comment if w.strip() != '']
 
-				comment = comment.split(' ')
+			if hp.replace_url_tokens:
+				comment = replace_urls(comment)
 
-				# remove all empty entries
-				comment = [w for w in comment if w.strip() != '']
+			if hp.use_spell_checkers:
+				comment = self.fix_spellings(comment, spell, 'en')
 
-				if hp.harmonize_bahn:
-					comment = harmonize_bahn_names(comment)
+			comment = ' '.join(comment)
 
-				if hp.replace_url_tokens:
-					comment = replace_urls(comment)
+			columns = [
+				comment,
+				sentiment_dict,
+				'' # padding
+			]
 
-
-				if hp.use_spell_checkers:
-					comment = self.fix_spellings(comment, spell, 'de')
-
-				comment = ' '.join(comment)
-				#comment = comment.translate(punctuation_remover)
-
-				columns[1] = comment
-
-				# comment is not relevant
-				if columns[2] == 'false':
-					# set all aspects to n/a
-					continue
-					
-				# add aspect sentiment field
-				columns.append('')
-
-				# add padding field
-				columns.append('')
-				raw_examples.append(columns)
+			raw_examples.append(columns)
 
 		# process the aspect sentiment
 		if len(self.aspects) == 0:
-			aspect_sentiment_categories.add('QR-Code')
 			self.aspects = list(aspect_sentiment_categories)
 
 			# make sure the list is sorted. Otherwise we'll have a different
@@ -250,16 +162,16 @@ class GermEval2017Dataset(Dataset):
 			# go through each aspect sentiment and add it at the corresponding position
 			ss = ['n/a'] * len(self.aspects)
 			nas = len(self.aspects)
-			for s_category, s in raw_example[-3].items():
+			for s_category, s in raw_example[1].items():
 				pos = self.aspects.index(s_category)
 				ss[pos] = s
 				nas -= 1
 
 			self.na_labels += nas
-			raw_example[6] = ss
+			raw_example[1] = ss
 			
 			# construct example and add it
-			example = raw_example[0:5] + [raw_example[6]] + [raw_example[7]] + ss
+			example = raw_example + ss
 			examples.append(data.Example.fromlist(example, tuple(fields)))
 
 		# clip comments
@@ -321,28 +233,4 @@ class GermEval2017Dataset(Dataset):
 			pickle.dump(self.aspects, f)
 
 
-def harmonize_bahn_names(text_tokens: List[str]) -> List[str]:
-	bahn_syn = [
-		'db',
-		'deutschebahn',
-		"db_bahn",
-		"bahn.de",
-		"@db_bahn",
-		"#db",
-		"@db",
-		"#db_bahn",
-		"@bahn",
-		"#bahn",
-		"@dbbahn",
-		"#dbbahn",
-		"#dbbahn"
-		"www.bahn.de",
-		"dbbahn"
-	]
-	result = []
-	for token in text_tokens:
-		if token.lower() in bahn_syn:
-			result.append('db')
-		else:
-			result.append(token)
-	return result
+	
