@@ -520,5 +520,8 @@ def intelligent_sentence_clipping(s: str, clip_to: int) -> str:
 germeval_words = [
 	'db',
 	'KVB',
-	'ITB'
+	'ITB',
+	'SSB',
+	'MVG',
+	'MVV'
 ]
