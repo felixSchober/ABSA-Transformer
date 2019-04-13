@@ -157,7 +157,7 @@ class GermEval2017Dataset(Dataset):
 
 					sentiment_dict = dict()
 
-					for s in sentiments:
+					for s in sentiments: 
 						category = ''
 						sentiment = ''
 						# remove #part
@@ -227,7 +227,7 @@ class GermEval2017Dataset(Dataset):
 				# comment is not relevant
 				if columns[2] == 'false':
 					# set all aspects to n/a
-					pass
+					continue
 					
 				# add aspect sentiment field
 				columns.append('')
