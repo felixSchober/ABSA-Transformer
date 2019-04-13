@@ -56,7 +56,7 @@ default_params = {
 		'output_conv_padding': 0
 	},
 	'output_dropout_rate': 0.2,
-	'task': 'absa'
+	'task': 'entities'
 }
 
 hyperOpt_goodParams = {
