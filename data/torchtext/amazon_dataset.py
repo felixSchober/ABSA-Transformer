@@ -60,7 +60,7 @@ class AmazonDataset(Dataset):
 		return tuple(d for d in (train_data, val_data, test_data)
 					 if d is not None)
 
-	def __init__(self, path, fields, a_sentiment=[], **kwargs):
+	def __init__(self, path, fields, a_sentiment=[], hp=None, **kwargs):
 		self.aspect_sentiment_fields = []
 		self.aspects = a_sentiment if len(a_sentiment) > 0 else []
 		self.stats = defaultdict(get_stats_dd)
@@ -80,7 +80,7 @@ class AmazonDataset(Dataset):
 		examples, loaded_fields = self._try_load(filename.split(".")[0], fields)
 
 		if not examples:
-			examples, fields = self._load(path, filename, fields, a_sentiment, **kwargs)
+			examples, fields = self._load(path, filename, fields, a_sentiment, hp=hp, **kwargs)
 			self._save(filename.split(".")[0], examples)
 		else:
 			fields = loaded_fields
