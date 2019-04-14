@@ -70,7 +70,7 @@ def amazon_dataset(
 	comment_field = data.Field(
 							batch_first=True,    # produce tensors with batch dimension first
 							lower=True,
-							fix_length=hyperparameters.clip_comments_to,a
+							fix_length=hyperparameters.clip_comments_to,
 							sequential=True,
 							use_vocab=True,
 							init_token=None,
@@ -99,7 +99,7 @@ def amazon_dataset(
 	# use updated fields
 	fields = train.fields
 	comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[pretrained_vectors])
-	padding_field.build_vocab(train.padding, val.comments, test.comments)
+	padding_field.build_vocab(train.padding, val.padding, test.padding)
 	aspect_sentiment_field.build_vocab(train.aspect_sentiments, val.aspect_sentiments, test.aspect_sentiments)
 	# id_field.build_vocab(train.id, val.id, test.id)
 

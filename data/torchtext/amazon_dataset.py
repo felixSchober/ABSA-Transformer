@@ -9,6 +9,7 @@ import torch.utils.data
 from misc.utils import create_dir_if_necessary, check_if_file_exists
 from tqdm import tqdm
 
+from data.torchtext.custom_fields import ReversibleField
 from data.torchtext.custom_datasets import *
 import pandas as pd
 
@@ -66,6 +67,14 @@ class AmazonDataset(Dataset):
 		self.na_labels = 0
 		self.hp = None
 
+		self.dataset_name = 'amazon'
+
+		if hp.use_spell_checkers:
+			self.dataset_name += '_SP'
+		
+		self.dataset_name += f'_{hp.clip_comments_to}'
+
+
 		# first, try to load all models from cache
 		filename = path.split("\\")[-1]
 		examples, loaded_fields = self._try_load(filename.split(".")[0], fields)
@@ -106,21 +115,20 @@ class AmazonDataset(Dataset):
 		df = pd.read_pickle(path)
 
 		# iterate over all samples
-		if verbose:
-			iterator = tqdm(df.itertuples(), desc=f'Load {filename[0:7]}', leave=False)
-		else:
-			iterator = df.itertuples()
+		total_samples = df.count()['overall']
+		iterator = tqdm(df.itertuples(), desc=f'Load {filename[0:7]}', leave=False, total=total_samples)
+
 
 		for row in iterator:
 			columns = []
 
 			sentiment_dict = dict()
-			aspect_category = row.getattr(row, 'aspect')
-			aspect_sentiment = row.getattr(row, 'sentiment')
-			comment = row.getattr(row, 'reviewText')			
+			aspect_category = getattr(row, 'aspect')
+			aspect_sentiment = getattr(row, 'sentiment')
+			comment = getattr(row, 'reviewText')			
 			self.stats[aspect_category][aspect_sentiment] += 1					
 			aspect_sentiment_categories.add(aspect_category)
-			sentiment_dict[category] = aspect_sentiment
+			sentiment_dict[aspect_category] = aspect_sentiment
 
 
 			# replace urls with regex
@@ -158,7 +166,7 @@ class AmazonDataset(Dataset):
 			# construct the fields
 			fields = self._construct_fields(fields)
 
-		for raw_example in raw_examples:
+		for raw_example in tqdm(raw_examples, leave=False, desc='Constructing Aspects'):
 			# go through each aspect sentiment and add it at the corresponding position
 			ss = ['n/a'] * len(self.aspects)
 			nas = len(self.aspects)
@@ -175,7 +183,7 @@ class AmazonDataset(Dataset):
 			examples.append(data.Example.fromlist(example, tuple(fields)))
 
 		# clip comments
-		for example in examples:
+		for example in tqdm(examples, leave=False, desc='Clipping comments'):
 			comment_length: int = len(example.comments)
 			if comment_length > hp.clip_comments_to:
 				example.comments = example.comments[0:hp.clip_comments_to]
@@ -200,10 +208,10 @@ class AmazonDataset(Dataset):
 		return fields
 
 	def _try_load(self, name, fields):
-		path = os.path.join(os.getcwd(), 'data', 'data', 'cache')
+		path = os.path.join(os.getcwd(), 'data', 'data', 'cache', self.dataset_name)
 		create_dir_if_necessary(path)
-		samples_path = os.path.join(path, name + "2.pkl")
-		aspects_path = os.path.join(path, name + "_2aspects.pkl")
+		samples_path = os.path.join(path, name + ".pkl")
+		aspects_path = os.path.join(path, name + "_aspects.pkl")
 
 		if not check_if_file_exists(samples_path) or not check_if_file_exists(aspects_path):
 			return [], None
@@ -219,7 +227,8 @@ class AmazonDataset(Dataset):
 		return examples, fields
 
 	def _save(self, name, samples):
-		path = os.path.join(os.getcwd(), 'data', 'data', 'cache')
+
+		path = os.path.join(os.getcwd(), 'data', 'data', 'cache', self.dataset_name)
 		create_dir_if_necessary(path)
 		samples_path = os.path.join(path, name + ".pkl")
 		aspects_path = os.path.join(path, name + "_aspects.pkl")
