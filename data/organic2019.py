@@ -35,119 +35,12 @@ def organic_dataset(
 				use_cuda=False,
 				verbose=True):
 
-	assert task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ALL_COMBINE, ORGANIC_TASK_ATTRIBUTES_COMBINE, ORGANIC_TASK_ENTITIES_COMBINE, ORGANIC_TASK_COARSE, ORGANIC_TASK_COARSE_COMBINE]
-	assert hyperparameters.language == 'en'
+	data = load_splits(task, hyperparameters, root, train_file, validation_file, test_file, verbose)
+	comment_field = data['fields']['comment']
+	padding_field = data['fields']['padding']
+	aspect_sentiment_field = data['fields']['padding']
 
-	if hyperparameters.use_stop_words:
-		stop_words = get_stop_words(hyperparameters.language)
-	else:
-		stop_words = []
-
-	# Sequence number
-	# Index
-	# Author_Id
-	# Comment number
-	# Sentence number
-	# Domain Relevance
-	# Sentiment
-	# Entity
-	# Attribute
-	# Sentence
-	# Source File
-	# Aspect
-
-	sq_num_field =  ReversibleField(
-							batch_first=True,
-							is_target=False,
-							sequential=False,
-							use_vocab=True,
-							unk_token=None)
-
-	idx_field = ReversibleField(
-							batch_first=True,
-							is_target=False,
-							sequential=False,
-							use_vocab=True,
-							unk_token=None)
-
-	sentiment_field = ReversibleField(
-							batch_first=True,
-							is_target=True,
-							sequential=False,
-							init_token=None,
-							eos_token=None,
-							unk_token=None,
-							use_vocab=True)
-
-	aspect_sentiment_field = ReversibleField(
-							batch_first=True,
-							is_target=True,
-							sequential=True,
-							init_token=None,
-							eos_token=None,
-							pad_token=None,
-							unk_token=None,
-							use_vocab=True)
-
-	padding_field = data.Field(
-							batch_first=True,
-							sequential=True,
-							fix_length=hyperparameters.clip_comments_to,
-							use_vocab=True,
-							init_token=None,
-							eos_token=None,
-							unk_token=None,
-							is_target=False)
-
-	comment_field = data.Field(
-							batch_first=True,    # produce tensors with batch dimension first
-							lower=True,
-							fix_length=hyperparameters.clip_comments_to,
-							sequential=True,
-							use_vocab=True,
-							init_token=None,
-							eos_token=None,
-							is_target=False,
-							stop_words=stop_words)
-
-	fields = [
-		(None, None), 										# sq_number
-		(None, None),
-		(None, None),
-		(None, None),
-		(None, None),
-		(None, None),
-		('aspect_sentiments', aspect_sentiment_field),		# aspect sentiment field List of 20 aspects with positive, negative, neutral, n/a
-		('comments', comment_field),                        # comment itself e.g. (@KuttnerSarah @DB_Bahn Hund = Fahrgast, Hund in Box = Gepäck.skurril, oder?)
-		(None, None), 										# source file
-		('padding', padding_field)                          # artificial field that we append to fill it with the padding information later to create the masks
-
-	]
-
-	if task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES]:
-		train, val, test = SingleSentenceOrganicDataset.splits(
-									path=root,
-									root='.data',
-									train=train_file,
-									validation=validation_file,
-									test=test_file,
-									separator='|',
-									fields=fields,
-									verbose=verbose,
-									hp=hyperparameters,
-									task=task)
-	else:
-		train, val, test = DoubleSentenceOrganicDataset.splits(
-									path=root,
-									root='.data',
-									train=train_file,
-									validation=validation_file,
-									test=test_file,
-									separator='|',
-									fields=fields,
-									verbose=verbose,
-									hp=hyperparameters,
-									task=task)
+	(train, val, test) = data['splits']
 
 	# use updated fields
 	fields = train.fields
@@ -194,3 +87,117 @@ def organic_dataset(
 			'germeval_best': 0.749
 		}
 		}
+
+
+def load_splits(
+	task:str,
+	hyperparameters: RunConfiguration,
+	root='./bio',
+	train_file='train.csv',
+	validation_file='validation.csv',
+	test_file='test.csv',
+	verbose=True
+	):
+	assert task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ALL_COMBINE, ORGANIC_TASK_ATTRIBUTES_COMBINE, ORGANIC_TASK_ENTITIES_COMBINE, ORGANIC_TASK_COARSE, ORGANIC_TASK_COARSE_COMBINE]
+	assert hyperparameters.language == 'en'
+
+	if hyperparameters.use_stop_words:
+		stop_words = get_stop_words(hyperparameters.language)
+	else:
+		stop_words = []
+
+	# Sequence number
+	# Index
+	# Author_Id
+	# Comment number
+	# Sentence number
+	# Domain Relevance
+	# Sentiment
+	# Entity
+	# Attribute
+	# Sentence
+	# Source File
+	# Aspect
+
+	aspect_sentiment_field = ReversibleField(
+							batch_first=True,
+							is_target=True,
+							sequential=True,
+							init_token=None,
+							eos_token=None,
+							pad_token=None,
+							unk_token=None,
+							use_vocab=True)
+
+	padding_field = data.Field(
+							batch_first=True,
+							sequential=True,
+							fix_length=hyperparameters.clip_comments_to,
+							use_vocab=True,
+							init_token=None,
+							eos_token=None,
+							unk_token=None,
+							is_target=False)
+
+	comment_field = data.Field(
+							batch_first=True,    # produce tensors with batch dimension first
+							lower=True,
+							fix_length=hyperparameters.clip_comments_to,
+							sequential=True,
+							use_vocab=True,
+							init_token=None,
+							eos_token=None,
+							is_target=False,
+							stop_words=stop_words)
+
+	fields = [
+		(None, None), 									
+		(None, None),
+		(None, None),
+		(None, None),
+		(None, None),
+		(None, None),
+		('aspect_sentiments', aspect_sentiment_field),		# aspect sentiment field List of 20 aspects with positive, negative, neutral, n/a
+		('comments', comment_field),                        # comment itself e.g. (@KuttnerSarah @DB_Bahn Hund = Fahrgast, Hund in Box = Gepäck.skurril, oder?)
+		(None, None), 										
+		('padding', padding_field)                          # artificial field that we append to fill it with the padding information later to create the masks
+
+	]
+
+	if task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES]:
+		train, val, test = SingleSentenceOrganicDataset.splits(
+									path=root,
+									root='.data',
+									train=train_file,
+									validation=validation_file,
+									test=test_file,
+									separator='|',
+									fields=fields,
+									verbose=verbose,
+									hp=hyperparameters,
+									task=task)
+	else:
+		train, val, test = DoubleSentenceOrganicDataset.splits(
+									path=root,
+									root='.data',
+									train=train_file,
+									validation=validation_file,
+									test=test_file,
+									separator='|',
+									fields=fields,
+									verbose=verbose,
+									hp=hyperparameters,
+									task=task)
+
+
+	return {
+		'fields': {
+			'comment': comment_field,
+			'aspect_sentiment': aspect_sentiment_field,
+			'padding': padding_field,
+			'fields': fields
+		},
+		'splits': (train, val, test)
+	}
+
+	
