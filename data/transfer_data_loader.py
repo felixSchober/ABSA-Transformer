@@ -10,7 +10,7 @@ class TransferDataLoader(Dataset):
 
 	def load_data(self,
 				loader,                
-				verbose=True):
+				verbose=False):
 
 		self.verbose = verbose
 
@@ -47,7 +47,7 @@ class TransferDataLoader(Dataset):
 			self.train_iter, self.valid_iter, self.test_iter = self.dataset['iters'][i]
 			self.fields = self.dataset['fields']
 			self.target = self.dataset['target'][i]
-			self.target_names = [n for n, _ in self.target[i]]
+			self.target_names = [n for n, _ in self.target]
 			self.examples = self.dataset['examples'][i]
 			self.embedding = self.dataset['embeddings']
 			self.dummy_input = self.dataset['dummy_input']
@@ -56,9 +56,9 @@ class TransferDataLoader(Dataset):
 			self.padding_field_name = self.dataset['padding_field_name']
 			self.baselines = self.dataset['baselines']
 
-			self.target_size = len(self.vocabs[self.target_vocab_index][i])
-			self.source_embedding = self.embedding[self.source_index]
-			self.class_labels = list(self.vocabs[self.target_vocab_index][i].itos)
+			self.target_size = len(self.vocabs[self.target_vocab_index[i]])
+			self.source_embedding = self.embedding[self.source_index[i]]
+			self.class_labels = list(self.vocabs[self.target_vocab_index[i]].itos)
 
 			self.source_reverser = self.dataset['source_field'][i]
 			self.target_reverser = self.target[0]

@@ -4,7 +4,7 @@ import torch
 
 from torch.autograd import *
 import torchtext
-from torchtext import data
+from torchtext import data as data_t
 from stop_words import get_stop_words
 
 from data.torchtext.custom_fields import ReversibleField
@@ -56,7 +56,7 @@ def organic_dataset(
 		aspect_sentiment_fields.append(f)
 
 	train_device = torch.device('cuda:0' if torch.cuda.is_available() and use_cuda else 'cpu')
-	train_iter, val_iter, test_iter = data.BucketIterator.splits(
+	train_iter, val_iter, test_iter = data_t.BucketIterator.splits(
 		(train, val, test), batch_size=batch_size, device=train_device)
 
 	# add embeddings
@@ -119,7 +119,7 @@ def load_splits(
 	# Source File
 	# Aspect
 
-	aspect_sentiment_field = ReversibleField(
+	aspect_sentiment_field = data.Field(
 							batch_first=True,
 							is_target=True,
 							sequential=True,

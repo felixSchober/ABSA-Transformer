@@ -110,13 +110,13 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {5.2.4}Multi-Domain Sentiment Dataset}{13}{subsection.5.2.4}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5.3}Training and Evaluation}{14}{section.5.3}
+\contentsline {section}{\numberline {5.3}Training and Evaluation}{13}{section.5.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {5.3.1}Evaluation}{14}{subsection.5.3.1}
+\contentsline {subsection}{\numberline {5.3.1}Evaluation}{13}{subsection.5.3.1}
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {5.3.2}Hardware}{15}{subsection.5.3.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {5.3.3}Docker}{15}{subsection.5.3.3}
+\contentsline {subsection}{\numberline {5.3.3}Docker}{17}{subsection.5.3.3}
 \defcounter {refsection}{0}\relax 
 \contentsline {chapter}{\numberline {6}Discussion of Results}{18}{chapter.6}
 \defcounter {refsection}{0}\relax 

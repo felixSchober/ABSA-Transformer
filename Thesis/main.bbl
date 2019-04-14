@@ -146,7 +146,7 @@
       \field{type}{Ph.D thesis}
       \field{year}{1997}
       \verb{file}
-      \verb ::
+      \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Caruana - 1997 - Multitask Learning.pdf:pdf
       \endverb
       \verb{url}
       \verb http://www8.cs.umu.se/research/ifor/dl/LEARNING/multitask%20learning.pdf
@@ -179,6 +179,44 @@
       \verb{url}
       \verb http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.57.3196
       \endverb
+    \endentry
+    \entry{Iyer1999}{article}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=45f090d988ecb270e6a2c5523880020f}{%
+           family={Iyer},
+           familyi={I\bibinitperiod},
+           given={Mahesh\bibnamedelima S.},
+           giveni={M\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{uniquename=0,hash=a5094db438940abc6cbb77546c49dc00}{%
+           family={Rhinehart},
+           familyi={R\bibinitperiod},
+           given={R.\bibnamedelimi Russell},
+           giveni={R\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+      }
+      \strng{namehash}{ca76a1fe1142513355b4e3785b60ec15}
+      \strng{fullhash}{ca76a1fe1142513355b4e3785b60ec15}
+      \strng{authornamehash}{ca76a1fe1142513355b4e3785b60ec15}
+      \strng{authorfullhash}{ca76a1fe1142513355b4e3785b60ec15}
+      \field{sortinit}{I}
+      \field{sortinithash}{a3dcedd53b04d1adfd5ac303ecd5e6fa}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Conventional neural network training algorithms often get stuck in local minima. To find the global optimum, training is conventionally repeated with 10, or so, random starting values for the weights. Here we develop an analytical procedure to determine how many times a neural network needs to be trained, with random starting weights, to ensure that the best of those is within a desirable lower percentile of all possible trainings, with a certain level of confidence. The theoretical developments are validated by experimental results. While applied to neural network training, the method is generally applicable to nonlinear optimization.}
+      \field{issn}{10459227}
+      \field{journaltitle}{IEEE Transactions on Neural Networks}
+      \field{number}{2}
+      \field{title}{{A method to determine the required number of neural-network training repetitions}}
+      \field{volume}{10}
+      \field{year}{1999}
+      \field{pages}{427\bibrangedash 432}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1109/72.750573
+      \endverb
+      \verb{file}
+      \verb :C$\backslash$:/Users/felix/Downloads/00750573.pdf:pdf
+      \endverb
+      \keyw{Neural-network training,Steady-state identification,Weakest-link-in-a-chain}
     \endentry
     \entry{LeCun;1990}{article}{}
       \name{author}{6}{}{%

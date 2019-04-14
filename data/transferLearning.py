@@ -40,7 +40,7 @@ def transfer_learning(
 		test_file = test_files[i]
 		logger.info(f'[{i}/{len(loaders)}] Loading dataset with root {root}')
 		result = l(task, hyperparameters, root, train_file, validation_file, test_file, verbose)
-		logger.debug('Dataset is loaded')
+		logger.debug(f'Dataset {i} is loaded')
 		loader_results.append(result)
 		fields.extend(result['splits'][0].fields)
 
@@ -77,9 +77,8 @@ def transfer_learning(
 		(train, val, test), batch_size=batch_size, device=train_device)
 
 		datasets['stats'].append((train.stats, val.stats, test.stats))
-		datasets['split_length'].append(len(train), len(val), len(test))
-		datasets['vocabs'].append(r['fields']['comment'].vocab, r['fields']['aspect_sentiment'].vocab)
-		datasets['source_field'].append(r['fields']['comment'])
+		datasets['split_length'].append((len(train), len(val), len(test)))
+		datasets['vocabs'].append((r['fields']['comment'].vocab, r['fields']['aspect_sentiment'].vocab))
 		datasets['source_field'].append(r['fields']['comment'])
 		datasets['aspect_sentiment_field'].append(r['fields']['aspect_sentiment'])
 		datasets['target'].append(train.aspect_sentiment_fields)
@@ -87,17 +86,17 @@ def transfer_learning(
 		datasets['iters'].append(iters)
 
 
-	# build aspect fields
-	# aspect_sentiment_fields = []
-	# for s_cat, f in train.aspect_sentiment_fields:
-	# 	f.build_vocab(train.__getattr__(s_cat), val.__getattr__(s_cat), test.__getattr__(s_cat))
-	# 	aspect_sentiment_fields.append(f)
+		# build aspect fields
+		aspect_sentiment_fields = []
+		for s_cat, f in train.aspect_sentiment_fields:
+			f.build_vocab(train.__getattr__(s_cat), val.__getattr__(s_cat), test.__getattr__(s_cat))
+			aspect_sentiment_fields.append(f)
 
 	
 
 	# add embeddings
-	embedding_size = datasets[0]['source_field'].vocab.vectors.shape[1]
-	source_embedding = get_embedding(datasets[0]['source_field'].vocab, embedding_size, hyperparameters.embedding_type)
+	embedding_size = datasets['source_field'][0].vocab.vectors.shape[1]
+	source_embedding = get_embedding(datasets['source_field'][0].vocab, embedding_size, hyperparameters.embedding_type)
 
 	result = {
 		'task': 'amazon',
