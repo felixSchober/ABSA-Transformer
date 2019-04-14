@@ -491,7 +491,7 @@ class OrganicDataset(Dataset):
 		return examples, fields
 
 	def _save(self, name, samples):
-		path = os.path.join(os.getcwd(), 'data', 'cache', self.dataset_name)
+		path = os.path.join(os.getcwd(), 'data', 'data', 'cache', self.dataset_name)
 		create_dir_if_necessary(path)
 		samples_path = os.path.join(path, name + ".pkl")
 		aspects_path = os.path.join(path, name + "_aspects.pkl")
