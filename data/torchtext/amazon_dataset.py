@@ -116,7 +116,7 @@ class AmazonDataset(Dataset):
 
 		# iterate over all samples
 		total_samples = df.count()['overall']
-		iterator = tqdm(df.itertuples(), desc=f'Load {filename[0:7]}', leave=False, total=total_samples)
+		iterator = tqdm(df.itertuples(), desc=f'Load {filename[0:7]}', leave=True, total=total_samples)
 
 
 		for row in iterator:
@@ -166,7 +166,7 @@ class AmazonDataset(Dataset):
 			# construct the fields
 			fields = self._construct_fields(fields)
 
-		for raw_example in tqdm(raw_examples, leave=False, desc='Constructing Aspects'):
+		for raw_example in tqdm(raw_examples, leave=True, desc='Constructing Aspects'):
 			# go through each aspect sentiment and add it at the corresponding position
 			ss = ['n/a'] * len(self.aspects)
 			nas = len(self.aspects)
@@ -183,7 +183,7 @@ class AmazonDataset(Dataset):
 			examples.append(data.Example.fromlist(example, tuple(fields)))
 
 		# clip comments
-		for example in tqdm(examples, leave=False, desc='Clipping comments'):
+		for example in tqdm(examples, leave=True, desc='Clipping comments'):
 			comment_length: int = len(example.comments)
 			if comment_length > hp.clip_comments_to:
 				example.comments = example.comments[0:hp.clip_comments_to]
