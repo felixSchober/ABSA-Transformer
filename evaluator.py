@@ -95,8 +95,8 @@ def produce_test_gold_labels(iterator: torchtext.data.Iterator, dataset: Dataset
 				text_field.text = comment[i]
 
 				# don't add aspects if field not relevant
-				if relevance[i] == 'false':
-					continue
+				# if relevance[i] == 'false':
+				# 	continue
 				options_elem = ET.SubElement(docuement_elem, 'Opinions')
 
 				# add aspects
@@ -180,8 +180,8 @@ def write_evaluation_file(iterator: torchtext.data.Iterator, dataset: Dataset, t
 				text_field.text = comment_decoded[i]
 
 				# don't add aspects if field not relevant
-				if relevance[i] == 'false':
-					continue
+				# if relevance[i] == 'false':
+				# 	continue
 				options_elem = ET.SubElement(docuement_elem, 'Opinions')
 
 				# add aspects

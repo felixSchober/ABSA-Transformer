@@ -8,33 +8,26 @@ from torchtext import data as data_t
 from stop_words import get_stop_words
 
 from data.torchtext.custom_fields import ReversibleField
-from data.torchtext.organic_dataset import *
+from data.torchtext.amazon_dataset import *
 from data.data_loader import get_embedding
 
 from misc.run_configuration import RunConfiguration
+logger = logging.getLogger(__name__)
 
-
-def preprocess_word(word: str) -> str:
-	# TODO: Actual processing
-	return word
-
-def preprocess_relevance_word(word: str) -> int:
-	if word == 'false':
-		return 0
-	return 1
-
-def organic_dataset(
+def amazon_dataset(
 				task:str,
 				pretrained_vectors,
 				hyperparameters: RunConfiguration,
 				batch_size=80,
-				root='./bio',
-				train_file='train.csv',
-				validation_file='validation.csv',
-				test_file='test.csv',
-				use_cuda=False,
+				root='./amazon',
+				train_file='train.pkl',
+				validation_file='validation.pkl',
+				test_file='test.pkl',
+				use_cuda=True,
 				verbose=True):
 
+
+	logger.debug('Creating splits and load data')
 	data = load_splits(task, hyperparameters, root, train_file, validation_file, test_file, verbose)
 	comment_field = data['fields']['comment']
 	padding_field = data['fields']['padding']
@@ -42,10 +35,15 @@ def organic_dataset(
 
 	(train, val, test) = data['splits']
 
+	
 	# use updated fields
 	fields = train.fields
 
+	logger.info('Building Vocabularies for comments')
+	print('Comment Vocabulary building')
 	comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[pretrained_vectors])
+	print('Comment Vocabulary building finished')
+
 	padding_field.build_vocab(train.padding, val.padding, test.padding)
 	aspect_sentiment_field.build_vocab(train.aspect_sentiments, val.aspect_sentiments, test.aspect_sentiments)
 	# id_field.build_vocab(train.id, val.id, test.id)
@@ -58,16 +56,19 @@ def organic_dataset(
 
 	train_device = torch.device('cuda:0' if torch.cuda.is_available() and use_cuda else 'cpu')
 	train_iter, val_iter, test_iter = data_t.BucketIterator.splits(
-		(train, val, test), batch_size=batch_size, device=train_device, shuffle=True)
+		(train, val, test), batch_size=batch_size, device=train_device)
 
 	# add embeddings
 	embedding_size = comment_field.vocab.vectors.shape[1]
+
+	logger.info('Building Sentence embedding for comments')
+	print('Building Sentence embedding for comments')
 	source_embedding = get_embedding(comment_field.vocab, embedding_size, hyperparameters.embedding_type)
 
 	examples = train.examples[0:3] + val.examples[0:3] + test.examples[0:3]
 
 	return {
-		'task': 'organic19_' + task,
+		'task': 'amazon',
 		'stats': (train.stats, val.stats, test.stats),
 		'split_length': (len(train), len(val), len(test)),
 		'iters': (train_iter, val_iter, test_iter), 
@@ -93,13 +94,12 @@ def organic_dataset(
 def load_splits(
 	task:str,
 	hyperparameters: RunConfiguration,
-	root='./bio',
-	train_file='train.csv',
-	validation_file='validation.csv',
-	test_file='test.csv',
+	root='./amazon',
+	train_file='train.pkl',
+	validation_file='validation.pkl',
+	test_file='test.pkl',
 	verbose=True
 	):
-	assert task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ALL_COMBINE, ORGANIC_TASK_ATTRIBUTES_COMBINE, ORGANIC_TASK_ENTITIES_COMBINE, ORGANIC_TASK_COARSE, ORGANIC_TASK_COARSE_COMBINE]
 	assert hyperparameters.language == 'en'
 
 	if hyperparameters.use_stop_words:
@@ -107,20 +107,7 @@ def load_splits(
 	else:
 		stop_words = []
 
-	# Sequence number
-	# Index
-	# Author_Id
-	# Comment number
-	# Sentence number
-	# Domain Relevance
-	# Sentiment
-	# Entity
-	# Attribute
-	# Sentence
-	# Source File
-	# Aspect
-
-	aspect_sentiment_field = data.Field(
+	aspect_sentiment_field = ReversibleField(
 							batch_first=True,
 							is_target=True,
 							sequential=True,
@@ -152,44 +139,21 @@ def load_splits(
 							stop_words=stop_words)
 
 	fields = [
-		(None, None), 									
-		(None, None),
-		(None, None),
-		(None, None),
-		(None, None),
-		(None, None),
-		('aspect_sentiments', aspect_sentiment_field),		# aspect sentiment field List of 20 aspects with positive, negative, neutral, n/a
 		('comments', comment_field),                        # comment itself e.g. (@KuttnerSarah @DB_Bahn Hund = Fahrgast, Hund in Box = Gepäck.skurril, oder?)
-		(None, None), 										
+		('aspect_sentiments', aspect_sentiment_field),		# aspect sentiment field List of 20 aspects with positive, negative, neutral, n/a
 		('padding', padding_field)                          # artificial field that we append to fill it with the padding information later to create the masks
-
 	]
 
-	if task in [ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES]:
-		train, val, test = SingleSentenceOrganicDataset.splits(
+	train, val, test = AmazonDataset.splits(
 									path=root,
 									root='.data',
 									train=train_file,
 									validation=validation_file,
 									test=test_file,
-									separator='|',
 									fields=fields,
 									verbose=verbose,
 									hp=hyperparameters,
 									task=task)
-	else:
-		train, val, test = DoubleSentenceOrganicDataset.splits(
-									path=root,
-									root='.data',
-									train=train_file,
-									validation=validation_file,
-									test=test_file,
-									separator='|',
-									fields=fields,
-									verbose=verbose,
-									hp=hyperparameters,
-									task=task)
-
 
 	return {
 		'fields': {
@@ -200,5 +164,3 @@ def load_splits(
 		},
 		'splits': (train, val, test)
 	}
-
-	

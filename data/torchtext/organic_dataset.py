@@ -221,8 +221,6 @@ class OrganicDataset(Dataset):
 	def _load(self, path, filename, fields, a_sentiment=[], separator='|', verbose=True, hp=None, task=None, length=None, **kwargs):
 		examples = []
 		
-		
-
 		# 0: Sequence number
 		# 1: Index
 		# 2: Author_Id
@@ -242,6 +240,8 @@ class OrganicDataset(Dataset):
 		if hp.organic_text_cleaning:
 			from data.spellchecker.spellchecker import get_organic_words_replacement
 			organic_text_cleaning_dict = get_organic_words_replacement()
+		else:
+			organic_text_cleaning_dict = {}
 
 		if hp.use_spell_checkers:
 			spell = self.initialize_spellchecker(hp.language)
@@ -448,7 +448,7 @@ class OrganicDataset(Dataset):
 
 		comment = ' '.join(comment)
 		if hp.use_text_cleaner:
-			comment = text_cleaner(comment, hp.language, spell)
+			comment = text_cleaner(comment, hp.language)
 
 		sample[-3] = comment
 		return sample
@@ -474,8 +474,8 @@ class OrganicDataset(Dataset):
 	def _try_load(self, name, fields):
 		path = os.path.join(os.getcwd(), 'data', 'data', 'cache', self.dataset_name)
 		create_dir_if_necessary(path)
-		samples_path = os.path.join(path, name + ".pkl")
-		aspects_path = os.path.join(path, name + "_aspects.pkl")
+		samples_path = os.path.join(path, name + "2.pkl")
+		aspects_path = os.path.join(path, name + "_2aspects.pkl")
 
 		if not check_if_file_exists(samples_path) or not check_if_file_exists(aspects_path):
 			return [], None
@@ -491,7 +491,7 @@ class OrganicDataset(Dataset):
 		return examples, fields
 
 	def _save(self, name, samples):
-		path = os.path.join(os.getcwd(), 'data', 'cache', self.dataset_name)
+		path = os.path.join(os.getcwd(), 'data', 'data', 'cache', self.dataset_name)
 		create_dir_if_necessary(path)
 		samples_path = os.path.join(path, name + ".pkl")
 		aspects_path = os.path.join(path, name + "_aspects.pkl")

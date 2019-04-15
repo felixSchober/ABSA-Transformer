@@ -56,7 +56,7 @@ default_params = {
 		'output_conv_padding': 0
 	},
 	'output_dropout_rate': 0.2,
-	'task': 'absa'
+	'task': 'entities'
 }
 
 hyperOpt_goodParams = {
@@ -295,7 +295,7 @@ class RunConfiguration(object):
 			# text cleaning only supported for english (organic) language
 			assert self.organic_text_cleaning == False or (self.organic_text_cleaning == True and self.language == 'en')
 
-			self.seed = 42			
+			self.seed = self._get_default('seed', 42, cast_int=True)			
 			set_seeds(self.seed)
 
 		def _get_default(self, key: str, default=None, section: Dict = None, cast_int: bool=False):
@@ -303,7 +303,7 @@ class RunConfiguration(object):
 				section = self.kwargs
 			if key in section:
 				v = section[key]
-				if cast_int:
+				if cast_int and v is not None:
 					v = int(v)
 				return v
 			return default
