@@ -4,7 +4,7 @@ import torch
 
 from torch.autograd import *
 import torchtext
-from torchtext import data
+from torchtext import data as data_t
 from stop_words import get_stop_words
 
 from data.torchtext.custom_fields import ReversibleField
@@ -28,7 +28,9 @@ def amazon_dataset(
 	data = load_splits(task, hyperparameters, root, train_file, validation_file, test_file, verbose)
 	comment_field = data['fields']['comment']
 	padding_field = data['fields']['padding']
-	aspect_sentiment_field = data['fields']['padding']
+	aspect_sentiment_field = data['fields']['aspect_sentiment']
+
+	(train, val, test) = data['splits']
 
 	
 	# use updated fields
@@ -45,7 +47,7 @@ def amazon_dataset(
 		aspect_sentiment_fields.append(f)
 
 	train_device = torch.device('cuda:0' if torch.cuda.is_available() and use_cuda else 'cpu')
-	train_iter, val_iter, test_iter = data.BucketIterator.splits(
+	train_iter, val_iter, test_iter = data_t.BucketIterator.splits(
 		(train, val, test), batch_size=batch_size, device=train_device)
 
 	# add embeddings

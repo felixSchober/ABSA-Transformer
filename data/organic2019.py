@@ -38,14 +38,15 @@ def organic_dataset(
 	data = load_splits(task, hyperparameters, root, train_file, validation_file, test_file, verbose)
 	comment_field = data['fields']['comment']
 	padding_field = data['fields']['padding']
-	aspect_sentiment_field = data['fields']['padding']
+	aspect_sentiment_field = data['fields']['aspect_sentiment']
 
 	(train, val, test) = data['splits']
 
 	# use updated fields
 	fields = train.fields
+
 	comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[pretrained_vectors])
-	padding_field.build_vocab(train.padding, val.comments, test.comments)
+	padding_field.build_vocab(train.padding, val.padding, test.padding)
 	aspect_sentiment_field.build_vocab(train.aspect_sentiments, val.aspect_sentiments, test.aspect_sentiments)
 	# id_field.build_vocab(train.id, val.id, test.id)
 
@@ -57,7 +58,7 @@ def organic_dataset(
 
 	train_device = torch.device('cuda:0' if torch.cuda.is_available() and use_cuda else 'cpu')
 	train_iter, val_iter, test_iter = data_t.BucketIterator.splits(
-		(train, val, test), batch_size=batch_size, device=train_device)
+		(train, val, test), batch_size=batch_size, device=train_device, shuffle=True)
 
 	# add embeddings
 	embedding_size = comment_field.vocab.vectors.shape[1]
