@@ -108,62 +108,62 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {5.2.3}Organic-2019 - Organic Comments}{13}{subsection.5.2.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {5.2.4}Multi-Domain Sentiment Dataset}{13}{subsection.5.2.4}
+\contentsline {subsection}{\numberline {5.2.4}Amazon Reviews Dataset}{13}{subsection.5.2.4}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5.3}Training and Evaluation}{13}{section.5.3}
+\contentsline {section}{\numberline {5.3}Training and Evaluation}{15}{section.5.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {5.3.1}Evaluation}{13}{subsection.5.3.1}
+\contentsline {subsection}{\numberline {5.3.1}Evaluation}{15}{subsection.5.3.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {5.3.2}Hardware}{15}{subsection.5.3.2}
+\contentsline {subsection}{\numberline {5.3.2}Hardware}{18}{subsection.5.3.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {5.3.3}Docker}{17}{subsection.5.3.3}
+\contentsline {subsection}{\numberline {5.3.3}Docker}{20}{subsection.5.3.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\numberline {6}Discussion of Results}{18}{chapter.6}
+\contentsline {chapter}{\numberline {6}Discussion of Results}{21}{chapter.6}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6.1}Hyper Parameter Optimization}{18}{section.6.1}
+\contentsline {section}{\numberline {6.1}Hyper Parameter Optimization}{21}{section.6.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {6.1.1}Model Parameters}{18}{subsection.6.1.1}
+\contentsline {subsection}{\numberline {6.1.1}Model Parameters}{21}{subsection.6.1.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Aspect Heads}{18}{section*.20}
+\contentsline {subsubsection}{\nonumberline Aspect Heads}{21}{section*.24}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Pointwise Layer Size}{18}{section*.21}
+\contentsline {subsubsection}{\nonumberline Pointwise Layer Size}{21}{section*.25}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Transformer Architecture}{18}{section*.22}
+\contentsline {subsubsection}{\nonumberline Transformer Architecture}{21}{section*.26}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Learning Rate Scheduler}{18}{section*.23}
+\contentsline {subsubsection}{\nonumberline Learning Rate Scheduler}{21}{section*.27}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Optimizer}{18}{section*.24}
+\contentsline {subsubsection}{\nonumberline Optimizer}{21}{section*.28}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Embedding}{18}{section*.25}
+\contentsline {subsubsection}{\nonumberline Embedding}{21}{section*.29}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {6.1.2}Data Preprocessing}{18}{subsection.6.1.2}
+\contentsline {subsection}{\numberline {6.1.2}Data Preprocessing}{21}{subsection.6.1.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Spell Checking}{18}{section*.26}
+\contentsline {subsubsection}{\nonumberline Spell Checking}{21}{section*.30}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Stop Word Removal}{18}{section*.27}
+\contentsline {subsubsection}{\nonumberline Stop Word Removal}{21}{section*.31}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Comment Clipping}{18}{section*.28}
+\contentsline {subsubsection}{\nonumberline Comment Clipping}{21}{section*.32}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6.2}Results for Named Entity Recognition}{19}{section.6.2}
+\contentsline {section}{\numberline {6.2}Results for Named Entity Recognition}{22}{section.6.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6.3}Results for Aspect-Based Sentiment Analysis}{19}{section.6.3}
+\contentsline {section}{\numberline {6.3}Results for Aspect-Based Sentiment Analysis}{22}{section.6.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {6.3.1}GermEval-2017}{19}{subsection.6.3.1}
+\contentsline {subsection}{\numberline {6.3.1}GermEval-2017}{22}{subsection.6.3.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {6.3.2}Organic-2019}{19}{subsection.6.3.2}
+\contentsline {subsection}{\numberline {6.3.2}Organic-2019}{22}{subsection.6.3.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {6.3.3}Amazon Product Reviews}{19}{subsection.6.3.3}
+\contentsline {subsection}{\numberline {6.3.3}Amazon Product Reviews}{22}{subsection.6.3.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6.4}Impact of Multitask Learning}{19}{section.6.4}
+\contentsline {section}{\numberline {6.4}Impact of Multitask Learning}{22}{section.6.4}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6.5}Impact of Transfer Learning}{19}{section.6.5}
+\contentsline {section}{\numberline {6.5}Impact of Transfer Learning}{22}{section.6.5}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\numberline {7}Conclusion}{20}{chapter.7}
+\contentsline {chapter}{\numberline {7}Conclusion}{23}{chapter.7}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {7.1}Future Work}{20}{section.7.1}
+\contentsline {section}{\numberline {7.1}Future Work}{23}{section.7.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\nonumberline List of Figures}{21}{chapter*.29}
+\contentsline {chapter}{\nonumberline List of Figures}{24}{chapter*.33}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\nonumberline List of Tables}{22}{chapter*.30}
+\contentsline {chapter}{\nonumberline List of Tables}{25}{chapter*.34}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\nonumberline Bibliography}{23}{chapter*.31}
+\contentsline {chapter}{\nonumberline Bibliography}{26}{chapter*.35}

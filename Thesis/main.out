@@ -48,7 +48,7 @@
 \BOOKMARK [2][-]{subsection.5.2.1}{Conll-2003 - Named Entity Recognition}{section.5.2}% 48
 \BOOKMARK [2][-]{subsection.5.2.2}{GermEval-2017 - Deutsche Bahn Tweets}{section.5.2}% 49
 \BOOKMARK [2][-]{subsection.5.2.3}{Organic-2019 - Organic Comments}{section.5.2}% 50
-\BOOKMARK [2][-]{subsection.5.2.4}{Multi-Domain Sentiment Dataset}{section.5.2}% 51
+\BOOKMARK [2][-]{subsection.5.2.4}{Amazon Reviews Dataset}{section.5.2}% 51
 \BOOKMARK [1][-]{section.5.3}{Training and Evaluation}{chapter.5}% 52
 \BOOKMARK [2][-]{subsection.5.3.1}{Evaluation}{section.5.3}% 53
 \BOOKMARK [2][-]{subsection.5.3.2}{Hardware}{section.5.3}% 54
@@ -66,6 +66,6 @@
 \BOOKMARK [1][-]{section.6.5}{Impact of Transfer Learning}{chapter.6}% 66
 \BOOKMARK [0][-]{chapter.7}{Conclusion}{}% 67
 \BOOKMARK [1][-]{section.7.1}{Future Work}{chapter.7}% 68
-\BOOKMARK [0][-]{chapter*.29}{List of Figures}{}% 69
-\BOOKMARK [0][-]{chapter*.30}{List of Tables}{}% 70
-\BOOKMARK [0][-]{chapter*.31}{Bibliography}{}% 71
+\BOOKMARK [0][-]{chapter*.33}{List of Figures}{}% 69
+\BOOKMARK [0][-]{chapter*.34}{List of Tables}{}% 70
+\BOOKMARK [0][-]{chapter*.35}{Bibliography}{}% 71

@@ -12,6 +12,7 @@ from data.torchtext.amazon_dataset import *
 from data.data_loader import get_embedding
 
 from misc.run_configuration import RunConfiguration
+logger = logging.getLogger(__name__)
 
 def amazon_dataset(
 				task:str,
@@ -25,6 +26,8 @@ def amazon_dataset(
 				use_cuda=True,
 				verbose=True):
 
+
+	logger.debug('Creating splits and load data')
 	data = load_splits(task, hyperparameters, root, train_file, validation_file, test_file, verbose)
 	comment_field = data['fields']['comment']
 	padding_field = data['fields']['padding']
@@ -35,7 +38,12 @@ def amazon_dataset(
 	
 	# use updated fields
 	fields = train.fields
+
+	logger.info('Building Vocabularies for comments')
+	print('Comment Vocabulary building')
 	comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[pretrained_vectors])
+	print('Comment Vocabulary building finished')
+
 	padding_field.build_vocab(train.padding, val.padding, test.padding)
 	aspect_sentiment_field.build_vocab(train.aspect_sentiments, val.aspect_sentiments, test.aspect_sentiments)
 	# id_field.build_vocab(train.id, val.id, test.id)
@@ -52,6 +60,9 @@ def amazon_dataset(
 
 	# add embeddings
 	embedding_size = comment_field.vocab.vectors.shape[1]
+
+	logger.info('Building Sentence embedding for comments')
+	print('Building Sentence embedding for comments')
 	source_embedding = get_embedding(comment_field.vocab, embedding_size, hyperparameters.embedding_type)
 
 	examples = train.examples[0:3] + val.examples[0:3] + test.examples[0:3]

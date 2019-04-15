@@ -29,6 +29,7 @@ The contraction expansion is followed by the replacement of \glspl{url} with the
 In addition any special characters are completely removed. Dashes ('-') are kept because there are compound-words which rely on dashes (e.g. non-organic).
 
 \subsubsection*{Spell Checking}
+\label{sec:05_SpellChecking}
 When writing comments in social media people tend to make spelling mistakes. Unfortunately, each spelling mistake is an out-of vocabulary word which we want to reduce as much as possible.
 Therefore, a spell checker is used to prevent these mistakes. The spell checker which is used for this step relies on the Levenshtein Distance \cite{Levenshtein1966} and a dictionary to determine if a word is spelled incorrectly and to make suggestions which word was meant originally. 
 
@@ -80,23 +81,83 @@ See section \ref{subsec:06_CommentClipping} for the evaluation of this preproces
 \subsection{Organic-2019 - Organic Comments}
 \subsection{Amazon Reviews Dataset}
 
-Taken from \cite{McAuley2015} and \cite{He2016}
+The Amazon Reviews Dataset consists of over 130 million Amazon product reviews from 1995 until 2015. Therefore, this dataset is one of the richest data sources for sentiment analysis or other related \gls{nlp} tasks. The raw data is available directly through amazon.\footnote{\hyperlink{https://s3.amazonaws.com/amazon-reviews-pds/readme.html}{https://s3.amazonaws.com/amazon-reviews-pds/readme.html}} The reviews are grouped into 45 product categories such as "Grocery", "Luggage" or "Video Games". 
 
+In 2013 McAuley and Leskovec compiled a subset of Amazon reviews \cite{McAuley2013}. This dataset contains 34,7 million reviews ranging from 1995 till 2013 grouped into 33 categories\footnote{Available through Stanford \hyperlink{https://snap.stanford.edu/data/web-Amazon.html}{https://snap.stanford.edu/data/web-Amazon.html}}. The authors also created a "Fine Food" Dataset from Amazon reviews \cite{McAuley2013a} \footnote{Available through Kaggle \hyperlink{https://www.kaggle.com/snap/amazon-fine-food-reviews}{https://www.kaggle.com/snap/amazon-fine-food-reviews}}. This dataset consists of 568454 Amazon reviews from 1995 till 2012. The domain of this specific dataset is related to the organic domain with 273 occurrences of the word 'organic'. Unfortunately, it does not contain predefined aspects so \gls{absa} is not possible without extensive pre-processing to generate aspects out of the reviews.
 
-\cite{Blitzer2007}
-\cite{Blitzer2008}
+The datasets created in 2013 contains duplicates so McAuley et. al. generated an improved Amazon Reviews dataset in 2015 without duplicates \cite{McAuley2015}\cite{He2016}. This iteration of the dataset contains 142.8 million reviews from 1996 till 2014\footnote{Available here: \hyperlink{http://jmcauley.ucsd.edu/data/amazon/}{http://jmcauley.ucsd.edu/data/amazon/}}. Due to the size of this dataset the authors provide a smaller dataset which only contains reviews from users who wrote exactly 5 reviews. This 5-core subset features 18 million reviews. The distribution of the domain categories is visualized in figure \ref{fig:05_amazonDatasetDistributin}. As one can observe the dataset is substantially skewed towards the largest domain 'books' which makes up of 49\% of the data.
 
-rating > 3 positive
-rating < 3 negative
-rating 3 neutral 			like \cite{Blitzer2007}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{figures/05_setup/05_amazonReviewsCategories}
+	\caption{Number of reviews per domain category in the amazon review dataset by McAuley et. al. \cite{McAuley2015}}
+	\label{fig:05_amazonDatasetDistributin}
+\end{figure}
 
-The Multi-Domain Sentiment Dataset contains product reviews taken from Amazon.com from many product types (domains). Some domains (books and dvds) have hundreds of thousands of reviews. Others (musical instruments) have only a few hundred. Reviews contain star ratings (1 to 5 stars) that can be converted into binary labels if needed. This page contains some descriptions about the data. If you have questions, please email Mark Dredze or John Blitzer. 
+To combat data imbalance and the sheer size of the dataset we propose a balanced subset of the 5-core dataset with 60000 reviews for each domain aside from \textit{Musical Instruments}, \textit{Amazon Instant Video}, \textit{Automotive} and \textit{Patio, Lawn and Garden}. These categories contain less than 50000 reviews so including them would skew the dataset again. In addition, we also transformed the star-rating to the common negative-neutral-positive rating schema. Similar to Blitzer et. al. we interpret $1-2$ stars as negative, 3 stars as neutral and $4-5$ stars as positive sentiment \cite{Blitzer2007}.
 
+To create a balanced dataset not only on domains but also on sentiment we sampled 20000 reviews for each sentiment for each domain. Overall, there are more positive reviews than neutral or negative reviews. Thus, some domains contain less than 20000 reviews per sentiment category. To prevent data imbalance, reviews from the remaining other sentiment categories are sampled so that each domain contains 60000 reviews in sum. This distribution and additional statistics about the dataset are documented in table \ref{tab:05_amazonDatasetStats}.
+\begin{table}	
+	\begin{tabularx}{\textwidth}{lXrrrcrr}
+		
+		\toprule
+		{} & helpful & \multicolumn{1}{c}{Pos.} & \multicolumn{1}{c}{Neu.} & \multicolumn{1}{c}{Neg.} &\multicolumn{1}{c}{stars} & \multicolumn{2}{c}{\# words} \\
+		{} &         					mean &   	Count & Count & Count &  mean 	&  mean  &     std \\
+		Domain Category             &        &            &       &       &       	&    	 &         \\
+		\midrule
+		Apps for Android            &   0.22 &   20000 &  	20000 & 20000 &    3.03 &     47 &   50 \\
+		Baby                        &   0.29 & 	17012 &  	17255 &  	17012 &    3.33 &    105 &  106 \\
+		Beauty                      &   0.32 &   20000 &  	20000 & 20000 &    3.10 &     90 &   94 \\
+		Books                       &   0.43 &   20000 &  	20000 & 20000 &    3.08 &    176 &  201 \\
+		CDs \& Vinyl                &   0.44 &   20000 &  	20000 & 20000 &    3.11 &    172 &  168 \\
+		Cell Phones \& Accessories  &   0.19 &   20000 &  	20000 & 20000 &    3.06 &     93 &  138 \\
+		Clothing Shoes \& Jewelry   &   0.26&   20000 &  	20000 & 20000 &    3.11 &     67 &   70 \\
+		Digital Music               &   0.53 &  47410 &  	6789 &  5801 &    4.19 &    202 &  190 \\
+		Electronics                 &   0.43 &   20000 &  	20000 & 20000 &    3.06 &    122 &  138 \\
+		Grocery \& Gourmet Food     &   0.33 &  28790 & 17514 & 13696 &    3.53 &    99  &   97 \\
+		Health \& Personal Care     &   0.35 &   20000 &  	20000 & 20000 &    3.09 &     95 &  126 \\
+		Home \& Kitchen             &   0.44 &   20000 &  	20000 & 20000 &    3.08 &    104 &  110 \\
+		Kindle Store                &   0.35 &   20000 &  	20000 & 20000 &    3.07 &    111 &  131 \\
+		Movies \& TV                &   0.39 &   20000 &  	20000 & 20000 &    3.07 &    184 &  198 \\
+		Office Products             &   0.29 &  45342 &  5060 & 2856 &    4.35 &    148 &  164 \\
+		Pet Supplies                &   0.27 &  26412 & 15933 & 17655 &    3.35 &     91 &   96 \\
+		Sports \& Outdoors          &   0.30 &  20751 & 20000 & 19249 &    3.14 &     94 &  111 \\
+		Tools \& Home Impr.  		&   0.40 &  39126 & 10769 & 10105 &    3.90 &    111 &  134 \\
+		Toys \& Games               &   0.32 &  11005 & 16357 & 11005 &    3.70 &    108 &  114 \\
+		Video Games                 &   0.41 &   20000 &  	20000 & 20000 &    3.07 &    226 &  267 \\
+		\midrule
+		Total						&	0.35 & 	   506202 &	349677& 337379&    3.31 &	 122 &  151 \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Dataset statistics for the generated Amazon review subset for the domain categories. This table contains mean helpfulness rating; number of positive reviews; number of neutral reviews; number of negative reviews; mean star rating; mean number of words per review; standard deviation of the number of words per review }
+		\label{tab:05_amazonDatasetStats}
+\end{table}
 
-other applicatiosn:
-\cite{Blitzer2008}
+\subsubsection*{Token Removal}
+There are over 145 million words in the dataset. These words combine into a vocabulary size of 1.6 million unique tokens and consequently into a very large embedding layer. {(In comparison: the Organic2019 dataset has a vocabulary size of only 11685.)} Two techniques were used to reduce the vocabulary size:
 
+\begin{enumerate}
+	\item Spell checking words
+	\item Removing rare tokens
+\end{enumerate}
 
+The process for the first technique is described in section \ref{sec:05_SpellChecking}. Another way to reduce the vocabulary size is by removing tokens, that only occur once or twice. These tokens make up the majority of the vocabulary size but only a small percentage of the overall word count. Table \ref{tab:05_amazonVocabSize} shows the different vocabulary sizes after the application of the reduction techniques.
+
+% TODO: Fill blanks
+\begin{table}[]
+	\centering
+	\begin{tabular}{lrrrrrr}
+			\toprule
+			& Original  & SP & SP + TR-1 1 & TR-1 & TR-2 & TR-3 \\
+			\midrule
+			Word Count      & 145740233 & 0              & 0                                & 0               & 0               & 0               \\
+			Vocabulary Size & 1594742   & 0              & 0                                & 0               & 0               & 0            \\  
+			\bottomrule 	
+	\end{tabular}
+
+	\caption{Different vocabulary size reduction techniques. \textit{SP} is the spell checked dataset; \textit{TR-}$n$ is the token removal technique were $n$ is the number times, tokens can occur in the dataset.}
+	\label{tab:05_amazonVocabSize}
+\end{table}
 
 \section{Training and Evaluation}
 \label{sec:05_TrainingAndEvaluation}
