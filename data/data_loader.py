@@ -221,7 +221,7 @@ class Dataset(object):
 		return result
 
 	def _calculate_dataset_stats(self):
-
+		self.class_weights = []
 		result_str = '\n\n'
 		target_sentiment_distribution = []
 		target_sentiment_distribution_labels = []
