@@ -141,21 +141,22 @@ There are over 145 million words in the dataset. These words combine into a voca
 	\item Removing rare tokens
 \end{enumerate}
 
-The process for the first technique is described in section \ref{sec:05_SpellChecking}. Another way to reduce the vocabulary size is by removing tokens, that only occur once or twice. These tokens make up the majority of the vocabulary size but only a small percentage of the overall word count. Table \ref{tab:05_amazonVocabSize} shows the different vocabulary sizes after the application of the reduction techniques.
+The process for the first technique is described in section \ref{sec:05_SpellChecking}. Another way to reduce the vocabulary size is by removing tokens, that only occur once or twice. These tokens make up the majority of the vocabulary size but only a small percentage of the overall word count. Table \ref{tab:05_amazonVocabSize} shows the proportion of tokens which only occur 1, 2, or 3 times. As demonstrated in the table, infrequent tokens are very rare {(all the tokens with one occurrence together make up only 0.33\% of the whole dataset)}. Yet, infrequent tokens make up over 74\% of the total vocabulary size. Removing all tokens with one occurrence reduces the vocabulary size by 74\%.
 
+Most of these rare tokens are either incorrectly written {(\textit{nthis})}, are part of structural elements such as headings {(review=======pros)} or are other unidentifiable characters and digits ({\textit{\^{}\_\^{}b4}}).
 % TODO: Fill blanks
 \begin{table}[]
 	\centering
 	\begin{tabular}{lrrrrrr}
 			\toprule
-			& Original  & SP & SP + TR-1 1 & TR-1 & TR-2 & TR-3 \\
+			& Original  & SP & SP + TR-1 & TR-1 & TR-2 & TR-3 \\
 			\midrule
-			Word Count      & 145740233 & 0              & 0                                & 0               & 0               & 0               \\
-			Vocabulary Size & 1594742   & 0              & 0                                & 0               & 0               & 0            \\  
+			Word Count      & 145740233 & 0              & 0             & 0.329\%         & 0.389\%         & 0.414\%            \\
+			Vocabulary Size & 1594742   & 0              & 0             & 62.97\%         & 74.41\%         & 79.32\%      \\  
 			\bottomrule 	
 	\end{tabular}
 
-	\caption{Different vocabulary size reduction techniques. \textit{SP} is the spell checked dataset; \textit{TR-}$n$ is the token removal technique were $n$ is the number times, tokens can occur in the dataset.}
+	\caption{Different vocabulary size reduction techniques. This table shows the proportion of tokens that occur only 1, 2 or 3 times in relation to the total word count and the vocabulary size. \textit{SP} is the spell checked dataset; \textit{TR-}$n$ is the token removal technique were $n$ is the number times, tokens can occur in the dataset.}
 	\label{tab:05_amazonVocabSize}
 \end{table}
 
