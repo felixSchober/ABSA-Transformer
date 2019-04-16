@@ -72,7 +72,7 @@
       \field{pages}{129\bibrangedash 136}
       \range{pages}{8}
       \verb{file}
-      \verb ::
+      \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Blitzer et al. - 2008 - Learning Bounds for Domain Adaptation.pdf:pdf
       \endverb
       \verb{url}
       \verb https://papers.nips.cc/paper/3212-learning-bounds-for-domain-adaptation.pdf
@@ -111,13 +111,14 @@
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Automatic sentiment classification has been extensively studied and applied in recent years. However, sentiment is expressed differently in different domains, and annotating corpora for every possible domain of interest is impractical. We investigate domain adaptation for sentiment classifiers, focusing on online reviews for different types of products. First, we extend to sentiment classification the recently-proposed structural correspondence learning (SCL) algorithm, reducing the relative error due to adaptation between domains by an average of 30{\%} over the original SCL algorithm and 46{\%} over a supervised baseline. Second, we identify a measure of domain similarity that correlates well with the potential for adaptation of a classifier from one domain to another. This measure could for instance be used to select a small set of domains to annotate whose trained classifiers would transfer well to many other domains.}
+      \field{annotation}{introduction domain adaptation}
       \field{booktitle}{Proceedings of the 45th Annual Meeting of the Association of Computational Linguistics}
       \field{title}{{Biographies, Bollywood, Boom-boxes and Blenders: Domain Adaptation for Sentiment Classification}}
       \field{year}{2007}
       \field{pages}{440\bibrangedash 447}
       \range{pages}{8}
       \verb{file}
-      \verb ::
+      \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Blitzer, Dredze, Pereira - 2007 - Biographies, Bollywood, Boom-boxes and Blenders Domain Adaptation for Sentiment Classification.pdf:pdf
       \endverb
       \verb{url}
       \verb http://ida.
@@ -146,7 +147,7 @@
       \field{type}{Ph.D thesis}
       \field{year}{1997}
       \verb{file}
-      \verb ::
+      \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Caruana - 1997 - Multitask Learning.pdf:pdf
       \endverb
       \verb{url}
       \verb http://www8.cs.umu.se/research/ifor/dl/LEARNING/multitask%20learning.pdf
@@ -179,6 +180,84 @@
       \verb{url}
       \verb http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.57.3196
       \endverb
+    \endentry
+    \entry{He2016}{article}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=1b8a48b9ddb1c09f1c48bd467d99488a}{%
+           family={He},
+           familyi={H\bibinitperiod},
+           given={Ruining},
+           giveni={R\bibinitperiod}}}%
+        {{uniquename=0,hash=24f98302ee924662159ce29687c18e4e}{%
+           family={McAuley},
+           familyi={M\bibinitperiod},
+           given={Julian},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{fcd9fe5c698fb1a95b86c14df5013495}
+      \strng{fullhash}{fcd9fe5c698fb1a95b86c14df5013495}
+      \strng{authornamehash}{fcd9fe5c698fb1a95b86c14df5013495}
+      \strng{authorfullhash}{fcd9fe5c698fb1a95b86c14df5013495}
+      \field{sortinit}{H}
+      \field{sortinithash}{2f664b453ec75da1fe3804ca92633405}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Building a successful recommender system depends on understanding both the dimensions of people's preferences as well as their dynamics. In certain domains, such as fashion, modeling such preferences can be incredibly difficult, due to the need to simultaneously model the visual appearance of products as well as their evolution over time. The subtle semantics and non-linear dynamics of fashion evolution raise unique challenges especially considering the sparsity and large scale of the underlying datasets. In this paper we build novel models for the One-Class Collaborative Filtering setting, where our goal is to estimate users' fashion-aware personalized ranking functions based on their past feedback. To uncover the complex and evolving visual factors that people consider when evaluating products, our method combines high-level visual features extracted from a deep convolutional neural network, users' past feedback, as well as evolving trends within the community. Experimentally we evaluate our method on two large real-world datasets from Amazon.com, where we show it to outperform state-of-the-art personalized ranking measures, and also use it to visualize the high-level fashion trends across the 11-year span of our dataset.}
+      \field{eprinttype}{arXiv}
+      \field{isbn}{9781450341431}
+      \field{title}{{Ups and Downs: Modeling the Visual Evolution of Fashion Trends with One-Class Collaborative Filtering}}
+      \field{year}{2016}
+      \verb{doi}
+      \verb 10.1145/2872427.2883037
+      \endverb
+      \verb{eprint}
+      \verb 1602.01585
+      \endverb
+      \verb{file}
+      \verb :C$\backslash$:/Users/felix/OneDrive/Desktop/1602.01585.pdf:pdf
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/1602.01585%7B%5C%%7D0Ahttp://dx.doi.org/10.1145/2872427.2883037
+      \endverb
+      \keyw{fashion evolution,personalized ranking,recommender systems}
+    \endentry
+    \entry{Iyer1999}{article}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=45f090d988ecb270e6a2c5523880020f}{%
+           family={Iyer},
+           familyi={I\bibinitperiod},
+           given={Mahesh\bibnamedelima S.},
+           giveni={M\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{uniquename=0,hash=a5094db438940abc6cbb77546c49dc00}{%
+           family={Rhinehart},
+           familyi={R\bibinitperiod},
+           given={R.\bibnamedelimi Russell},
+           giveni={R\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+      }
+      \strng{namehash}{ca76a1fe1142513355b4e3785b60ec15}
+      \strng{fullhash}{ca76a1fe1142513355b4e3785b60ec15}
+      \strng{authornamehash}{ca76a1fe1142513355b4e3785b60ec15}
+      \strng{authorfullhash}{ca76a1fe1142513355b4e3785b60ec15}
+      \field{sortinit}{I}
+      \field{sortinithash}{a3dcedd53b04d1adfd5ac303ecd5e6fa}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Conventional neural network training algorithms often get stuck in local minima. To find the global optimum, training is conventionally repeated with 10, or so, random starting values for the weights. Here we develop an analytical procedure to determine how many times a neural network needs to be trained, with random starting weights, to ensure that the best of those is within a desirable lower percentile of all possible trainings, with a certain level of confidence. The theoretical developments are validated by experimental results. While applied to neural network training, the method is generally applicable to nonlinear optimization.}
+      \field{issn}{10459227}
+      \field{journaltitle}{IEEE Transactions on Neural Networks}
+      \field{number}{2}
+      \field{title}{{A method to determine the required number of neural-network training repetitions}}
+      \field{volume}{10}
+      \field{year}{1999}
+      \field{pages}{427\bibrangedash 432}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1109/72.750573
+      \endverb
+      \verb{file}
+      \verb :C$\backslash$:/Users/felix/Downloads/00750573.pdf:pdf
+      \endverb
+      \keyw{Neural-network training,Steady-state identification,Weakest-link-in-a-chain}
     \endentry
     \entry{LeCun;1990}{article}{}
       \name{author}{6}{}{%
@@ -270,6 +349,149 @@
       \endverb
       \verb{url}
       \verb https://nymity.ch/sybilhunting/pdf/Levenshtein1966a.pdf
+      \endverb
+    \endentry
+    \entry{McAuley2013a}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=24f98302ee924662159ce29687c18e4e}{%
+           family={McAuley},
+           familyi={M\bibinitperiod},
+           given={Julian},
+           giveni={J\bibinitperiod}}}%
+        {{uniquename=0,hash=900d107125ff0ca84698cb909e4f6c51}{%
+           family={Leskovec},
+           familyi={L\bibinitperiod},
+           given={Jure},
+           giveni={J\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Rio de Janeiro, Brazil}%
+      }
+      \list{publisher}{1}{%
+        {ACM}%
+      }
+      \strng{namehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \strng{fullhash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \strng{authornamehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \strng{authorfullhash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \field{sortinit}{M}
+      \field{sortinithash}{c26a05ef03e4429073ed5c825140fac3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Recommending products to consumers means not only understanding their tastes, but also understanding their level of experience. For example, it would be a mistake to recommend the iconic film Seven Samurai simply because a user enjoys other action movies; rather, we might conclude that they will eventually enjoy it -- once they are ready. The same is true for beers, wines, gourmet foods -- or any products where users have acquired tastes: the `best' products may not be the most `accessible'. Thus our goal in this paper is to recommend products that a user will enjoy now, while acknowledging that their tastes may have changed over time, and may change again in the future. We model how tastes change due to the very act of consuming more products -- in other words, as users become more experienced. We develop a latent factor recommendation system that explicitly accounts for each user's level of experience. We find that such a model not only leads to better recommendations, but also allows us to study the role of user experience and expertise on a novel dataset of fifteen million beer, wine, food, and movie reviews.}
+      \field{booktitle}{WWW '13 Proceedings of the 22Nd International Conference on World Wide Web}
+      \field{eprinttype}{arXiv}
+      \field{month}{3}
+      \field{title}{{From Amateurs to Connoisseurs: Modeling the Evolution of User Expertise through Online Reviews}}
+      \field{year}{2013}
+      \field{pages}{897\bibrangedash 908}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.1145/2488388.2488466
+      \endverb
+      \verb{eprint}
+      \verb 1303.4402
+      \endverb
+      \verb{file}
+      \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/McAuley, Leskovec - 2013 - From Amateurs to Connoisseurs Modeling the Evolution of User Expertise through Online Reviews.pdf:pdf
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/1303.4402
+      \endverb
+      \keyw{expertise,recommender systems,user modeling}
+    \endentry
+    \entry{McAuley2013}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=24f98302ee924662159ce29687c18e4e}{%
+           family={McAuley},
+           familyi={M\bibinitperiod},
+           given={Julian},
+           giveni={J\bibinitperiod}}}%
+        {{uniquename=0,hash=900d107125ff0ca84698cb909e4f6c51}{%
+           family={Leskovec},
+           familyi={L\bibinitperiod},
+           given={Jure},
+           giveni={J\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Hong Kong, China}%
+      }
+      \list{publisher}{1}{%
+        {ACM}%
+      }
+      \strng{namehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \strng{fullhash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \strng{authornamehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \strng{authorfullhash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \field{sortinit}{M}
+      \field{sortinithash}{c26a05ef03e4429073ed5c825140fac3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{In order to recommend products to users we must ultimately predict how a user will respond to a new product. To do so we must uncover the implicit tastes of each user as well as the properties of each product. For example, in order to predict whether a user will enjoy Harry Potter, it helps to identify that the book is about wiz- ards, as well as the user's level of interest in wizardry. User feedback is required to discover these latent product and user dimensions. Such feedback often comes in the form of a numeric rating accompanied by review text. However, traditional methods often discard review text, which makes user and product latent dimensions difficult to interpret, since they ignore the very text that justifies a user's rating. In this paper, we aim to combine latent rating dimensions (such as those of latent-factor recommender systems) with latent review topics (such as those learned by topic models like LDA). Our approach has several advantages. Firstly, we ob- tain highly interpretable textual labels for latent rating dimensions, which helps us to ‘justify' ratings with text. Secondly, our approach more accurately predicts product ratings by harnessing the informa- tion present in review text; this is especially true for new products and users, who may have too few ratings to model their latent fac- tors, yet may still provide substantial information from the text of even a single review. Thirdly, our discovered topics can be used to facilitate other tasks such as automated genre discovery, and to identify useful and representative reviews.}
+      \field{booktitle}{RecSys '13 Proceedings of the 7th ACM conference on Recommender systems}
+      \field{isbn}{9781450324090}
+      \field{title}{{Hidden Factors and Hidden Topics: Understanding Rating Dimensions with Review Text}}
+      \field{year}{2013}
+      \field{pages}{165\bibrangedash 172}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1145/2507157.2507163
+      \endverb
+      \verb{file}
+      \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Mcauley, Leskovec - Unknown - Hidden Factors and Hidden Topics Understanding Rating Dimensions with Review Text.pdf:pdf
+      \endverb
+      \verb{url}
+      \verb http://dx.doi.org/10.1145/2507157.2507163.
+      \endverb
+      \keyw{recommender systems,topic models}
+    \endentry
+    \entry{McAuley2015}{article}{}
+      \name{author}{4}{}{%
+        {{uniquename=0,hash=24f98302ee924662159ce29687c18e4e}{%
+           family={McAuley},
+           familyi={M\bibinitperiod},
+           given={Julian},
+           giveni={J\bibinitperiod}}}%
+        {{uniquename=0,hash=d3d8dd6d94d65c683e17bbbc8a84da47}{%
+           family={Targett},
+           familyi={T\bibinitperiod},
+           given={Christopher},
+           giveni={C\bibinitperiod}}}%
+        {{uniquename=0,hash=4babe5a0322188f1800f7bf84fa9898e}{%
+           family={Shi},
+           familyi={S\bibinitperiod},
+           given={Qinfeng},
+           giveni={Q\bibinitperiod}}}%
+        {{uniquename=0,hash=b53a0ea70213607fcdf8c0d7e4f957c8}{%
+           family={Hengel},
+           familyi={H\bibinitperiod},
+           given={Anton},
+           giveni={A\bibinitperiod},
+           prefix={van\bibnamedelima den},
+           prefixi={v\bibinitperiod\bibinitdelim d\bibinitperiod}}}%
+      }
+      \strng{namehash}{a5c4f433396f437b34ee954748697db3}
+      \strng{fullhash}{a5c4f433396f437b34ee954748697db3}
+      \strng{authornamehash}{a5c4f433396f437b34ee954748697db3}
+      \strng{authorfullhash}{a5c4f433396f437b34ee954748697db3}
+      \field{sortinit}{M}
+      \field{sortinithash}{c26a05ef03e4429073ed5c825140fac3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Humans inevitably develop a sense of the relationships between objects, some of which are based on their appearance. Some pairs of objects might be seen as being alternatives to each other (such as two pairs of jeans), while others may be seen as being complementary (such as a pair of jeans and a matching shirt). This information guides many of the choices that people make, from buying clothes to their interactions with each other. We seek here to model this human sense of the relationships between objects based on their appearance. Our approach is not based on fine-grained modeling of user annotations but rather on capturing the largest dataset possible and developing a scalable method for uncovering human notions of the visual relationships within. We cast this as a network inference problem defined on graphs of related images, and provide a large-scale dataset for the training and evaluation of the same. The system we develop is capable of recommending which clothes and accessories will go well together (and which will not), amongst a host of other applications.}
+      \field{eprinttype}{arXiv}
+      \field{title}{{Image-based Recommendations on Styles and Substitutes}}
+      \field{year}{2015}
+      \field{pages}{1\bibrangedash 11}
+      \range{pages}{11}
+      \verb{eprint}
+      \verb 1506.04757
+      \endverb
+      \verb{file}
+      \verb :C$\backslash$:/Users/felix/OneDrive/Desktop/1506.04757.pdf:pdf
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/1506.04757
       \endverb
     \endentry
     \entry{Plank}{report}{}

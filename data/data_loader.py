@@ -93,12 +93,7 @@ class Dataset(object):
 		self.t_heads_weights: List[float] = []
 
 		self.majority_class_baseline = 0.0
-
-		if self.verbose:
-			# create an image folder
-			self.img_stats_folder = os.path.join(self.data_path, 'stats')
-			create_dir_if_necessary(self.img_stats_folder)
-				
+		
 
 	def load_data(self,
 				loader,                
@@ -106,6 +101,11 @@ class Dataset(object):
 				verbose=True):
 
 		self.verbose = verbose
+
+		if self.verbose:
+			# create an image folder
+			self.img_stats_folder = os.path.join(self.data_path, 'stats')
+			create_dir_if_necessary(self.img_stats_folder)
 
 		self.logger.info(f'Getting {self.pretrained_word_embeddings} with dimension {self.pretrained_word_embeddings_dim}')
 		word_vectors: vocab
