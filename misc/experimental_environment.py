@@ -115,6 +115,10 @@ class Experiment(object):
 		print(rc)
 
 		logger.debug('Load dataset')
+
+		# time dataset loading
+		ds_start = time.time()
+
 		try:
 			dataset = self.load_dataset(rc, dataset_logger, rc.task)
 		except Exception as err:
@@ -124,7 +128,10 @@ class Experiment(object):
 				'status': STATUS_FAIL,
 				'eval_time': time.time() - run_time
 			}
-		logger.debug('dataset loaded')
+		ds_end = time.time()
+
+		logger.debug(f'dataset loaded. Duration: {ds_end - ds_start}')
+		print(f'dataset loaded. Duration: {ds_end - ds_start}')
 		logger.debug('Load model')
 
 		try:
@@ -142,7 +149,9 @@ class Experiment(object):
 		logger.debug('Begin training')
 		model = None
 		try:
+			tr_start = time.time()
 			result = trainer.train(use_cuda=rc.use_cuda, perform_evaluation=False)
+			tr_end = time.time()
 			model = result['model']
 		except Exception as err:
 			print('Exception while training: ' + str(err))
@@ -153,6 +162,8 @@ class Experiment(object):
 				'best_loss': trainer.get_best_loss(),
 				'best_f1': trainer.get_best_f1()
 			}
+		logger.info(f'Training duration was {tr_end - tr_start}')
+		print(f'Training duration was {tr_end - tr_start}')
 
 		if math.isnan(trainer.get_best_loss()):
 			print('Loss is nan')
@@ -262,7 +273,7 @@ class Experiment(object):
 			logger.exception('Could not pickle dataframe')
 
 		print('TEST F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
-		self.logger.info('\n' + str(self.data_frame.test_f1.describe()))
+		logger.info('\n' + str(self.data_frame.test_f1.describe()))
 		return self.data_frame
 
 

@@ -31,22 +31,22 @@ In addition any special characters are completely removed. Dashes ('-') are kept
 \subsubsection*{Spell Checking}
 \label{sec:05_SpellChecking}
 When writing comments in social media people tend to make spelling mistakes. Unfortunately, each spelling mistake is an out-of vocabulary word which we want to reduce as much as possible.
-Therefore, a spell checker is used to prevent these mistakes. The spell checker which is used for this step relies on the Levenshtein Distance \cite{Levenshtein1966} and a dictionary to determine if a word is spelled incorrectly and to make suggestions which word was meant originally. 
 
-hunspell taste/flavor -> flavorless
-GMOs -> G Mos
-Coca~Cola -> Chocolate
-didn -> did
+Therefore, a spell checker is used to prevent these mistakes. The first spell checker\footnote{PySpellchecker: \hyperlink{https://pyspellchecker.readthedocs.io/en/latest/}{https://pyspellchecker.readthedocs.io/en/latest/}} which was evaluated relies on the Levenshtein Distance \cite{Levenshtein1966} and a dictionary to determine if a word is spelled incorrectly and to make suggestions which word was meant originally. Although, word replacement suggestions are good, the spell checking is slow especially with large dictionaries.
 
-slow
+The second spell checker is called Hunspell developed by László Németh\footnote{Hunspell: \hyperlink{http://hunspell.github.io/}{http://hunspell.github.io/}}. Hunspell is used in a variety of open- and closed sourced projects such as OpenOffice, Google Chrome or macOS. Hunspell also utilizes the Levenshtein Distance in addition to several other measurements. Both spell checkers suffer from false positives {(word is incorrectly flagged as negative)} as well as incorrect suggestions. Below are examples of Hunspells suggestions for words it did not recognize:
 
-not good
+\begin{itemize}
+	\item taste/flavor -> flavorless
+	\item GMOs -> G Mos
+	\item Coca~Cola -> Chocolate
+	\item didn -> did
+\end{itemize}
 
-edit distnace not good measure
-lot of false positives
+All of the above replacements are very bad because they change the meaning of the entire sentence.
 
+Nevertheless, in terms of vocabulary size reduction they are clearly outperforming other techniques as table \ref{tab:05_amazonVocabSize} demonstrates. Running Hunspell on the Amazon dataset reduces the original vocabulary size of 1.6 Million by over 80\% to about 311,000 unique words. In addition, as column \textit{SP + TR-1} shows there are no tokens which only appear once. The reason for this is, that Hunspell always suggests something. Even words like \textit{\^{}\_\^{}b4} are replaced by new words even if it would make more sense to delete those words altogether.
 
-Show table with results: out of vocabulary words before and after
 
 \subsubsection*{Stemming and Lemmatization}
 
@@ -134,28 +134,29 @@ To create a balanced dataset not only on domains but also on sentiment we sample
 \end{table}
 
 \subsubsection*{Token Removal}
-There are over 145 million words in the dataset. These words combine into a vocabulary size of 1.6 million unique tokens and consequently into a very large embedding layer. {(In comparison: the Organic2019 dataset has a vocabulary size of only 11685.)} Two techniques were used to reduce the vocabulary size:
+There are over 145 million words in the dataset. These words combine into a vocabulary size of 1.6 million unique tokens and consequently into a very large embedding layer. {(In comparison: the Organic2019 dataset has a vocabulary size of just 11,685.)} Two techniques were used to reduce the vocabulary size:
 
 \begin{enumerate}
 	\item Spell checking words
 	\item Removing rare tokens
 \end{enumerate}
 
-The process for the first technique is described in section \ref{sec:05_SpellChecking}. Another way to reduce the vocabulary size is by removing tokens, that only occur once or twice. These tokens make up the majority of the vocabulary size but only a small percentage of the overall word count. Table \ref{tab:05_amazonVocabSize} shows the different vocabulary sizes after the application of the reduction techniques.
+The process for the first technique is described in section \ref{sec:05_SpellChecking}. Another way to reduce the vocabulary size is by removing tokens, that only occur once or twice. These tokens make up the majority of the vocabulary size but only a small percentage of the overall word count. Table \ref{tab:05_amazonVocabSize} shows the proportion of tokens which only occur 1, 2, or 3 times. As demonstrated in the table, infrequent tokens are very rare {(all the tokens with one occurrence make up only 0.33\% of the whole dataset)}. Yet, infrequent tokens make up over 74\% of the total vocabulary size. Removing all tokens with one occurrence, therefore reduces the vocabulary size by 74\% but only 0.33\% of information is lost.
 
-% TODO: Fill blanks
+Most of these rare tokens are either incorrectly written {(\textit{nthis})}, are part of structural elements such as headings {(\textit{review=======pros})} or are other unidentifiable characters and digits ({\textit{\^{}\_\^{}b4}}).
+
 \begin{table}[]
 	\centering
 	\begin{tabular}{lrrrrrr}
 			\toprule
-			& Original  & SP & SP + TR-1 1 & TR-1 & TR-2 & TR-3 \\
+							& Original  	& SP & SP + TR-1 & TR-1 & TR-2 & TR-3 \\
 			\midrule
-			Word Count      & 145740233 & 0              & 0                                & 0               & 0               & 0               \\
-			Vocabulary Size & 1594742   & 0              & 0                                & 0               & 0               & 0            \\  
+			Word Count      &148,129,490 	& -              & 0\%           & 0.329\%         & 0.389\%         & 0.414\%            \\
+			Vocabulary Size & 1,594,742   	& 80.51\%        & 80.51\% 		 & 62.97\%         & 74.41\%         & 79.32\%      \\  
 			\bottomrule 	
 	\end{tabular}
 
-	\caption{Different vocabulary size reduction techniques. \textit{SP} is the spell checked dataset; \textit{TR-}$n$ is the token removal technique were $n$ is the number times, tokens can occur in the dataset.}
+	\caption{Different vocabulary size reduction techniques. This table shows the proportion of tokens that occur only 1, 2 or 3 times in relation to the total word count and the vocabulary size. \textit{SP} is the spell checked dataset; \textit{TR-}$n$ is the token removal technique were $n$ is the number times, tokens can occur in the dataset.}
 	\label{tab:05_amazonVocabSize}
 \end{table}
 

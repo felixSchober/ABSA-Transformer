@@ -86,7 +86,7 @@ class CommentWiseSumLogSoftmax(nn.Module):
 			transformed_mask = mask.squeeze(1).unsqueeze(-1)
 			logits.masked_fill(transformed_mask == 0, 0)
 
-		logits = torch.sum(logits, dim=1) / logits.shape[1]
+		logits = torch.sum(logits, dim=1) / logits.shape[1] # before sum, logits have shape [12, 113, 4]
 		probs = F.log_softmax(logits, dim=-1)
 
 		return probs

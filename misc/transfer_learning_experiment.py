@@ -133,7 +133,7 @@ class TransferLearningExperiment(object):
 
 		for i in dataset_generator:
 			logger.debug(f'Load model [{i}/{len(self.dsls)}]')
-			print(f'Load model [{i}/{len(self.dsls)}]')
+			print(f'Load model [{i+1}/{len(self.dsls)}]')
 
 			try:
 				trainer = self.load_model(self.current_dataset, rc, experiment_name, i)
@@ -185,7 +185,7 @@ class TransferLearningExperiment(object):
 				}
 			print(f'VAL f1\t{trainer.get_best_f1()} - ({result[1][1]})')
 			print(f'VAL loss\t{trainer.get_best_loss()}')
-			result.append({
+			results.append({
 					'loss': result[1][0],
 					'status': STATUS_OK,
 					'eval_time': time.time() - run_time,
@@ -270,7 +270,7 @@ class TransferLearningExperiment(object):
 			logger.exception('Could not pickle dataframe')
 
 		print('TEST F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
-		self.logger.info('\n' + str(self.data_frame.test_f1.describe()))
+		logger.info('\n' + str(self.data_frame.test_f1.describe()))
 		return self.data_frame
 
 
