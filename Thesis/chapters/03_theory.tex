@@ -54,11 +54,19 @@ There are several reasons why the \gls{mtl} paradigm performs so well. For insta
 
 \subsection{Improvements through Data Augmentation}
 
-Secondly, Multi-Task Learning increases the number of available data points for training. All tasks share a common representation. While training one task all other tasks are also implicitly trained through the common representation. Furthermore, each new task also introduces new noise. Traditionally, a model tries to learn by ignoring the noise from its data. However, if the model does not have enough training samples it will overfit because it focuses too much on the noise to explain the data. By introducing additional tasks, new data and therefore new noise is introduced which the model has to try and ignore \cite{Ruder2017}.
+Secondly, Multi-Task Learning increases the number of available data points for training. All tasks share a common representation. While training one task all other tasks are also implicitly trained through the common representation.
 
-Rei makes use of this aspect and proposed a sequence labeling framework which uses a secondary, unsupervised word prediction task to augment other tasks such as \gls{ner} or chunking. They show that by including the word prediction the auxiliary task performance is improved for all sequence labeling benchmarks they tried \cite{Rei2017}.
+\subsubsection*{Statistical Data Amplification}
 
-Similarily, Plank et al. show that learning to predict word-frequencies along with \gls{pos}-tagging also improves the total model performance \cite{Plank}. They argue that predicting word frequencies helps to learn the differentiation between rare and common words.
+Each new task also introduces new noise. Traditionally, a model tries to learn by ignoring the noise from its data. However, if the model does not have enough training samples it will overfit because it focuses too much on the noise to explain the data. By introducing additional tasks, new data and therefore new noise is introduced which the model has to try and ignore \cite{Ruder2017}. This aspect is called \textit{Statistical Data Amplification}\cite{Caruana1995a}.
+
+\subsubsection*{Blocking Data Amplification}
+
+\textit{Blocking Data Amplification} occurs when there is little or no noise. Consider the simple example from Caruana \cite{Caruana1995a} that there are two tasks $T$ and $T'$ and common features $F$. The first task $T$ is $T = A \land F $ and the second task $T'$ is $T' = \neg A \land F$. For $A=0$ only $T$ uses feature $F$ and $T'$ does not and for $A=1$ it's the other way around. By training on both tasks $F$ is used no matter what value $A$ takes. 
+
+Rei makes use of these aspects and proposed a sequence labeling framework which uses a secondary, unsupervised word prediction task to augment other tasks such as \gls{ner} or chunking. They show that by including the word prediction the auxiliary task performance is improved for all sequence labeling benchmarks they tried \cite{Rei2017}.
+
+Similarly, Plank et al. show that learning to predict word-frequencies along with \gls{pos}-tagging also improves the total model performance \cite{Plank}. They argue that predicting word frequencies helps to learn the differentiation between rare and common words.
 
 
 \subsection{Architecture}
@@ -68,6 +76,7 @@ The easiest way to compute the loss for a hard parameter sharing \gls{mtl} archi
 
 %TODO: add Equation for MTL losses
 
+% TODO: redo figure 
 \begin{figure}[ht]
 	\centering
 	\includegraphics[scale=0.5]{figures/03_theory/03_mtl_architecture}
@@ -80,7 +89,30 @@ The easiest way to compute the loss for a hard parameter sharing \gls{mtl} archi
 \section{Transfer Learning}
 \label{sec:TransferLearning}
 
-\section{Optimization}
+In 1991, Pratt et al. suggested to transfer information encoded in a neural network by reusing the network weights in a new network \cite{Pratt1991}. They show that even accounting for the training time of the source network they achieved significant speedups when training a target network compared to random weight initialization.
+
+Yosinski et al. provide a more modern definition: First, a base network is trained on a base dataset. Then, the learned features {(the knowledge)} of the base network is transfered to a second target network which is then trained on the target dataset and task \cite{Yosinski2014}. This process works well if the base and target dataset and tasks are similar.
+
+Goodfellow et al. give a more general definition. They define transfer learning as the transfer of previously learned knowledge from one or multiple sources to a target domain with fewer examples \cite{Goodfellow2016}.
+
+Figure \ref{fig:03_transferLearning} communicates those definitions. 
+% TODO: redo figure 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[scale=0.5]{figures/03_theory/03_transferLearning}
+	\caption{Difference in traditional machine learning were each model uses its own dataset and task. In contrast, in transfer learning a model is first trained on source tasks and part of the features are transformed to the target model to facilitate training. Source: Pan and Yang \cite{Pan2010}}
+	\label{fig:03_transferLearning}
+\end{figure}
+
+In practice it is very expensive to collect or recollect training data for every new domain. Transfer learning makes it possible to transfer knowledge from a larger dataset to a smaller dataset which greatly reduces the labeling effort \Cite{Blitzer2007}. When the target dataset has significantly fewer examples than the base dataset studies showed that it is possible to train large networks without overfitting \cite{Donahue2013}\cite{Zeiler2014}. Usually, after the base model has been trained on the large dataset, the first $n$ layers of the base model are copied over as the first $n$ layers of the target model. The remaining layers of the target model are then randomly initialized and trained. The weights of the $n$ layers from the base model can either be \textit{frozen} or \textit{finetuned} along the rest of the target model. If the target dataset has few samples compared to the number of parameters in the first $n$ layers, finetuning can actually result in overfitting which is a reason why the error during target training is often not backpropagated to the first $n$ layers \cite{Yosinski2014}.
+
+\subsection*{Pre Training}
+The most common way to employ transfer learning is pre-training. 
+Pre-training is often used in image recognition were interestingly, the first few layers generally form into the same feature regardless of the domain or task \cite{Yosinski2014}. Consequently, researchers are able to exploit this by taking the first layers from a model which was previously trained on a large dataset like ImageNet \cite{Russakovsky2015} and use these weights for their tasks which might have less examples.
+
+This paradigm can also be applied on natural language processing. Understanding what words mean is the fundamental problem every \gls{nlp} model has to solve. Therefore, it is sensible to use an embedding layer which has been pre-trained on large datasets like common crawl which contain petabytes of information \cite{commonCrawl}. This pre-trained embedding layer can then be used in a model trained on a much smaller dataset.
+ 
+\section{Hyperparameter Optimization}
 
 \subsection{Grid Search}
 
