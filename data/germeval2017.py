@@ -36,6 +36,7 @@ def germeval2017_dataset(
 					use_cuda=False,
 					verbose=True):
 
+	assert hyperparameters.task == 'germeval'
 	assert hyperparameters.language == 'de'
 	if hyperparameters.use_stop_words:
 		stop_words = get_stop_words('de')
