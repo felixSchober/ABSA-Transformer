@@ -33,6 +33,7 @@ In addition any special characters are completely removed. Dashes ('-') are kept
 When writing comments in social media people tend to make spelling mistakes. Unfortunately, each spelling mistake is an out-of vocabulary word which we want to reduce as much as possible.
 
 Therefore, a spell checker is used to prevent these mistakes. The first spell checker\footnote{PySpellchecker: \hyperlink{https://pyspellchecker.readthedocs.io/en/latest/}{https://pyspellchecker.readthedocs.io/en/latest/}} which was evaluated relies on the Levenshtein Distance \cite{Levenshtein1966} and a dictionary to determine if a word is spelled incorrectly and to make suggestions which word was meant originally. Although, word replacement suggestions are good, the spell checking is slow especially with large dictionaries.
+\newline
 
 The second spell checker is called Hunspell developed by László Németh\footnote{Hunspell: \hyperlink{http://hunspell.github.io/}{http://hunspell.github.io/}}. Hunspell is used in a variety of open- and closed sourced projects such as OpenOffice, Google Chrome or macOS. Hunspell also utilizes the Levenshtein Distance in addition to several other measurements. Both spell checkers suffer from false positives {(word is incorrectly flagged as negative)} as well as incorrect suggestions. Below are examples of Hunspells suggestions for words it did not recognize:
 
@@ -53,7 +54,12 @@ Nevertheless, in terms of vocabulary size reduction they are clearly outperformi
 % TODO: cite and explain Stemming and Lemmatization
 Stemming were also briefly explored, however, they did not provide a significant performance improvement.
 
+\subsubsection*{Stopword Removal}
+
+%TODO: Write stop word section
+
 \subsection{Comment Clipping}
+\label{subsec:06_CommentClipping}
 
 % TODO: Show how many comments are very long in dataset
 
@@ -74,18 +80,65 @@ See section \ref{subsec:06_CommentClipping} for the evaluation of this preproces
 \section{Data}
 \label{sec:05_Data}
 
-
 \subsection{Conll-2003 - Named Entity Recognition}
-\subsection{GermEval-2017 - Deutsche Bahn Tweets}
-\subsubsection*{Bahn Name Harmonization}
+\subsection{GermEval-2017 - Customer Feedback on Deutsche Bahn}
+
+GermEval 2017 is a dataset for Aspect-Based Sentiment Analysis on customer feedback about \textit{"Deutsche Bahn"} in German \cite{Wojatzki2017}. \textit{"Deutsche Bahn"} is the largest railway operator in Europe\footnote{Financial Earnings Presentation 2014: \url{https://ir.deutschebahn.com/fileadmin/Deutsch/2014/Anhaenge/2014_finanzpraesentation_asien_de.pdf}}. All data is collected from social media, blogs and Q\&A pages over the course of one year from May 2015 till June 2016. Each document is annotated with a relevance flag, a document-level sentiment polarity as well as up to 19 different aspect-sentiment combinations such as atmosphere {(\textit{Atmosphäre})} or the experience of buying a ticket {(\textit{Ticketkauf})}.
+
+GermEval-2017 is a shared dataset for four different tasks: 
+
+\begin{enumerate}
+	\item \textcolor{darkgray}{Task-A: Relevance Detection}
+	\item \textcolor{darkgray}{Task-B: General Document Sentiment Classification}
+	\item Task-C: Aspect-Based Sentiment Analysis
+	\item \textcolor{darkgray}{Task-C: Opinion Target Extraction}
+\end{enumerate}
+
+This work focuses on Subtask C and all results for the aspect-based sentiment analysis are reported in section \ref{sec:06_ResultsGermEval}.
+\newline
+
+Beating the baseline systems of GermEval is not trivial since the dataset is extremely skewed towards the dominant category 'general' {(\textit{Allgemein})}. This category makes up 62.2\% of all the samples in the dataset. Some categories contain less than 50 samples which is only 2\% of the whole data. Almost half of the aspects have less than 1\% share of the total amount of samples. There is even one aspect \textit{QR-Code} which has a total of two samples and none in the training split. Table \ref{tab:05_germevalDatasetStats} provides the detailed breakdown of the number of samples per aspect.
+
+This imbalance is the reason why the GermEval-2017 majority class baseline is extremely strong. In fact, during the GermEval-2017 challenge there was only one other model submission from Lee et al \cite{Lee2017} that could outperform the baseline models \cite{Wojatzki2017}.
+
+\begin{table}
+	\begin{tabular}{lrrrrrr}
+		\hline
+		Aspect                       & Test-1 & Test-2 & Train  & Val  & Total  & Ratio   \\ \hline
+		Allgemein                    & 1398   & 1024   & 12138  & 1475 & 16035  & 62,16\% \\
+		Atmosphäre                   & 148    & 53     & 1046   & 139  & 1386   & 5,37\%  \\
+		Auslastung \& Platzangebot   & 35     & 20     & 251    & 33   & 339    & 1.31\%  \\
+		Barrierefreiheit             & 9      & 2      & 64     & 17   & 92     & 0.36\%  \\
+		Connectivity                 & 36     & 73     & 257    & 23   & 389    & 1.51\%  \\
+		DB App \& Website            & 28     & 18     & 185    & 23   & 254    & 0.98\%  \\
+		Design                       & 4      & 2      & 31     & 4    & 41     & 0.16\%  \\
+		Gastronomisches Angebot      & 3      & 3      & 44     & 4    & 54     & 0.21\%  \\
+		Gepäck                       & 2      & 6      & 18     & 3    & 29     & 0.11\%  \\
+		Image                        & 0      & 3      & 51     & 7    & 61     & 0.24\%  \\
+		Informationen                & 58     & 35     & 330    & 34   & 457    & 1.77\%  \\
+		Komfort \& Ausstattung       & 24     & 11     & 153    & 21   & 209    & 0.81\%  \\
+		QR-Code                      & 1      & 0      & 0      & 1    & 2      & 0.01\%  \\
+		Reisen mit Kindern           & 7      & 2      & 44     & 4    & 57     & 0.22\%  \\
+		Service \& Kundenbetreuung   & 63     & 27     & 486    & 49   & 625    & 2.24\%  \\
+		Sicherheit                   & 84     & 42     & 429    & 63   & 618    & 2.40\%  \\
+		Sonstige Unregelmässigkeiten & 224    & 164    & 1335   & 145  & 1868   & 7.24\%  \\
+		Ticketkauf                   & 95     & 48     & 593    & 70   & 806    & 3.12\%  \\
+		Toiletten                    & 7      & 4      & 44     & 5    & 60     & 0.23\%  \\
+		Zugfahrt                     & 241    & 184    & 1798   & 190  & 2413   & 9.35\%  \\ \hline
+		Total                        & 2467   & 1721   & 19,297 & 2310 & 25,795 & 100\%   \\ \hline
+	\end{tabular}
+	\caption{Number of samples for each aspect per split in the GermEval-2017 shared task dataset.}
+\label{tab:05_germevalDatasetStats}
+\end{table}
+
 \subsection{Organic-2019 - Organic Comments}
 \subsection{Amazon Reviews Dataset}
 
-The Amazon Reviews Dataset consists of over 130 million Amazon product reviews from 1995 until 2015. Therefore, this dataset is one of the richest data sources for sentiment analysis or other related \gls{nlp} tasks. The raw data is available directly through amazon.\footnote{\hyperlink{https://s3.amazonaws.com/amazon-reviews-pds/readme.html}{https://s3.amazonaws.com/amazon-reviews-pds/readme.html}} The reviews are grouped into 45 product categories such as "Grocery", "Luggage" or "Video Games". 
+The Amazon Reviews Dataset consists of over 130 million Amazon product reviews from 1995 until 2015. Therefore, this dataset is one of the richest data sources for sentiment analysis or other related \gls{nlp} tasks. The raw data is available directly through amazon.\footnote{\url{https://s3.amazonaws.com/amazon-reviews-pds/readme.html}} The reviews are grouped into 45 product categories such as "Grocery", "Luggage" or "Video Games". 
 
-In 2013 McAuley and Leskovec compiled a subset of Amazon reviews \cite{McAuley2013}. This dataset contains 34,7 million reviews ranging from 1995 till 2013 grouped into 33 categories\footnote{Available through Stanford \hyperlink{https://snap.stanford.edu/data/web-Amazon.html}{https://snap.stanford.edu/data/web-Amazon.html}}. The authors also created a "Fine Food" Dataset from Amazon reviews \cite{McAuley2013a} \footnote{Available through Kaggle \hyperlink{https://www.kaggle.com/snap/amazon-fine-food-reviews}{https://www.kaggle.com/snap/amazon-fine-food-reviews}}. This dataset consists of 568454 Amazon reviews from 1995 till 2012. The domain of this specific dataset is related to the organic domain with 273 occurrences of the word 'organic'. Unfortunately, it does not contain predefined aspects so \gls{absa} is not possible without extensive pre-processing to generate aspects out of the reviews.
+In 2013 McAuley and Leskovec compiled a subset of Amazon reviews \cite{McAuley2013}. This dataset contains 34,7 million reviews ranging from 1995 till 2013 grouped into 33 categories\footnote{Available through Stanford \url{https://snap.stanford.edu/data/web-Amazon.html}}. The authors also created a "Fine Food" Dataset from Amazon reviews \cite{McAuley2013a} \footnote{Available through Kaggle \url{https://www.kaggle.com/snap/amazon-fine-food-reviews}}. This dataset consists of 568,454 Amazon reviews from 1995 till 2012. The domain of this specific dataset is related to the organic domain with 273 occurrences of the word 'organic'. Unfortunately, it does not contain predefined aspects so \gls{absa} is not possible without extensive pre-processing to generate aspects out of the reviews.
 
-The datasets created in 2013 contains duplicates so McAuley et. al. generated an improved Amazon Reviews dataset in 2015 without duplicates \cite{McAuley2015}\cite{He2016}. This iteration of the dataset contains 142.8 million reviews from 1996 till 2014\footnote{Available here: \hyperlink{http://jmcauley.ucsd.edu/data/amazon/}{http://jmcauley.ucsd.edu/data/amazon/}}. Due to the size of this dataset the authors provide a smaller dataset which only contains reviews from users who wrote exactly 5 reviews. This 5-core subset features 18 million reviews. The distribution of the domain categories is visualized in figure \ref{fig:05_amazonDatasetDistributin}. As one can observe the dataset is substantially skewed towards the largest domain 'books' which makes up of 49\% of the data.
+The datasets created in 2013 contains duplicates so McAuley et. al. generated an improved Amazon Reviews dataset in 2015 without duplicates \cite{McAuley2015}\cite{He2016}. This iteration of the dataset contains 142.8 million reviews from 1996 till 2014\footnote{Available here: \url{http://jmcauley.ucsd.edu/data/amazon/}}. Due to the size of this dataset the authors provide a smaller dataset which only contains reviews from users who wrote exactly 5 reviews. This 5-core subset features 18 million reviews. The distribution of the domain categories is visualized in figure \ref{fig:05_amazonDatasetDistributin}. As one can observe the dataset is substantially skewed towards the largest domain 'books' which makes up of 49\% of the data.
 
 \begin{figure}[ht]
 	\centering
@@ -282,14 +335,21 @@ Training and evaluation of the models was done on four different machines. One o
 % TODO: Cite docker
 
 % TODO: Explain Docker
-Docker is a virtualization framework ...
+Docker\footnote{Docker: \hyperlink{https://www.docker.com}{https://www.docker.com}} is a framework for container virtualisation. Docker containers use the same kernel as the host system but an isolated file system with own system libraries. 
 
 % Add link to Docker Hub and image as footnote
 
 Since training was performed on four different environments a Docker image was created which automates the installation of all required frameworks, environments, drivers and versions. An automated build pipeline builds a new image as soon as a new code version is pushed to the repository. Users can install or update an image directly from Docker Hub without rebuilding it every time locally.
 
-The main concern of using docker for resource intensive task is the loss of performance due to the virtualization overhead. To evaluate this epoch training time was measured with and without docker. As one can observe in figure XX 
+The main concern of using docker for resource intensive task is the loss of performance due to the virtualization overhead. To evaluate this, epoch training time was measured with and without docker. The experiment was performed on machine-1 displayed in table \ref{tab:05_usedHardware}. For both experiments a complete model was trained for 5 epochs on the Organic2019 dataset. Figure \ref{fig:05_dockerExecution} visualizes the time each part of the training took. For both environments the mean execution time was around 195 seconds. This means that there is no difference between running a model inside a docker container or just locally. However, this is only the case when the host is running on a linux environment. On Windows and macOS, Docker has to virtualize part of the linux kernel. Therefore, there is no advantage of running on the exact same kernel as the host system. In addition, At the time of writing, the NVIDIA-runtime\footnote{NVIDIA Docker Runtime: \hyperlink{https://github.com/NVIDIA/nvidia-docker}{https://github.com/NVIDIA/nvidia-docker}} is only supported for linux environments.
 
-% TODO: measure epoch time with and without docker and report differences.
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{figures/05_setup/05_dockerExecution}
+	\caption{Docker vs. Local environment - Comparision of model training times.}
+	\label{fig:05_dockerExecution}
+\end{figure}
+
+
 
 

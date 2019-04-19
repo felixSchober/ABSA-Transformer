@@ -20,17 +20,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
-    <Content Include="01_NER-Notebook.ipynb" />
-    <Content Include="02_GeneralSentiment-Notebook.ipynb" />
-    <Content Include="03_AspectSentiment-Notebook - AdaBound.ipynb" />
-    <Content Include="03_AspectSentiment-Notebook.ipynb" />
-    <Content Include="03_HyperParameterSearch.ipynb" />
-    <Content Include="04_HyperParameterSearch.ipynb" />
-    <Content Include="05_Evaluator.ipynb" />
-    <Content Include="06_ModelEvaluator.ipynb" />
-    <Content Include="data\conll2003\eng.testa.txt" />
-    <Content Include="data\conll2003\eng.testb.txt" />
-    <Content Include="data\conll2003\eng.train.txt" />
     <Content Include="data\germeval2017\dev_v1.4.tsv" />
     <Content Include="data\germeval2017\evaluation\00_EvaluateRelevance.bat" />
     <Content Include="data\germeval2017\evaluation\EvaluationScript.jar" />
@@ -41,7 +30,15 @@
     <Content Include="data\germeval2017\test_TIMESTAMP1.tsv" />
     <Content Include="data\germeval2017\test_TIMESTAMP2.tsv" />
     <Content Include="data\germeval2017\train_v1.4.tsv" />
-    <Content Include="desktop.ini" />
+    <Content Include="data\spellchecker\de\de_DE.pkl" />
+    <Content Include="data\spellchecker\de\german.dic" />
+    <Content Include="data\spellchecker\de_cache.pkl" />
+    <Content Include="data\spellchecker\hunspell-en_US-2018\en_US.aff" />
+    <Content Include="data\spellchecker\hunspell-en_US-2018\en_US.dic" />
+    <Content Include="data\spellchecker\hunspell-en_US-2018\en_US.pkl" />
+    <Content Include="data\spellchecker\hunspell-en_US-2018\README_en_US.txt" />
+    <Content Include="data\spellchecker\organic-space-replace.txt" />
+    <Content Include="data\spellchecker\organic-words.txt" />
     <Content Include="logs\05generalSentimentStdModeUnkToken20Ep\images\c_11368.png" />
     <Content Include="logs\05generalSentimentStdModeUnkToken20Ep\images\c_12789.png" />
     <Content Include="logs\05generalSentimentStdModeUnkToken20Ep\images\c_1421.png" />
@@ -389,23 +386,33 @@
     <Content Include="logs\TransformerModel\images\c_9947.png" />
     <Content Include="README.md" />
     <Content Include="requirements.txt" />
-    <Content Include="trainer\__pycache__\train.cpython-36.pyc" />
-    <Content Include="trainer\__pycache__\utils.cpython-36.pyc" />
-    <Content Include="trainer\__pycache__\__init__.cpython-36.pyc" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="criterion.py" />
+    <Compile Include="data\amazon.py" />
     <Compile Include="data\conll.py" />
-    <Compile Include="data\custom_datasets.py" />
-    <Compile Include="data\custom_fields.py" />
     <Compile Include="data\data_loader.py" />
     <Compile Include="data\germeval2017.py" />
+    <Compile Include="data\organic2019.py" />
+    <Compile Include="data\spellchecker\spellchecker.py" />
+    <Compile Include="data\torchtext\amazon_dataset.py" />
+    <Compile Include="data\torchtext\custom_datasets.py" />
+    <Compile Include="data\torchtext\custom_fields.py" />
+    <Compile Include="data\torchtext\custom_vocab.py" />
+    <Compile Include="data\torchtext\germeval2017_dataset.py" />
+    <Compile Include="data\torchtext\organic_dataset.py" />
+    <Compile Include="data\torchtext\sequence_tagging_dataset.py" />
+    <Compile Include="data\transferLearning.py" />
+    <Compile Include="data\transfer_data_loader.py" />
     <Compile Include="data\__init__.py" />
     <Compile Include="evaluator.py" />
     <Compile Include="main.py" />
+    <Compile Include="misc\experimental_environment.py" />
+    <Compile Include="misc\hyperopt_space.py" />
     <Compile Include="misc\preferences.py" />
     <Compile Include="misc\run_configuration.py" />
     <Compile Include="misc\torchsummary.py" />
+    <Compile Include="misc\transfer_learning_experiment.py" />
     <Compile Include="misc\utils.py" />
     <Compile Include="misc\visualizer.py" />
     <Compile Include="misc\__init__.py" />
@@ -413,30 +420,35 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="models\output_layers.py" />
-    <Compile Include="models\softmax_output.py" />
     <Compile Include="models\transformer\constants.py" />
     <Compile Include="models\transformer\decoder.py" />
     <Compile Include="models\transformer\embeddings.py" />
     <Compile Include="models\transformer\encoder.py" />
     <Compile Include="models\transformer\googleTransformer.py" />
     <Compile Include="models\transformer\layers.py" />
-    <Compile Include="models\transformer\train.py" />
     <Compile Include="models\transformer\__init__.py" />
     <Compile Include="models\transformer_tagger.py" />
     <Compile Include="models\__init__.py" />
     <Compile Include="naming.py" />
     <Compile Include="optimizer.py" />
+    <Compile Include="trainer\early_stopping.py" />
     <Compile Include="trainer\train.py" />
     <Compile Include="trainer\train_evaluator.py" />
+    <Compile Include="trainer\train_evaluator_germEval.py" />
     <Compile Include="trainer\train_logger.py" />
+    <Compile Include="trainer\train_plotter.py" />
     <Compile Include="trainer\utils.py" />
+    <Compile Include="trainer\variable_early_stopping.py" />
     <Compile Include="trainer\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="data" />
-    <Folder Include="data\conll2003" />
     <Folder Include="data\germeval2017\" />
     <Folder Include="data\germeval2017\evaluation\" />
+    <Folder Include="data\spellchecker\" />
+    <Folder Include="data\spellchecker\de\" />
+    <Folder Include="data\spellchecker\hunspell-en_US-2018\" />
+    <Folder Include="data\torchtext\" />
     <Folder Include="logs\" />
     <Folder Include="logs\05generalSentimentStdModeUnkToken20Ep\" />
     <Folder Include="logs\05generalSentimentStdModeUnkToken20Ep\images" />
@@ -462,7 +474,6 @@
     <Folder Include="models" />
     <Folder Include="models\transformer" />
     <Folder Include="trainer\" />
-    <Folder Include="trainer\__pycache__\" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="test\">

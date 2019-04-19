@@ -1,6 +1,5 @@
 \boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
-\defcounter {refsection}{0}\relax 
-\select@language {american}
+\babel@toc {american}{}
 \defcounter {refsection}{0}\relax 
 \contentsline {chapter}{Acknowledgments}{iii}{Doc-Start}
 \defcounter {refsection}{0}\relax 
@@ -124,25 +123,25 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {6.1.1}Model Parameters}{22}{subsection.6.1.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Aspect Heads}{22}{section*.24}
+\contentsline {subsubsection}{\nonumberline Aspect Heads}{22}{section*.25}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Pointwise Layer Size}{22}{section*.25}
+\contentsline {subsubsection}{\nonumberline Pointwise Layer Size}{22}{section*.26}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Transformer Architecture}{22}{section*.26}
+\contentsline {subsubsection}{\nonumberline Transformer Architecture}{22}{section*.27}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Learning Rate Scheduler}{22}{section*.27}
+\contentsline {subsubsection}{\nonumberline Learning Rate Scheduler}{22}{section*.28}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Optimizer}{22}{section*.28}
+\contentsline {subsubsection}{\nonumberline Optimizer}{22}{section*.29}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Embedding}{22}{section*.29}
+\contentsline {subsubsection}{\nonumberline Embedding}{22}{section*.30}
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {6.1.2}Data Preprocessing}{22}{subsection.6.1.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Spell Checking}{22}{section*.30}
+\contentsline {subsubsection}{\nonumberline Spell Checking}{22}{section*.31}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Stop Word Removal}{22}{section*.31}
+\contentsline {subsubsection}{\nonumberline Stop Word Removal}{22}{section*.32}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\nonumberline Comment Clipping}{22}{section*.32}
+\contentsline {subsubsection}{\nonumberline Comment Clipping}{22}{section*.33}
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {6.2}Results for Named Entity Recognition}{23}{section.6.2}
 \defcounter {refsection}{0}\relax 
@@ -162,8 +161,10 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {7.1}Future Work}{24}{section.7.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\nonumberline List of Figures}{25}{chapter*.33}
+\contentsline {chapter}{Acronyms}{25}{section*.34}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\nonumberline List of Tables}{26}{chapter*.34}
+\contentsline {chapter}{\nonumberline List of Figures}{27}{chapter*.36}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{\nonumberline Bibliography}{27}{chapter*.35}
+\contentsline {chapter}{\nonumberline List of Tables}{28}{chapter*.37}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\nonumberline Bibliography}{29}{chapter*.38}
