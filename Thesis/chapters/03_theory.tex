@@ -99,12 +99,12 @@ Figure \ref{fig:03_transferLearning} communicates those definitions.
 % TODO: redo figure 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[scale=0.5]{figures/03_theory/03_transferLearning}
+	\includegraphics[scale=0.55]{figures/03_theory/03_transferLearning}
 	\caption{Difference in traditional machine learning were each model uses its own dataset and task. In contrast, in transfer learning a model is first trained on source tasks and part of the features are transformed to the target model to facilitate training. Source: Pan and Yang \cite{Pan2010}}
 	\label{fig:03_transferLearning}
 \end{figure}
 
-In practice it is very expensive to collect or recollect training data for every new domain. Transfer learning makes it possible to transfer knowledge from a larger dataset to a smaller dataset which greatly reduces the labeling effort \Cite{Blitzer2007}. When the target dataset has significantly fewer examples than the base dataset studies showed that it is possible to train large networks without overfitting \cite{Donahue2013}\cite{Zeiler2014}. Usually, after the base model has been trained on the large dataset, the first $n$ layers of the base model are copied over as the first $n$ layers of the target model. The remaining layers of the target model are then randomly initialized and trained. The weights of the $n$ layers from the base model can either be \textit{frozen} or \textit{finetuned} along the rest of the target model. If the target dataset has few samples compared to the number of parameters in the first $n$ layers, finetuning can actually result in overfitting which is a reason why the error during target training is often not backpropagated to the first $n$ layers \cite{Yosinski2014}.
+In practice it is very expensive to collect or recollect training data for every new domain. Transfer learning makes it possible to transfer knowledge from a larger dataset to a smaller dataset which greatly reduces the labeling effort \cite{Blitzer2007}. When the target dataset has significantly fewer examples than the base dataset studies showed that it is possible to train large networks without overfitting \cite{Donahue2013}\cite{Zeiler2014}. Usually, after the base model has been trained on the large dataset, the first $n$ layers of the base model are copied over as the first $n$ layers of the target model. The remaining layers of the target model are then randomly initialized and trained. The weights of the $n$ layers from the base model can either be \textit{frozen} or \textit{finetuned} along the rest of the target model. If the target dataset has few samples compared to the number of parameters in the first $n$ layers, finetuning can actually result in overfitting which is a reason why the error during target training is often not backpropagated to the first $n$ layers \cite{Yosinski2014}.
 
 \subsection*{Pre Training}
 The most common way to employ transfer learning is pre-training. 
@@ -114,13 +114,40 @@ This paradigm can also be applied on natural language processing. Understanding 
  
 \section{Hyperparameter Optimization}
 
+Generally, there are two sets of parameters in machine learning: learned parameters and hyperparameters which are used to configure various aspects of the training process. Learned parameters such as neural network weights are optimized during training whereas hyperparameters are usually defined at the beginning and without a few exceptions {(e.g. learning rate)} do not change during training.
+
+It has been demonstrated that there are a few hyperparameters which have an enormous impact on the overall model performance but identifying those parameters among a big set of possible candidates is difficult \cite{Bergstra2012a}. However, correctly setting these parameters is crucial for achieving a good model performance.
+
+Hyperparameters are either hand tuned by reviewing similar literature, semi automatically optimized or fully automatically optimized.
+
+This section presents three approaches to optimize the hyperparameter space. The first two are naive, semi-automatic approaches where a set of possible parameters is tried and the success is recorded. The researcher then selects the most promising results. The third example, HyperOpt, is an algorithm which treats the hyperparamter search as an optimization problem and identifies critical parameters and tries to find their optimum value for the given model and task \cite{Bergstra2013}.
+
+
+
 \subsection{Grid Search}
+
+Grid search is a very easy method to search for optimal hyperparameters. When performing a grid search for a parameter a new value is sampled from a predefined parameter subset at a fixed interval. Each trial with the new parameter value is then evaluated on the model. For multiple parameters each distinct parameter value is tested against all other parameter values, therefore creating a \textit{grid} of parameter values to test.
+
+This approach is very easy to implement and is trivial to parallelize.
 
 \subsection{Random Search}
 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[scale=0.35]{figures/03_theory/03_randomSearch}
+	\caption{This figure from Bergstra and Bengio demonstrates the advantage of random searches over grid searches in a two-dimensional space. Nine trials are performed to optimize a function $f(x, y) = g(x) + h(y) \approx g(x)$. $g(x)$ shown in green has a bigger impact compared to $h(y)$ shown in yellow on the left. Each gray circle represents a trial. Because of the two-dimensional space, grid search can only test $g(x)$ in three places. Random search tries a different $x$ in every trial and is therefore able to find a value close to the optimum. Source: \cite{Bergstra2012a}}
+	\label{fig:03_randomSearch}
+\end{figure}
+
+Surprisingly, Bergstra and Bengio proofed that randomly choosing hyperparameters is more efficient than performing a grid search \cite{Bergstra2012a} for high dimensional search spaces. Instead of defining values in a grid, they randomly sample from the grid space.
+
+The problem with grid search is that by increasing the number of dimensions the number of trials has to increase exponentially to provide the same number of distinct trials for a single parameter \cite{Bergstra2012a}. When performing a grid search on a one-dimensional parameter space, three runs on the model have to be performed in order to test three distinct values of the parameter. Optimizing two parameters {(shown in figure \ref{fig:03_randomSearch})} increases the number of runs to $3^2$ and optimizing $n$ parameters $m$ times will lead to $m^n$ runs. 
+
+Grid search is set up on the assumption that each parameter is equally important. However, it has been shown that not all parameters are equally significant for the model performance \cite{Bergstra2012a}. Figure \ref{fig:03_randomSearch} demonstrates why this is an advantage for random search over grid search. In this specific example one parameter constitutes more towards model performance than the other. However, grid search can only sample three values for the important parameter and is therefore not able to find the optimum value. According to Bergstra and Bengio this situation is the norm rather than the exception for grid search \cite{Bergstra2012a}.
+
 \subsection{HyperOpt}
 
-
+Preprocessing \cite{Hutter2009}
 
 
 
