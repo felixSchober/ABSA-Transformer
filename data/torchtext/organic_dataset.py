@@ -16,6 +16,14 @@ from misc.utils import create_dir_if_necessary, check_if_file_exists
 from data.torchtext.custom_datasets import *
 
 
+def add_tr_prefixes(path:str, sp=False) -> str:
+	fn = path.split('.')
+
+	if sp:
+		fn[0] += '_sp'
+
+	return '.'.join(fn)
+
 ORGANIC_TASK_ALL = 'all'
 ORGANIC_TASK_ENTITIES = 'entities'
 ORGANIC_TASK_ATTRIBUTES = 'attributes'
@@ -168,6 +176,10 @@ class OrganicDataset(Dataset):
 		# lines for splits
 		lengths = (8918, 786, 738)
 
+		train = add_tr_prefixes(train, hp.use_spell_checkers)
+		validation = add_tr_prefixes(validation, hp.use_spell_checkers)
+		test = add_tr_prefixes(test, hp.use_spell_checkers)
+
 		train_data = None if train is None else cls(
 			path=os.path.join(path, train), length=lengths[0], **kwargs)
 		# make sure, we use exactly the same fields across all splits
@@ -243,10 +255,7 @@ class OrganicDataset(Dataset):
 		else:
 			organic_text_cleaning_dict = {}
 
-		if hp.use_spell_checkers:
-			spell = self.initialize_spellchecker(hp.language)
-		else:
-			spell = None
+		spell = None
 
 		if task.startswith(ORGANIC_TASK_ALL):
 			aspect_example_index = -1

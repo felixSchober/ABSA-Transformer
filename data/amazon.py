@@ -34,8 +34,7 @@ def amazon_dataset(
 	assert not(hyperparameters.token_removal_2 and hyperparameters.token_removal_3)
 	assert not(hyperparameters.token_removal_1 and hyperparameters.token_removal_3)
 
-
-
+	
 	logger.debug('Creating splits and load data')
 	data = load_splits(task, hyperparameters, root, train_file, validation_file, test_file, verbose)
 	comment_field = data['fields']['comment']
