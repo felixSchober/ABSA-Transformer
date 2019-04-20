@@ -13,6 +13,22 @@ from data.torchtext.custom_fields import ReversibleField
 from data.torchtext.custom_datasets import *
 import pandas as pd
 
+def add_tr_prefixes(path:str, tr_1=False, tr_2=False, tr_3=False, sp=False) -> str:
+	fn = path.split('.')
+
+	if sp:
+		fn[0] += '_sp'
+
+	if tr_1:
+		fn[0] += '_TR-1'
+
+	if tr_2:
+		fn[0] += '_TR-2'
+
+	if tr_3:
+		fn[0] += '_TR-3' 
+	return '.'.join(fn)
+
 class AmazonDataset(Dataset):
 
 	@staticmethod
@@ -25,7 +41,7 @@ class AmazonDataset(Dataset):
 
 	@classmethod
 	def splits(cls, path=None, root='.data', train=None, validation=None,
-			   test=None, **kwargs) -> Tuple[Dataset]:
+			   test=None, hp=None, **kwargs) -> Tuple[Dataset]:
 		"""Create Dataset objects for multiple splits of a dataset.
 		Arguments:
 			path (str): Common prefix of the splits' file paths, or None to use
@@ -43,19 +59,22 @@ class AmazonDataset(Dataset):
 			Tuple[Dataset]: Datasets for train, validation, and
 			test splits in that order, if provided.
 		"""
-		if path is None:
-			path = cls.download(root)
+
+		# depending on the hps we have to adjust the paths
+		train = add_tr_prefixes(train, hp.token_removal_1, hp.token_removal_2, hp.token_removal_3,  hp.use_spell_checkers)
+		validation = add_tr_prefixes(validation, hp.token_removal_1, hp.token_removal_2, hp.token_removal_3, hp.use_spell_checkers)
+		test = add_tr_prefixes(test, hp.token_removal_1, hp.token_removal_2, hp.use_spell_checkers)
 
 		train_data = None if train is None else cls(
-			os.path.join(path, train), **kwargs)
+			os.path.join(path, train), hp=hp, **kwargs)
 		# make sure, we use exactly the same fields across all splits
 		train_aspects = train_data.aspects
 
 		val_data = None if validation is None else cls(
-			os.path.join(path, validation), a_sentiment=train_aspects, **kwargs)
+			os.path.join(path, validation), a_sentiment=train_aspects, hp=hp, **kwargs)
 
 		test_data = None if test is None else cls(
-			os.path.join(path, test), a_sentiment=train_aspects, **kwargs)
+			os.path.join(path, test), a_sentiment=train_aspects, hp=hp, **kwargs)
 
 		return tuple(d for d in (train_data, val_data, test_data)
 					 if d is not None)
@@ -99,13 +118,7 @@ class AmazonDataset(Dataset):
 		# 1: Comment
 		# 4: Apsect Specific sentiment List
 		# 5: Padding Field
-
-		if hp.use_spell_checkers:
-			spell = self.initialize_spellchecker('en')
-		else:
-			spell = None
-
-
+		
 		aspect_sentiment_categories = set()
 		aspect_sentiments: List[Dict[str, str]] = []
 
@@ -141,10 +154,7 @@ class AmazonDataset(Dataset):
 
 			if hp.replace_url_tokens:
 				comment = replace_urls(comment)
-
-			if hp.use_spell_checkers:
-				comment = self.fix_spellings(comment, spell, 'en')
-
+				
 			comment = ' '.join(comment)
 
 			columns = [
