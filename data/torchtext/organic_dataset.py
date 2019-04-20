@@ -152,7 +152,7 @@ class OrganicDataset(Dataset):
 
 	@classmethod
 	def splits(cls, path=None, root='.data', train=None, validation=None,
-			   test=None, **kwargs) -> Tuple[Dataset]:
+			   test=None, hp=None, **kwargs) -> Tuple[Dataset]:
 		"""Create Dataset objects for multiple splits of a dataset.
 		Arguments:
 			path (str): Common prefix of the splits' file paths, or None to use
@@ -181,15 +181,15 @@ class OrganicDataset(Dataset):
 		test = add_tr_prefixes(test, hp.use_spell_checkers)
 
 		train_data = None if train is None else cls(
-			path=os.path.join(path, train), length=lengths[0], **kwargs)
+			path=os.path.join(path, train), length=lengths[0], hp=hp, **kwargs)
 		# make sure, we use exactly the same fields across all splits
 		train_aspects = train_data.aspects
 
 		val_data = None if validation is None else cls(
-			path=os.path.join(path, validation), a_sentiment=train_aspects, length=lengths[1], **kwargs)
+			path=os.path.join(path, validation), a_sentiment=train_aspects, length=lengths[1], hp=hp, **kwargs)
 
 		test_data = None if test is None else cls(
-			path=os.path.join(path, test), a_sentiment=train_aspects, length=lengths[2], **kwargs)
+			path=os.path.join(path, test), a_sentiment=train_aspects, length=lengths[2], hp=hp, **kwargs)
 
 		return tuple(d for d in (train_data, val_data, test_data)
 					 if d is not None)
