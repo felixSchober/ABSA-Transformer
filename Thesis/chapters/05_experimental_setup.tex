@@ -32,7 +32,7 @@ In addition any special characters are completely removed. Dashes ('-') are kept
 \label{sec:05_SpellChecking}
 When writing comments in social media people tend to make spelling mistakes. Unfortunately, each spelling mistake is an out-of vocabulary word which we want to reduce as much as possible.
 
-Therefore, a spell checker is used to prevent these mistakes. The first spell checker\footnote{PySpellchecker: \hyperlink{https://pyspellchecker.readthedocs.io/en/latest/}{https://pyspellchecker.readthedocs.io/en/latest/}} which was evaluated relies on the Levenshtein Distance \cite{Levenshtein1966} and a dictionary to determine if a word is spelled incorrectly and to make suggestions which word was meant originally. Although, word replacement suggestions are good, the spell checking is slow especially with large dictionaries.
+Therefore, a spell checker is used to prevent these mistakes. The first spell checker\footnote{PySpellchecker: \url{https://pyspellchecker.readthedocs.io/en/latest/}} which was evaluated relies on the Levenshtein Distance \cite{Levenshtein1966} and a dictionary to determine if a word is spelled incorrectly and to make suggestions which word was meant originally. Although, word replacement suggestions are good, the spell checking is slow especially with large dictionaries.
 \newline
 
 The second spell checker is called Hunspell developed by László Németh\footnote{Hunspell: \hyperlink{http://hunspell.github.io/}{http://hunspell.github.io/}}. Hunspell is used in a variety of open- and closed sourced projects such as OpenOffice, Google Chrome or macOS. Hunspell also utilizes the Levenshtein Distance in addition to several other measurements. Both spell checkers suffer from false positives {(word is incorrectly flagged as negative)} as well as incorrect suggestions. Below are examples of Hunspells suggestions for words it did not recognize:
@@ -100,6 +100,8 @@ This work focuses on Subtask C and all results for the aspect-based sentiment an
 Beating the baseline systems of GermEval is not trivial since the dataset is extremely skewed towards the dominant category 'general' {(\textit{Allgemein})}. This category makes up 62.2\% of all the samples in the dataset. Some categories contain less than 50 samples which is only 2\% of the whole data. Almost half of the aspects have less than 1\% share of the total amount of samples. There is even one aspect \textit{QR-Code} which has a total of two samples and none in the training split. Table \ref{tab:05_germevalDatasetStats} provides the detailed breakdown of the number of samples per aspect.
 
 This imbalance is the reason why the GermEval-2017 majority class baseline is extremely strong. In fact, during the GermEval-2017 challenge there was only one other model submission from Lee et al \cite{Lee2017} that could outperform the baseline models \cite{Wojatzki2017}.
+
+%TODO: Refer to GermEval F1 Score issues
 
 \begin{table}
 	\begin{tabular}{lrrrrrr}
@@ -335,13 +337,13 @@ Training and evaluation of the models was done on four different machines. One o
 % TODO: Cite docker
 
 % TODO: Explain Docker
-Docker\footnote{Docker: \hyperlink{https://www.docker.com}{https://www.docker.com}} is a framework for container virtualisation. Docker containers use the same kernel as the host system but an isolated file system with own system libraries. 
+Docker\footnote{Docker: \url{https://www.docker.com}} is a framework for container virtualisation. Docker containers use the same kernel as the host system but an isolated file system with own system libraries. 
 
 % Add link to Docker Hub and image as footnote
 
 Since training was performed on four different environments a Docker image was created which automates the installation of all required frameworks, environments, drivers and versions. An automated build pipeline builds a new image as soon as a new code version is pushed to the repository. Users can install or update an image directly from Docker Hub without rebuilding it every time locally.
 
-The main concern of using docker for resource intensive task is the loss of performance due to the virtualization overhead. To evaluate this, epoch training time was measured with and without docker. The experiment was performed on machine-1 displayed in table \ref{tab:05_usedHardware}. For both experiments a complete model was trained for 5 epochs on the Organic2019 dataset. Figure \ref{fig:05_dockerExecution} visualizes the time each part of the training took. For both environments the mean execution time was around 195 seconds. This means that there is no difference between running a model inside a docker container or just locally. However, this is only the case when the host is running on a linux environment. On Windows and macOS, Docker has to virtualize part of the linux kernel. Therefore, there is no advantage of running on the exact same kernel as the host system. In addition, At the time of writing, the NVIDIA-runtime\footnote{NVIDIA Docker Runtime: \hyperlink{https://github.com/NVIDIA/nvidia-docker}{https://github.com/NVIDIA/nvidia-docker}} is only supported for linux environments.
+The main concern of using docker for resource intensive task is the loss of performance due to the virtualization overhead. To evaluate this, epoch training time was measured with and without docker. The experiment was performed on machine-1 displayed in table \ref{tab:05_usedHardware}. For both experiments a complete model was trained for 5 epochs on the Organic2019 dataset. Figure \ref{fig:05_dockerExecution} visualizes the time each part of the training took. For both environments the mean execution time was around 195 seconds. This means that there is no difference between running a model inside a docker container or just locally. However, this is only the case when the host is running on a linux environment. On Windows and macOS, Docker has to virtualize part of the linux kernel. Therefore, there is no advantage of running on the exact same kernel as the host system. In addition, At the time of writing, the NVIDIA-runtime\footnote{NVIDIA Docker Runtime: \url{https://github.com/NVIDIA/nvidia-docker}} is only supported for linux environments.
 
 \begin{figure}[ht]
 	\centering

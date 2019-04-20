@@ -116,9 +116,9 @@ This paradigm can also be applied on natural language processing. Understanding 
 
 Generally, there are two sets of parameters in machine learning: learned parameters and hyperparameters which are used to configure various aspects of the training process. Learned parameters such as neural network weights are optimized during training whereas hyperparameters are usually defined at the beginning and without a few exceptions {(e.g. learning rate)} do not change during training.
 
-It has been demonstrated that there are a few hyperparameters which have an enormous impact on the overall model performance but identifying those parameters among a big set of possible candidates is difficult \cite{Bergstra2012a}. However, correctly setting these parameters is crucial for achieving a good model performance.
+It has been demonstrated that there are a few hyperparameters which have an enormous impact on the overall model performance but identifying those parameters among a big set of possible candidates is difficult \cite{Bergstra2012a}. However, correctly setting these parameters is crucial for achieving a good model performance. Cox and Pinto demonstrated that hyperparameters make the difference between a state of the art model and a model which does not perform better than a random classifier \cite{Cox2011}. Therefore, hyperparamter tuning is critical for the model performance.
 
-Hyperparameters are either hand tuned by reviewing similar literature, semi automatically optimized or fully automatically optimized.
+Hyperparameters are either hand tuned by reviewing similar literature or by the researchers understanding of the underlying architecutre and how he expects certain parameters to influence the architecture. Another way is to semi automatically optimize or fully automatically optimize the search for good hyperparameters.
 
 This section presents three approaches to optimize the hyperparameter space. The first two are naive, semi-automatic approaches where a set of possible parameters is tried and the success is recorded. The researcher then selects the most promising results. The third example, HyperOpt, is an algorithm which treats the hyperparamter search as an optimization problem and identifies critical parameters and tries to find their optimum value for the given model and task \cite{Bergstra2013}.
 
@@ -147,9 +147,36 @@ Grid search is set up on the assumption that each parameter is equally important
 
 \subsection{HyperOpt}
 
-Preprocessing \cite{Hutter2009}
+Hyperopt is an open source\footnote{Official repository \url{https://github.com/hyperopt/hyperopt}} hyperparameter optimization package by Bergstra et al. \cite{Bergstra2013a}. It treats the hyperparameter search as an optimization problem. Bergstra et al. show that by using \glspl{tpe} and Gaussian processes Hyperopt is able to find hyperparameters that outperform random searches and traditional manual hyperparameter tuning \cite{Bergstra2011}.
 
 
+
+
+\subsubsection*{Challenges}
+
+There are certain challenges when treating hyperparameter tuning as an optimization problem. For instance, the parameter search space is often high dimensional and may contain a mix of continuous {(e.g. learning rate)}, discrete {(e.g. hidden layer size)}, boolean {(e.g. preprocessing steps \cite{Hutter2009})} and even conditional variables \cite{Bergstra2013}. 
+
+For instance the choice of a optimizer or even the machine learning algorithm itself can be seen as a hyperparameter. Each choice then has its own set of parameters which are independent of the other choices. For instance, the Adam optimizer uses certain parameters like $\beta_1$ which the \gls{sgd} optimizer does not use. Hyperopt generates a graph from these conditional parameters and then uses a tree like structure for solving the optimization problem \cite{Bergstra2011}.
+\newline
+
+Another difficulty is the limited "fitness evaluation budget" \cite{Bergstra2011}. This means that for each evaluation of a hyperparameter set the model has to be trained which potentially takes a long time. Therefore, Hyperopt has to cope with less evaluation steps than a normal optimization algorithm.
+
+\subsubsection*{Tree of Parzen Estimators {(TPEs)}}
+The Hyperopt package uses \glspl{tpe} to sample good hyperparaters from the hyperparameter search space \cite{Bergstra2013a}. To model $p(x|y)$ \gls{tpe} replaces, all distributions in the configuration space by Gaussian mixture equivalents: uniform $\rightarrow$ truncated Gaussian mixture, log-uniform $\rightarrow$ exponentiated trucanted Gaussian mixture and categorical $\rightarrow$ re-weighted categorical \cite{Bergstra2013a}. The prior for the calculation - the different observations $\{x^1,..., x^n, ..., x^k\}$ - is initialized by performing $n$ random runs where the default value for $n$ is 10.
+
+The \gls{tpe} defines $p(x|y)$ as 
+
+\begin{equation}
+p(x|y) =
+\begin{cases}
+
+l(x) & \text{if } y < y^* \\
+g(x) & \text{if } y \geq y^*
+
+\end{cases}
+\end{equation}
+
+where $l(x)$ {(first case)} is a density formed by an observation $\{x^i\}$ where the loss $y$ of $f(x^i)=y$ was less than a threshold $y^*$. $g(x)$ is the density by using all other remaining observations \cite{Bergstra2013a}. $y^*$ is higher than the best observation so that the density $l(x)$ is formed by more than just one observation. $l(x)$ and $g(x)$ model the hyperparameter search space which means that they have to be hierarchical when the search space contains conditional and discrete variables. $l(x)$ and $g(x)$ are then used to optimize the expected improvement and after each iteration the parameter set with the highest expected improvement is chosen for the next iteration which then becomes the next observation $x^{k+1}$ \cite{Bergstra2013a}. 
 
 
 

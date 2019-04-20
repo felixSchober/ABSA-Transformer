@@ -295,8 +295,7 @@ class OrganicDataset(Dataset):
 				# comment is not relevant
 				if columns[6] == '0' or columns[-1] == '':
 					# skip for now
-					pass
-					# continue
+					continue
 
 				# aspect sentiment is missing
 				if len(columns) == 12:
