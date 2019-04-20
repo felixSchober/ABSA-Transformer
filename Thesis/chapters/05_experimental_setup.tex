@@ -80,9 +80,42 @@ See section \ref{subsec:06_CommentClipping} for the evaluation of this preproces
 \section{Data}
 \label{sec:05_Data}
 
-\subsection{Conll-2003 - Named Entity Recognition}
-\subsection{GermEval-2017 - Customer Feedback on Deutsche Bahn}
+This section describes the four datasets which were used for the evaluation of the ABSA-Transformer architecture described previously.
 
+The first dataset - CoNLL-2003 - is used to evaluate just the transformer model without the use of aspect heads. The task of this dataset is word level \gls{ner} prediction. Since the original transformer model provides predictions on the word level this is good task to evaluate just the transformer part.
+\newline
+
+GermEval-2017 described in section \ref{sec:05_germeval} is a dataset for aspect-based sentiment analysis and contains over 25,000 review documents from social media.
+\newline
+
+Organic-2019 is a very recent dataset, also providing an aspect-based sentiment analysis task in the domain of organic food. Whereas, GermEval-2017 contains document level annotations, Organic-2019 contains word level over 10,000 annotated sentences. Organic-2019 is described in section \ref{sec:05_organic2019}.
+\newline
+
+Finally, section \ref{sec:05_amazonReviews} describes a new dataset consisting of Amazon reviews which was created with the goal to provide a big dataset as the source for transfer learning. The dataset contains almost 1.2 million reviews with 20 domains spanning the Amazon product catalog.
+
+\subsection{CoNLL-2003 - Named Entity Recognition}
+
+The CoNLL-2003 shared task contains datasets in English and German for \acrfull{ner} \cite{Erik2003}. \gls{ner} describes the task of assigning labels to individual words. The four labels which are used for CoNLL-2003 are \textit{persons}, \textit{locations}, \textit{organizations} and \textit{names} \cite{Erik2003}. For example the sentence "Gerry is a researcher at TUM in Munich" would be labeled as "[\textit{PER} Gerry] is a researcher at [\textit{ORG} TUM] in [\textit{LOC} Munich]".
+
+The English data which was used for this research consists of news stories which occurred between August 1996 and August 1997 \cite{Erik2003}. The English dataset contains a total of 22,137 sentences with 301,421 tokens and is reasonably balanced in comparison to the datasets described in the next sections. Table \ref{tab:05_conll2003DatasetStats} shows the distribution of the labels and the number of samples for each data split.
+
+\begin{table}
+	\begin{tabular}{crrrrrrr}
+		\toprule
+		& Articles & Sentences & Tokens & LOC & MISC & ORG & PER \\ 
+		\midrule
+		Train & 946 & 14,987 & 203,621 & 7140 & 3438 & 6321 & 6600 \\ 
+		Validation & 216 & 3,466 & 51,362 & 1837 & 922 & 1341 & 1842 \\ 
+		Test & 231 & 3,684 & 46,435 & 1668 & 702 & 1661 & 1617 \\ 
+		\bottomrule 
+	\end{tabular} 
+\caption{Number of samples and labels for each split in the CoNLL-2003 English \gls{ner} dataset}
+\label{tab:05_conll2003DatasetStats}
+\end{table}
+
+
+\subsection{GermEval-2017 - Customer Feedback on Deutsche Bahn}
+\label{sec:05_germeval}
 GermEval 2017 is a dataset for Aspect-Based Sentiment Analysis on customer feedback about \textit{"Deutsche Bahn"} in German \cite{Wojatzki2017}. \textit{"Deutsche Bahn"} is the largest railway operator in Europe\footnote{Financial Earnings Presentation 2014: \url{https://ir.deutschebahn.com/fileadmin/Deutsch/2014/Anhaenge/2014_finanzpraesentation_asien_de.pdf}}. All data is collected from social media, blogs and Q\&A pages over the course of one year from May 2015 till June 2016. Each document is annotated with a relevance flag, a document-level sentiment polarity as well as up to 19 different aspect-sentiment combinations such as atmosphere {(\textit{Atmosphäre})} or the experience of buying a ticket {(\textit{Ticketkauf})}.
 
 GermEval-2017 is a shared dataset for four different tasks: 
@@ -100,13 +133,14 @@ This work focuses on Subtask C and results for the aspect-based sentiment analys
 Beating the baseline systems of GermEval is not trivial since the dataset is extremely skewed towards the dominant category 'general' {(\textit{Allgemein})}. This category makes up 62.2\% of all the samples in the dataset. Some categories contain less than 50 samples which is only 2\% of the whole data. Almost half of the aspects have less than 1\% share of the total amount of samples. There is even one aspect \textit{QR-Code} which has a total of two samples and none in the training split. Table \ref{tab:05_germevalDatasetStats} provides the detailed breakdown of the number of samples per aspect.
 
 This imbalance is the reason why the GermEval-2017 majority class baseline is extremely strong. In fact, during the GermEval-2017 challenge there was only one other model submission from Lee et al \cite{Lee2017} that could outperform the baseline models \cite{Wojatzki2017}.
+\newline
 
-%TODO: Refer to GermEval F1 Score issues
-
+In addition, there are some issues with the evaluation metric that the organizers of GermEval-2017 provide. Section \ref{sec:05_GermEvalEvaluation} deals with this issue in detail.
 \begin{table}
 	\begin{tabular}{lrrrrrr}
-		\hline
-		Aspect                       & Test-1 & Test-2 & Train  & Val  & Total  & Ratio   \\ \hline
+		\toprule
+		Aspect                       & Test-1 & Test-2 & Train  & Val  & Total  & Ratio   \\ 
+		\midrule
 		Allgemein                    & 1398   & 1024   & 12138  & 1475 & 16035  & 62,16\% \\
 		Atmosphäre                   & 148    & 53     & 1046   & 139  & 1386   & 5,37\%  \\
 		Auslastung \& Platzangebot   & 35     & 20     & 251    & 33   & 339    & 1.31\%  \\
@@ -126,15 +160,17 @@ This imbalance is the reason why the GermEval-2017 majority class baseline is ex
 		Sonstige Unregelmässigkeiten & 224    & 164    & 1335   & 145  & 1868   & 7.24\%  \\
 		Ticketkauf                   & 95     & 48     & 593    & 70   & 806    & 3.12\%  \\
 		Toiletten                    & 7      & 4      & 44     & 5    & 60     & 0.23\%  \\
-		Zugfahrt                     & 241    & 184    & 1798   & 190  & 2413   & 9.35\%  \\ \hline
-		Total                        & 2467   & 1721   & 19,297 & 2310 & 25,795 & 100\%   \\ \hline
+		Zugfahrt                     & 241    & 184    & 1798   & 190  & 2413   & 9.35\%  \\ 
+		\midrule
+		Total                        & 2467   & 1721   & 19,297 & 2310 & 25,795 & 100\%   \\ 
+		\bottomrule
 	\end{tabular}
 	\caption{Number of samples for each aspect per split in the GermEval-2017 shared task dataset.}
 \label{tab:05_germevalDatasetStats}
 \end{table}
 
 \subsection{Organic-2019 - Organic Comments}
-
+\label{sec:05_organic2019}
 This dataset was collected and annotated in the end of 2018 and the beginning of 2019. It contains 1,373 comments and 10,439 annotated sentences from Quora, a social question-and-answer website. 
 
 Each sentence is annotated with a domain relevance flag, a sentiment and at least one entity-attribute-sentiment triplet. Out of the 10,439 sentences, 5560 sentences are marked as domain relevant. Out of the relevant sentences 668 contain two or more aspect triplets.
@@ -152,10 +188,12 @@ Since training on the full number of entities and attributes is very challenging
 \end{figure}
 
 \subsection{Amazon Reviews Dataset}
-
+\label{sec:05_amazonReviews}
 The Amazon Reviews Dataset consists of over 130 million Amazon product reviews from 1995 until 2015. Therefore, this dataset is one of the richest data sources for sentiment analysis or other related \gls{nlp} tasks. The raw data is available directly through amazon.\footnote{\url{https://s3.amazonaws.com/amazon-reviews-pds/readme.html}} The reviews are grouped into 45 product categories such as "Grocery", "Luggage" or "Video Games". 
+\newline
 
 In 2013 McAuley and Leskovec compiled a subset of Amazon reviews \cite{McAuley2013}. This dataset contains 34,7 million reviews ranging from 1995 till 2013 grouped into 33 categories\footnote{Available through Stanford \url{https://snap.stanford.edu/data/web-Amazon.html}}. The authors also created a "Fine Food" Dataset from Amazon reviews \cite{McAuley2013a} \footnote{Available through Kaggle \url{https://www.kaggle.com/snap/amazon-fine-food-reviews}}. This dataset consists of 568,454 Amazon reviews from 1995 till 2012. The domain of this specific dataset is related to the organic domain with 273 occurrences of the word 'organic'. Unfortunately, it does not contain predefined aspects so \gls{absa} is not possible without extensive pre-processing to generate aspects out of the reviews.
+\newline
 
 The datasets created in 2013 contains duplicates so McAuley et. al. generated an improved Amazon Reviews dataset in 2015 without duplicates \cite{McAuley2015}\cite{He2016}. This iteration of the dataset contains 142.8 million reviews from 1996 till 2014\footnote{Available here: \url{http://jmcauley.ucsd.edu/data/amazon/}}. Due to the size of this dataset the authors provide a smaller dataset which only contains reviews from users who wrote exactly 5 reviews. This 5-core subset features 18 million reviews. The distribution of the domain categories is visualized in figure \ref{fig:05_amazonDatasetDistributin}. As one can observe the dataset is substantially skewed towards the largest domain 'books' which makes up of 49\% of the data.
 
@@ -167,6 +205,7 @@ The datasets created in 2013 contains duplicates so McAuley et. al. generated an
 \end{figure}
 
 To combat data imbalance and the sheer size of the dataset we propose a balanced subset of the 5-core dataset with 60000 reviews for each domain aside from \textit{Musical Instruments}, \textit{Amazon Instant Video}, \textit{Automotive} and \textit{Patio, Lawn and Garden}. These categories contain less than 50000 reviews so including them would skew the dataset again. In addition, we also transformed the star-rating to the common negative-neutral-positive rating schema. Similar to Blitzer et. al. we interpret $1-2$ stars as negative, 3 stars as neutral and $4-5$ stars as positive sentiment \cite{Blitzer2007}.
+\newline
 
 To create a balanced dataset not only on domains but also on sentiment we sampled 20000 reviews for each sentiment for each domain. Overall, there are more positive reviews than neutral or negative reviews. Thus, some domains contain less than 20000 reviews per sentiment category. To prevent data imbalance, reviews from the remaining other sentiment categories are sampled so that each domain contains 60000 reviews in sum. This distribution and additional statistics about the dataset are documented in table \ref{tab:05_amazonDatasetStats}.
 \begin{table}	
@@ -246,7 +285,7 @@ Therefore, for each dataset-result we repeat the experiment 5-times and report t
 All experiments on hyper parameters are performed once with a fixed seed of 42. This should make sure that all experiments on hyper parameters are reproducible. There are however some cudnn functions which are non-deterministic which means that even though a random seed is set the results could differ when running the same model with the same parameters multiple times.
 
 \subsubsection*{GermEval 2017 - Evaluation}
-
+\label{sec:05_GermEvalEvaluation}
 Wojatzki et al. \cite{Wojatzki} provide an evaluation script for their dataset GermEval-2017. All results from the GermEval 2017 challenge were evaluated using this dataset. Therefore, all results reported in this thesis also use the evaluation script to calculate the f1 score. This is done to be able to compare the results on this datasets to other approaches on this data.
 
 \begin{table}[hbt]
