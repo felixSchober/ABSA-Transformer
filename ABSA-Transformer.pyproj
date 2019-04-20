@@ -429,7 +429,6 @@
     <Compile Include="models\transformer\__init__.py" />
     <Compile Include="models\transformer_tagger.py" />
     <Compile Include="models\__init__.py" />
-    <Compile Include="naming.py" />
     <Compile Include="optimizer.py" />
     <Compile Include="trainer\early_stopping.py" />
     <Compile Include="trainer\train.py" />
