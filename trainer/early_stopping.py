@@ -106,8 +106,8 @@ class EarlyStopping(object):
 		if isLossNaN:
 			self.logger.info(f'Loss is NaN. > Reduce early stopping counter by 3')
 
-        # early stopping if no improvement of val_acc during the last
-        # https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
+		# early stopping if no improvement of val_acc during the last
+		# https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5
 
 		# to reset early stopping we need to fulfill the following conditions:
 		# 	1: Loss should be a number
@@ -119,7 +119,7 @@ class EarlyStopping(object):
 			self.reset_early_stopping(iteration, f1)
 		else:
 			self.should_stop = self.perform_early_stopping()
-            
+			
 		return self.should_stop
 
 	def isEnabled(self) -> bool:

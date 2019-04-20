@@ -173,7 +173,7 @@ class GermEval2017Dataset(Dataset):
 
 						sentiment_dict[category] = sentiment
 						self.stats[category][sentiment] += 1
-					 
+
 					# add all new potential keys to set
 					for s_category in sentiment_dict.keys():
 						aspect_sentiment_categories.add(s_category)
