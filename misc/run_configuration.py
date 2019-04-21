@@ -287,7 +287,7 @@ class RunConfiguration(object):
 			self.replace_url_tokens = self._get_default('replace_url_tokens', True)
 			self.use_text_cleaner = self._get_default('use_text_cleaner', False)
 			self.contraction_removal = self._get_default('contraction_removal', False)
-			self.organic_text_cleaning = self._get_default('organic_text_cleaning', True)
+			self.organic_text_cleaning = self._get_default('organic_text_cleaning', False)
 
 			# amazon specific
 			self.token_removal_1 = self._get_default('token_removal_1', False)
@@ -426,16 +426,20 @@ def from_hyperopt(hyperopt_params,
 				num_epochs:int,
 				log_every_xth_iteration: int,
 				language: str) -> RunConfiguration:
+
+	# add all default params
+	hyperopt_params['output_layer_type'] = hyperopt_params['output_layer']['type']
+	hyperopt_params['learning_rate_scheduler_type'] = hyperopt_params['learning_rate_scheduler']['type']
+	hyperopt_params['optimizer_type'] = hyperopt_params['optimizer']['type']
+	hyperopt_params = {**default_params, **hyperopt_params}
+
+	hyperopt_params['language'] = language
+	hyperopt_params['early_stopping'] = early_stopping
+	hyperopt_params['num_epochs'] = num_epochs
+	hyperopt_params['log_every_xth_iteration'] = log_every_xth_iteration
+
 	rc = RunConfiguration(
 		use_cuda,
-		model_size,
-		early_stopping,
-		num_epochs,
-		log_every_xth_iteration,
-		hyperopt_params['output_layer']['type'],
-		hyperopt_params['learning_rate_scheduler']['type'],
-		hyperopt_params['optimizer']['type'],
-		language,
 		**hyperopt_params)
 	return rc
 	

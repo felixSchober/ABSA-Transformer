@@ -8,7 +8,7 @@ from hyperopt.plotting import *
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, base
 from data.data_loader import Dataset
 from misc.preferences import PREFERENCES
-from misc.run_configuration import from_hyperopt, OutputLayerType, LearningSchedulerType, OptimizerType
+from misc.run_configuration import from_hyperopt, OutputLayerType, LearningSchedulerType, OptimizerType, default_params
 from misc import utils
 from misc.hyperopt_space import *
 
@@ -66,7 +66,7 @@ def objective(parameters):
 
 	# generate hp's from parameters
 	try:
-		rc = from_hyperopt(parameters, use_cuda, model_size=300, early_stopping=5, num_epochs=35, log_every_xth_iteration=-1, language='en')
+		rc = from_hyperopt(parameters, use_cuda, model_size=300, early_stopping=5, num_epochs=35, log_every_xth_iteration=-1, language=PREFERENCES.language)
 	except Exception as err:
 		print('Could not convert params: ' + str(err))
 		logger.exception("Could not load parameters from hyperopt configuration: " + parameters)
@@ -202,16 +202,73 @@ if dataset_choice not in possible_dataset_values:
 runs = args.runs
 
 if dataset_choice == possible_dataset_values[0]:
-	 PREFERENCES.defaults(
+	PREFERENCES.defaults(
 		data_root='./data/data/germeval2017',
 		data_train='train_v1.4.tsv',    
 		data_validation='dev_v1.4.tsv',
 		data_test='test_TIMESTAMP1.tsv',
 		source_index=0,
 		target_vocab_index=2,
-		file_format='csv'
-	 )
-	 from data.germeval2017 import germeval2017_dataset as dsl
+		file_format='csv',
+		language='de'
+	)
+	from data.germeval2017 import germeval2017_dataset as dsl
+
+	search_space = {
+		'batch_size': hp.quniform('batch_size', 10, 100, 1),
+		'num_encoder_blocks': hp.quniform('num_encoder_blocks', 1, 8, 1),
+		'pointwise_layer_size': hp.quniform('pointwise_layer_size', 32, 256, 1),
+		'clip_comments_to': hp.quniform('clip_comments_to', 10, 250, 1),
+		'dropout_rate': hp.uniform('dropout_rate', 0.0, 0.8),
+		'output_dropout_rate': hp.uniform('last_layer_dropout', 0.0, 0.8),
+		'num_heads': hp.choice('num_heads', [1, 2, 3, 4, 5]),
+		'transformer_use_bias': hp_bool('transformer_use_bias'),
+		'output_layer': hp.choice('output_layer', [
+			{
+				'type': OutputLayerType.Convolutions,
+				'output_conv_num_filters': hp.quniform('output_conv_num_filters', 1, 400, 1),
+				'output_conv_kernel_size': hp.quniform('output_conv_kernel_size', 1, 10, 1),
+				'output_conv_stride': hp.quniform('output_conv_stride', 1, 10, 1),
+				'output_conv_padding': hp.quniform('output_conv_padding', 0, 5, 1),
+			},
+			{
+				'type': OutputLayerType.LinearSum
+			}
+		]),
+		'learning_rate_scheduler': hp.choice('learning_rate_scheduler', [
+			{
+				'type': LearningSchedulerType.Noam,
+				'noam_learning_rate_warmup': hp.quniform('noam_learning_rate_warmup', 1000, 9000, 1),
+				'noam_learning_rate_factor': hp.uniform('noam_learning_rate_factor', 0.01, 4)
+			}
+		]),
+		'optimizer': hp.choice('optimizer', [
+			{
+				'type': OptimizerType.Adam,
+				'adam_beta1': hp.uniform('adam_beta1', 0.7, 0.999),
+				'adam_beta2': hp.uniform('adam_beta2', 0.7, 0.999),
+				'adam_eps': hp.loguniform('adam_eps', np.log(1e-10), np.log(1)),
+				'learning_rate': hp.lognormal('adam_learning_rate', np.log(0.01), np.log(10)),
+				'adam_weight_decay': 1*10**hp.quniform('adam_weight_decay', -8, -3, 1)
+			},
+			#{
+			#    'type': OptimizerType.SGD,
+			#    'sgd_momentum': hp.uniform('sgd_momentum', 0.4, 1),
+			#    'sgd_weight_decay': hp.loguniform('sgd_weight_decay', np.log(1e-4), np.log(1)),
+			#    'sgd_nesterov': hp_bool('sgd_nesterov'),
+			#    'learning_rate': hp.lognormal('sgd_learning_rate', np.log(0.01), np.log(10))
+		]),
+		'replace_url_tokens': hp_bool('replace_url_tokens'),
+		'harmonize_bahn': hp_bool('harmonize_bahn'),
+		'embedding_type': hp.choice('embedding_type', ['fasttext', 'glove']),
+		'embedding_name': hp.choice('embedding_name', ['6B']),
+		'embedding_dim': hp.choice('embedding_dim', [300]),
+		'use_stop_words': hp_bool('use_stop_words'),
+		'use_spell_checker': hp_bool('use_spell_checker'),
+		'embedding_type': hp.choice('embedding_type', ['fasttext', 'glove']),
+		'task': 'germeval'
+	}
+
 elif dataset_choice == possible_dataset_values[1]:
 	 from data.organic2019 import organic_dataset as dsl
 	 from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ENTITIES_COMBINE, ORGANIC_TASK_COARSE
@@ -222,7 +279,8 @@ elif dataset_choice == possible_dataset_values[1]:
 		data_test='test.csv',
 		source_index=0,
 		target_vocab_index=1,
-		file_format='csv'
+		file_format='csv',
+		language='en'
 	 )
 
 	 search_space = {
@@ -273,6 +331,7 @@ elif dataset_choice == possible_dataset_values[1]:
 			ORGANIC_TASK_ENTITIES,
 			ORGANIC_TASK_ENTITIES_COMBINE
 		]),
+		'use_stop_words': hp_bool('use_stop_words'),
 		'use_spell_checker': hp_bool('use_spell_checker'),
 		'embedding_type': hp.choice('embedding_type', ['fasttext', 'glove'])
 	}
@@ -284,7 +343,8 @@ else:
 		data_test='test.pkl',
 		source_index=0,
 		target_vocab_index=1,
-		file_format='pkl'
+		file_format='pkl',
+		language='en'
 	)
 	from data.amazon import amazon_dataset as dsl
 
