@@ -41,15 +41,18 @@ class TrainEvaluatorGermEval(TrainEvaluator):
 		eval_entries = []
 		for aspect_index, (prediction_aspect, target_aspect) in enumerate(zip([prediction], [target])):
 			for y_hat, y in zip(prediction_aspect, target_aspect):
-				# y is applicable
-				if y != y_hat and y > 0:
-					eval_entries.append(((aspect_index, y), (aspect_index, 0)))
+					# y is applicable
+					if y != y_hat and y > 0:
+						eval_entries.append(((aspect_index, y), (aspect_index, 0)))
 
-					if y_hat > 0:
-						eval_entries.append(((aspect_index, 0), (aspect_index, y_hat)))
+						if y_hat > 0:
+							eval_entries.append(((aspect_index, 0), (aspect_index, y_hat)))
 
-				elif y == y_hat and y > 0:
-					eval_entries.append(((aspect_index, y), (aspect_index, y_hat)))
+					elif y == y_hat and y > 0:
+						eval_entries.append(((aspect_index, y), (aspect_index, y_hat)))
+					elif y_hat > 0:
+							eval_entries.append(((aspect_index, 0), (aspect_index, y_hat)))
+
 		return eval_entries
 
 	def calculate_f1(self, target, prediction):
@@ -61,5 +64,6 @@ class TrainEvaluatorGermEval(TrainEvaluator):
 		tp, fp, fn, _ = self.calculate_metrics(eval_entries)
 
 		metrics = {'tp': tp, 'fp': fp, 'fn': fn}
+		empty_metric = {'tp': 0, 'fp': 0, 'fn': 0}
 		micro_f1 = self.calculate_binary_aspect_f1(metrics)
-		return (micro_f1, [micro_f1, micro_f1, micro_f1, micro_f1], [metrics, metrics, metrics, metrics])
+		return (micro_f1, [micro_f1, micro_f1, micro_f1, micro_f1], [empty_metric, metrics, empty_metric, empty_metric])
