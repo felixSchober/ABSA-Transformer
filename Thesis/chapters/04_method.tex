@@ -15,7 +15,25 @@ why mean? -> bring loss to similar value regardless of a) word length and b) asp
 
 \subsubsection{CNN-Head}
 
+\subsubsection*{Weighted Loss}
+
+\begin{equation}
+\mathcal{L}_\text{NLL}=-\frac{1}{n}\sum_{i=1}^{n} w_i * (y_i \cdot log(\hat{y}_i))
+\label{eq:04_nll}
+\end{equation}
+
+where $n$ is the number of classes, $w_i$ is the class weight, $y_i$ is the ground truth and $\hat{y}_i$ is the prediction.
+
 \section{Multi-Task Learning}
+
+The way the \gls{absa}-Transformer is build, inevitably necessitates multi-task learning since for each aspect-head a separate \gls{nll}-loss is computed. For each of the $m$ classes the loss is calculated. In the end the mean of all losses is calculated as shown in equation \ref{eq:04_multiheadLoss}.
+
+\begin{equation}
+\mathcal{L}_\text{MultiTask} = \frac{1}{m}\sum_{j=1}^{m}\mathcal{L}(f(x), y_m)
+\label{eq:04_multiheadLoss}
+\end{equation}
+
+where $\mathcal{L}(f(x), y_m)$ is the \gls{nll}-loss defined above in equation \ref{eq:04_nll}.
 
 \section{Transfer Learning}
 

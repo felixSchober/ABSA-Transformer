@@ -21,38 +21,39 @@ from misc.transfer_learning_experiment import TransferLearningExperiment
 import pprint
 
 # PREFERENCES.defaults(
-# 	data_root='./data/data/germeval2017',
-# 	data_train='train_v1.4.tsv',    
-# 	data_validation='dev_v1.4.tsv',
-# 	data_test='test_TIMESTAMP1.tsv',
-# 	source_index=0,
-# 	target_vocab_index=2,
-# 	file_format='csv'
+#  	data_root='./data/data/germeval2017',
+#  	data_train='train_v1.4.tsv',    
+#  	data_validation='dev_v1.4.tsv',
+#  	data_test='test_TIMESTAMP1.tsv',
+#  	source_index=0,
+#  	target_vocab_index=2,
+#  	file_format='csv'
 # )
 # from data.germeval2017 import germeval2017_dataset as dsl
 
 
-from data.organic2019 import organic_dataset as dsl
-from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ENTITIES_COMBINE, ORGANIC_TASK_COARSE
+# from data.organic2019 import organic_dataset as dsl
+# from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ENTITIES_COMBINE, ORGANIC_TASK_COARSE
+# PREFERENCES.defaults(
+#    data_root='./data/data/organic2019',
+#    data_train='train.csv',    
+#    data_validation='validation.csv',
+#    data_test='test.csv',
+# 	source_index=0,
+# 	target_vocab_index=1,
+# 	file_format='csv'
+# )
+
 PREFERENCES.defaults(
-    data_root='./data/data/organic2019',
-    data_train='train.csv',    
-    data_validation='validation.csv',
-    data_test='test.csv',
+	data_root='./data/data/amazon/splits',
+	data_train='train.pkl',    
+	data_validation='val.pkl',
+	data_test='test.pkl',
 	source_index=0,
 	target_vocab_index=1,
-	file_format='csv'
+	file_format='pkl'
 )
-
-# PREFERENCES.defaults(
-# 	data_root='./data/data/amazon/splits',
-# 	data_train='train.pkl',    
-# 	data_validation='val.pkl',
-# 	data_test='test.pkl',
-# 	source_index=0,
-# 	target_vocab_index=1
-# )
-# from data.amazon import amazon_dataset as dsl
+from data.amazon import amazon_dataset as dsl
 
 # def load(hp, logger):
 # 	dataset = Dataset(
@@ -154,8 +155,8 @@ PREFERENCES.defaults(
 
 #evaluation_results = trainer.perform_final_evaluation()
 
-test_params = {**hyperOpt_goodParams, **{'num_epochs': 1, 'language': 'en'}}
-e = Experiment('t3st', 'test description', default_params, test_params, dsl, runs=2)
+test_params = {**hyperOpt_goodParams, **{'num_epochs': 1, 'language': 'en', 'batch_size': 12, 'task': 'ORGANIC_TASK_COARSE', 'token_removal_2': True}}
+e = Experiment('t3st', 'test description', default_params, test_params, dsl, runs=1)
 e.run()
 # from data.organic2019 import load_splits as dsl
 # loaders = [dsl, dsl]
