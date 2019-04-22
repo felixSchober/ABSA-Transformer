@@ -103,7 +103,9 @@ class AmazonDataset(Dataset):
 
 		if not examples:
 			examples, fields = self._load(path, filename, fields, a_sentiment, hp=hp, **kwargs)
-			self._save(filename.split(".")[0], examples)
+			
+			# disable caching for now... space on Azure Cloud VMs is expensive ;)
+			# self._save(filename.split(".")[0], examples)
 		else:
 			fields = loaded_fields
 			
