@@ -348,6 +348,60 @@ else:
 	)
 	from data.amazon import amazon_dataset as dsl
 
+	search_space = {
+		'batch_size': hp.quniform('batch_size', 10, 100, 1),
+		'num_encoder_blocks': hp.quniform('num_encoder_blocks', 1, 8, 1),
+		'pointwise_layer_size': hp.quniform('pointwise_layer_size', 32, 512, 1),
+		'clip_comments_to': hp.quniform('clip_comments_to', 45, 250, 1),
+		'dropout_rate': hp.uniform('dropout_rate', 0.0, 0.8),
+		'output_dropout_rate': hp.uniform('last_layer_dropout', 0.0, 0.8),
+		'num_heads': hp.choice('num_heads', [1, 2, 3, 4, 5]),
+		'transformer_use_bias': hp_bool('transformer_use_bias'),
+		'output_layer': hp.choice('output_layer', [
+			{
+				'type': OutputLayerType.Convolutions,
+				'output_conv_num_filters': hp.quniform('output_conv_num_filters', 1, 400, 1),
+				'output_conv_kernel_size': hp.quniform('output_conv_kernel_size', 1, 10, 1),
+				'output_conv_stride': hp.quniform('output_conv_stride', 1, 10, 1),
+				'output_conv_padding': hp.quniform('output_conv_padding', 0, 5, 1),
+			},
+			{
+				'type': OutputLayerType.LinearSum
+			}
+		]),
+		'learning_rate_scheduler': hp.choice('learning_rate_scheduler', [
+			{
+				'type': LearningSchedulerType.Noam,
+				'noam_learning_rate_warmup': hp.quniform('noam_learning_rate_warmup', 1000, 9000, 1),
+				'noam_learning_rate_factor': hp.uniform('noam_learning_rate_factor', 0.01, 4)
+			}
+		]),
+		'optimizer': hp.choice('optimizer', [
+			{
+				'type': OptimizerType.Adam,
+				'adam_beta1': hp.uniform('adam_beta1', 0.7, 0.999),
+				'adam_beta2': hp.uniform('adam_beta2', 0.7, 0.999),
+				'adam_eps': hp.loguniform('adam_eps', np.log(1e-10), np.log(1)),
+				'learning_rate': hp.lognormal('adam_learning_rate', np.log(0.01), np.log(10)),
+				'adam_weight_decay': 1*10**hp.quniform('adam_weight_decay', -8, -3, 1)
+			},
+			#{
+			#    'type': OptimizerType.SGD,
+			#    'sgd_momentum': hp.uniform('sgd_momentum', 0.4, 1),
+			#    'sgd_weight_decay': hp.loguniform('sgd_weight_decay', np.log(1e-4), np.log(1)),
+			#    'sgd_nesterov': hp_bool('sgd_nesterov'),
+			#    'learning_rate': hp.lognormal('sgd_learning_rate', np.log(0.01), np.log(10))
+		]),
+		'replace_url_tokens': hp_bool('replace_url_tokens'),
+		'embedding_type': hp.choice('embedding_type', ['fasttext', 'glove']),
+		'embedding_name': hp.choice('embedding_name', ['6B']),
+		'embedding_dim': hp.choice('embedding_dim', [300]),
+		'use_stop_words': hp_bool('use_stop_words'),
+		'use_spell_checker': hp_bool('use_spell_checker'),
+		'token_removal_1': hp_bool('token_removal_1'),
+		'task': 'amazon'
+	}
+
 
 main_experiment_name = args.name
 use_cuda = True
