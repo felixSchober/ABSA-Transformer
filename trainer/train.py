@@ -17,7 +17,6 @@ from tqdm.autonotebook import tqdm
 
 from trainer.utils import *
 from trainer.train_logger import TrainLogger
-from trainer.train_evaluator import TrainEvaluator
 from trainer.early_stopping import EarlyStopping
 
 from misc.utils import *
@@ -117,15 +116,30 @@ class Trainer(object):
 			self.log_imgage_dir,
 			self.loss.name)		
 
-		self.evaluator = TrainEvaluator(
-			self.model,
-			self.loss,
-			self.iterations_per_epoch_train,
-			self.log_every_xth_iteration,
-			(dataset.train_iter, dataset.valid_iter, dataset.test_iter),
-			self.train_logger,
-			self.pre_training,
-			dataset)
+		# use special evaluator for germeval
+		if self.dataset.name == 'germeval':
+			from trainer.train_evaluator_germEval import TrainEvaluatorGermEval
+			self.evaluator = TrainEvaluatorGermEval(
+				self.model,
+				self.loss,
+				self.iterations_per_epoch_train,
+				self.log_every_xth_iteration,
+				(dataset.train_iter, dataset.valid_iter, dataset.test_iter),
+				self.train_logger,
+				self.pre_training,
+				dataset)
+		else:
+			from trainer.train_evaluator import TrainEvaluator
+
+			self.evaluator = TrainEvaluator(
+				self.model,
+				self.loss,
+				self.iterations_per_epoch_train,
+				self.log_every_xth_iteration,
+				(dataset.train_iter, dataset.valid_iter, dataset.test_iter),
+				self.train_logger,
+				self.pre_training,
+				dataset)
 
 		self.early_stopping = EarlyStopping(self.optimizer, self.model, hyperparameters, self.evaluator, self.checkpoint_dir)
 

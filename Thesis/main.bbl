@@ -1,5 +1,5 @@
 % $ biblatex auxiliary file $
-% $ biblatex bbl format version 2.8 $
+% $ biblatex bbl format version 2.9 $
 % Do not modify the above lines!
 %
 % This is an auxiliary file used by the 'biblatex' package.
@@ -18,83 +18,27 @@
 
 
 \refsection{0}
-  \sortlist[entry]{nty/global/}
-    \entry{Blitzer2008}{inproceedings}{}
-      \name{author}{5}{}{%
-        {{uniquename=0,hash=4cf8cf8b1e08936da7cbd269f4327216}{%
-           family={Blitzer},
-           familyi={B\bibinitperiod},
-           given={John},
-           giveni={J\bibinitperiod}}}%
-        {{uniquename=0,hash=16e0c91cca40e2931e13a4c18e98530b}{%
-           family={Crammer},
-           familyi={C\bibinitperiod},
-           given={Koby},
-           giveni={K\bibinitperiod}}}%
-        {{uniquename=0,hash=ed45112f884bd28f8284073833f32f19}{%
-           family={Kulesza},
-           familyi={K\bibinitperiod},
-           given={Alex},
-           giveni={A\bibinitperiod}}}%
-        {{uniquename=0,hash=3ef139cfd819ad7d3af54f3d2e9507b9}{%
-           family={Pereira},
-           familyi={P\bibinitperiod},
-           given={Fernando},
-           giveni={F\bibinitperiod}}}%
-        {{uniquename=0,hash=33eae076507ec8b54b3f37a1d31e5391}{%
-           family={Wortman},
-           familyi={W\bibinitperiod},
-           given={Jennifer},
-           giveni={J\bibinitperiod}}}%
-      }
-      \name{editor}{1}{}{%
-        {{hash=7e4cab19d5209bb2fa2693a633399e67}{%
-           family={{J. C. Platt and D. Koller and Y. Singer and S. T. Roweis}},
-           familyi={J\bibinitperiod}}}%
-      }
-      \list{publisher}{1}{%
-        {Curran Associates, Inc.}%
-      }
-      \strng{namehash}{58c5be84d7f115dde6280a76dbb9337f}
-      \strng{fullhash}{a06535fb7881e347360da845dfd3c3f8}
-      \strng{authornamehash}{58c5be84d7f115dde6280a76dbb9337f}
-      \strng{authorfullhash}{a06535fb7881e347360da845dfd3c3f8}
-      \strng{editornamehash}{7e4cab19d5209bb2fa2693a633399e67}
-      \strng{editorfullhash}{7e4cab19d5209bb2fa2693a633399e67}
-      \field{sortinit}{B}
-      \field{sortinithash}{5f6fa000f686ee5b41be67ba6ff7962d}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{abstract}{Empirical risk minimization offers well-known learning guarantees when training and test data come from the same domain. In the real world, though, we often wish to adapt a classifier from a source domain with a large amount of training data to different target domain with very little training data. In this work we give uniform convergence bounds for algorithms that minimize a convex combination of source and target empirical risk. The bounds explicitly model the inherent trade-off between training on a large but inaccurate source data set and a small but accurate target training set. Our theory also gives results when we have multiple source domains, each of which may have a different number of instances, and we exhibit cases in which minimizing a non-uniform combination of source risks can achieve much lower target error than standard empirical risk minimization.}
-      \field{booktitle}{Advances in Neural Information Processing Systems 20 (NIPS 2007)}
-      \field{title}{{Learning Bounds for Domain Adaptation}}
-      \field{year}{2008}
-      \field{pages}{129\bibrangedash 136}
-      \range{pages}{8}
-      \verb{file}
-      \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Blitzer et al. - 2008 - Learning Bounds for Domain Adaptation.pdf:pdf
-      \endverb
-      \verb{url}
-      \verb https://papers.nips.cc/paper/3212-learning-bounds-for-domain-adaptation.pdf
-      \endverb
-    \endentry
+  \datalist[entry]{nty/global//global/global}
     \entry{Blitzer2007}{inproceedings}{}
       \name{author}{3}{}{%
-        {{uniquename=0,hash=4cf8cf8b1e08936da7cbd269f4327216}{%
+        {{uniquename=0,uniquepart=base,hash=4cf8cf8b1e08936da7cbd269f4327216}{%
            family={Blitzer},
            familyi={B\bibinitperiod},
            given={John},
-           giveni={J\bibinitperiod}}}%
-        {{uniquename=0,hash=fad798cd3972b70e217b653e07abc99d}{%
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=fad798cd3972b70e217b653e07abc99d}{%
            family={Dredze},
            familyi={D\bibinitperiod},
            given={Mark},
-           giveni={M\bibinitperiod}}}%
-        {{uniquename=0,hash=3ef139cfd819ad7d3af54f3d2e9507b9}{%
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=3ef139cfd819ad7d3af54f3d2e9507b9}{%
            family={Pereira},
            familyi={P\bibinitperiod},
            given={Fernando},
-           giveni={F\bibinitperiod}}}%
+           giveni={F\bibinitperiod},
+           givenun=0}}%
       }
       \list{location}{1}{%
         {Prague, Czech Republic}%
@@ -104,10 +48,12 @@
       }
       \strng{namehash}{2a209d9caa4702f4911fe2bbf586a95c}
       \strng{fullhash}{2a209d9caa4702f4911fe2bbf586a95c}
+      \strng{bibnamehash}{2a209d9caa4702f4911fe2bbf586a95c}
+      \strng{authorbibnamehash}{2a209d9caa4702f4911fe2bbf586a95c}
       \strng{authornamehash}{2a209d9caa4702f4911fe2bbf586a95c}
       \strng{authorfullhash}{2a209d9caa4702f4911fe2bbf586a95c}
       \field{sortinit}{B}
-      \field{sortinithash}{5f6fa000f686ee5b41be67ba6ff7962d}
+      \field{sortinithash}{276475738cc058478c1677046f857703}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Automatic sentiment classification has been extensively studied and applied in recent years. However, sentiment is expressed differently in different domains, and annotating corpora for every possible domain of interest is impractical. We investigate domain adaptation for sentiment classifiers, focusing on online reviews for different types of products. First, we extend to sentiment classification the recently-proposed structural correspondence learning (SCL) algorithm, reducing the relative error due to adaptation between domains by an average of 30{\%} over the original SCL algorithm and 46{\%} over a supervised baseline. Second, we identify a measure of domain similarity that correlates well with the potential for adaptation of a classifier from one domain to another. This measure could for instance be used to select a small set of domains to annotate whose trained classifiers would transfer well to many other domains.}
@@ -120,27 +66,33 @@
       \verb{file}
       \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Blitzer, Dredze, Pereira - 2007 - Biographies, Bollywood, Boom-boxes and Blenders Domain Adaptation for Sentiment Classification.pdf:pdf
       \endverb
+      \verb{urlraw}
+      \verb http://ida.
+      \endverb
       \verb{url}
       \verb http://ida.
       \endverb
     \endentry
     \entry{Caruana1997a}{thesis}{}
       \name{author}{1}{}{%
-        {{uniquename=0,hash=599c5251d489b92dc7856277d56cb1a9}{%
+        {{uniquename=0,uniquepart=base,hash=599c5251d489b92dc7856277d56cb1a9}{%
            family={Caruana},
            familyi={C\bibinitperiod},
            given={Rich},
-           giveni={R\bibinitperiod}}}%
+           giveni={R\bibinitperiod},
+           givenun=0}}%
       }
       \list{institution}{1}{%
         {Carnegie Melon University}%
       }
       \strng{namehash}{599c5251d489b92dc7856277d56cb1a9}
       \strng{fullhash}{599c5251d489b92dc7856277d56cb1a9}
+      \strng{bibnamehash}{599c5251d489b92dc7856277d56cb1a9}
+      \strng{authorbibnamehash}{599c5251d489b92dc7856277d56cb1a9}
       \strng{authornamehash}{599c5251d489b92dc7856277d56cb1a9}
       \strng{authorfullhash}{599c5251d489b92dc7856277d56cb1a9}
       \field{sortinit}{C}
-      \field{sortinithash}{095692fd22cc3c74d7fe223d02314dbd}
+      \field{sortinithash}{963e9d84a3da2344e8833203de5aed05}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{title}{{Multitask Learning}}
@@ -149,24 +101,30 @@
       \verb{file}
       \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Caruana - 1997 - Multitask Learning.pdf:pdf
       \endverb
+      \verb{urlraw}
+      \verb http://www8.cs.umu.se/research/ifor/dl/LEARNING/multitask learning.pdf
+      \endverb
       \verb{url}
       \verb http://www8.cs.umu.se/research/ifor/dl/LEARNING/multitask%20learning.pdf
       \endverb
     \endentry
     \entry{Caruana1993}{article}{}
       \name{author}{1}{}{%
-        {{uniquename=0,hash=2965a10236a9abe0c21d7d05358c7a2d}{%
+        {{uniquename=0,uniquepart=base,hash=2965a10236a9abe0c21d7d05358c7a2d}{%
            family={Caruana},
            familyi={C\bibinitperiod},
            given={Richard},
-           giveni={R\bibinitperiod}}}%
+           giveni={R\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{2965a10236a9abe0c21d7d05358c7a2d}
       \strng{fullhash}{2965a10236a9abe0c21d7d05358c7a2d}
+      \strng{bibnamehash}{2965a10236a9abe0c21d7d05358c7a2d}
+      \strng{authorbibnamehash}{2965a10236a9abe0c21d7d05358c7a2d}
       \strng{authornamehash}{2965a10236a9abe0c21d7d05358c7a2d}
       \strng{authorfullhash}{2965a10236a9abe0c21d7d05358c7a2d}
       \field{sortinit}{C}
-      \field{sortinithash}{095692fd22cc3c74d7fe223d02314dbd}
+      \field{sortinithash}{963e9d84a3da2344e8833203de5aed05}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{PROCEEDINGS OF THE TENTH INTERNATIONAL CONFERENCE ON MACHINE LEARNING}
@@ -177,29 +135,36 @@
       \verb{file}
       \verb ::
       \endverb
+      \verb{urlraw}
+      \verb http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.57.3196
+      \endverb
       \verb{url}
       \verb http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.57.3196
       \endverb
     \endentry
     \entry{He2016}{article}{}
       \name{author}{2}{}{%
-        {{uniquename=0,hash=1b8a48b9ddb1c09f1c48bd467d99488a}{%
+        {{uniquename=0,uniquepart=base,hash=1b8a48b9ddb1c09f1c48bd467d99488a}{%
            family={He},
            familyi={H\bibinitperiod},
            given={Ruining},
-           giveni={R\bibinitperiod}}}%
-        {{uniquename=0,hash=24f98302ee924662159ce29687c18e4e}{%
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=24f98302ee924662159ce29687c18e4e}{%
            family={McAuley},
            familyi={M\bibinitperiod},
            given={Julian},
-           giveni={J\bibinitperiod}}}%
+           giveni={J\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{fcd9fe5c698fb1a95b86c14df5013495}
       \strng{fullhash}{fcd9fe5c698fb1a95b86c14df5013495}
+      \strng{bibnamehash}{fcd9fe5c698fb1a95b86c14df5013495}
+      \strng{authorbibnamehash}{fcd9fe5c698fb1a95b86c14df5013495}
       \strng{authornamehash}{fcd9fe5c698fb1a95b86c14df5013495}
       \strng{authorfullhash}{fcd9fe5c698fb1a95b86c14df5013495}
       \field{sortinit}{H}
-      \field{sortinithash}{2f664b453ec75da1fe3804ca92633405}
+      \field{sortinithash}{5f15a7bc777ad49ff15aa4d2831b1681}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Building a successful recommender system depends on understanding both the dimensions of people's preferences as well as their dynamics. In certain domains, such as fashion, modeling such preferences can be incredibly difficult, due to the need to simultaneously model the visual appearance of products as well as their evolution over time. The subtle semantics and non-linear dynamics of fashion evolution raise unique challenges especially considering the sparsity and large scale of the underlying datasets. In this paper we build novel models for the One-Class Collaborative Filtering setting, where our goal is to estimate users' fashion-aware personalized ranking functions based on their past feedback. To uncover the complex and evolving visual factors that people consider when evaluating products, our method combines high-level visual features extracted from a deep convolutional neural network, users' past feedback, as well as evolving trends within the community. Experimentally we evaluate our method on two large real-world datasets from Amazon.com, where we show it to outperform state-of-the-art personalized ranking measures, and also use it to visualize the high-level fashion trends across the 11-year span of our dataset.}
@@ -216,6 +181,9 @@
       \verb{file}
       \verb :C$\backslash$:/Users/felix/OneDrive/Desktop/1602.01585.pdf:pdf
       \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1602.01585{\%}0Ahttp://dx.doi.org/10.1145/2872427.2883037
+      \endverb
       \verb{url}
       \verb http://arxiv.org/abs/1602.01585%7B%5C%%7D0Ahttp://dx.doi.org/10.1145/2872427.2883037
       \endverb
@@ -223,23 +191,27 @@
     \endentry
     \entry{Iyer1999}{article}{}
       \name{author}{2}{}{%
-        {{uniquename=0,hash=45f090d988ecb270e6a2c5523880020f}{%
+        {{uniquename=0,uniquepart=base,hash=45f090d988ecb270e6a2c5523880020f}{%
            family={Iyer},
            familyi={I\bibinitperiod},
            given={Mahesh\bibnamedelima S.},
-           giveni={M\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
-        {{uniquename=0,hash=a5094db438940abc6cbb77546c49dc00}{%
+           giveni={M\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=a5094db438940abc6cbb77546c49dc00}{%
            family={Rhinehart},
            familyi={R\bibinitperiod},
            given={R.\bibnamedelimi Russell},
-           giveni={R\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+           giveni={R\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{ca76a1fe1142513355b4e3785b60ec15}
       \strng{fullhash}{ca76a1fe1142513355b4e3785b60ec15}
+      \strng{bibnamehash}{ca76a1fe1142513355b4e3785b60ec15}
+      \strng{authorbibnamehash}{ca76a1fe1142513355b4e3785b60ec15}
       \strng{authornamehash}{ca76a1fe1142513355b4e3785b60ec15}
       \strng{authorfullhash}{ca76a1fe1142513355b4e3785b60ec15}
       \field{sortinit}{I}
-      \field{sortinithash}{a3dcedd53b04d1adfd5ac303ecd5e6fa}
+      \field{sortinithash}{320bc8fe8101b9376f9f21cd507de0e8}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Conventional neural network training algorithms often get stuck in local minima. To find the global optimum, training is conventionally repeated with 10, or so, random starting values for the weights. Here we develop an analytical procedure to determine how many times a neural network needs to be trained, with random starting weights, to ensure that the best of those is within a desirable lower percentile of all possible trainings, with a certain level of confidence. The theoretical developments are validated by experimental results. While applied to neural network training, the method is generally applicable to nonlinear optimization.}
@@ -261,43 +233,51 @@
     \endentry
     \entry{LeCun;1990}{article}{}
       \name{author}{6}{}{%
-        {{uniquename=0,hash=769a6bb10ee7c5d8025d7ded064e2a29}{%
+        {{uniquename=0,uniquepart=base,hash=769a6bb10ee7c5d8025d7ded064e2a29}{%
            family={LeCun;},
            familyi={L\bibinitperiod},
            given={Y},
-           giveni={Y\bibinitperiod}}}%
-        {{uniquename=0,hash=7eacb03f7d28612977f50d8cb1be0bad}{%
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=7eacb03f7d28612977f50d8cb1be0bad}{%
            family={Boser},
            familyi={B\bibinitperiod},
            given={B},
-           giveni={B\bibinitperiod}}}%
-        {{uniquename=0,hash=4f138434f743ff4d54b0b36a04662329}{%
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=4f138434f743ff4d54b0b36a04662329}{%
            family={Denker},
            familyi={D\bibinitperiod},
            given={John\bibnamedelima S},
-           giveni={J\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
-        {{uniquename=0,hash=bda766234c11a6558f113fbc70b3a162}{%
+           giveni={J\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=bda766234c11a6558f113fbc70b3a162}{%
            family={Howard},
            familyi={H\bibinitperiod},
            given={R\bibnamedelima E},
-           giveni={R\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
-        {{uniquename=0,hash=4ac80f1eb17df2440de877aa4f54e932}{%
+           giveni={R\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=4ac80f1eb17df2440de877aa4f54e932}{%
            family={Habbard},
            familyi={H\bibinitperiod},
            given={W},
-           giveni={W\bibinitperiod}}}%
-        {{uniquename=0,hash=9789716909ac1531cb255742d7b1068b}{%
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=9789716909ac1531cb255742d7b1068b}{%
            family={Jackel},
            familyi={J\bibinitperiod},
            given={L\bibnamedelima D},
-           giveni={L\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+           giveni={L\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{1e02fea53989bdfc1c5cb28b1803f3ae}
       \strng{fullhash}{94294e2ffdfbef05c4a8c40eaa4fddae}
+      \strng{bibnamehash}{94294e2ffdfbef05c4a8c40eaa4fddae}
+      \strng{authorbibnamehash}{94294e2ffdfbef05c4a8c40eaa4fddae}
       \strng{authornamehash}{1e02fea53989bdfc1c5cb28b1803f3ae}
       \strng{authorfullhash}{94294e2ffdfbef05c4a8c40eaa4fddae}
       \field{sortinit}{L}
-      \field{sortinithash}{7bba64db83423e3c29ad597f3b682cf3}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{We present an application of back-propagation networks to handwritten digit recognition. Minimal preprocessing of the data was required, but architecture of the network was highly constrained and specifically designed for the task. The input of the network consists of normalized images of isolated digits. The method has 1{\%} error rate and about a 9{\%} reject rate on zipcode digits provided by the U.S. Postal Service.}
@@ -318,24 +298,30 @@
       \verb{file}
       \verb ::
       \endverb
+      \verb{urlraw}
+      \verb http://papers.nips.cc/paper/293-handwritten-digit-recognition-with-a-back-propagation-network.pdf http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.32.5076{\%}5Cnhttp://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.32.5076{\&}rep=rep1{\&}type=pdf
+      \endverb
       \verb{url}
       \verb http://papers.nips.cc/paper/293-handwritten-digit-recognition-with-a-back-propagation-network.pdf%20http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.32.5076%7B%5C%%7D5Cnhttp://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.32.5076%7B%5C&%7Drep=rep1%7B%5C&%7Dtype=pdf
       \endverb
     \endentry
     \entry{Levenshtein1966}{article}{}
       \name{author}{1}{}{%
-        {{uniquename=0,hash=245f012ddc9a48f0cfc990bd487f595c}{%
+        {{uniquename=0,uniquepart=base,hash=245f012ddc9a48f0cfc990bd487f595c}{%
            family={Levenshtein},
            familyi={L\bibinitperiod},
            given={V.I.},
-           giveni={V\bibinitperiod}}}%
+           giveni={V\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{245f012ddc9a48f0cfc990bd487f595c}
       \strng{fullhash}{245f012ddc9a48f0cfc990bd487f595c}
+      \strng{bibnamehash}{245f012ddc9a48f0cfc990bd487f595c}
+      \strng{authorbibnamehash}{245f012ddc9a48f0cfc990bd487f595c}
       \strng{authornamehash}{245f012ddc9a48f0cfc990bd487f595c}
       \strng{authorfullhash}{245f012ddc9a48f0cfc990bd487f595c}
       \field{sortinit}{L}
-      \field{sortinithash}{7bba64db83423e3c29ad597f3b682cf3}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Insertions and Reversals. Sov}
@@ -347,22 +333,27 @@
       \verb{file}
       \verb ::
       \endverb
+      \verb{urlraw}
+      \verb https://nymity.ch/sybilhunting/pdf/Levenshtein1966a.pdf
+      \endverb
       \verb{url}
       \verb https://nymity.ch/sybilhunting/pdf/Levenshtein1966a.pdf
       \endverb
     \endentry
     \entry{McAuley2013a}{inproceedings}{}
       \name{author}{2}{}{%
-        {{uniquename=0,hash=24f98302ee924662159ce29687c18e4e}{%
+        {{uniquename=0,uniquepart=base,hash=24f98302ee924662159ce29687c18e4e}{%
            family={McAuley},
            familyi={M\bibinitperiod},
            given={Julian},
-           giveni={J\bibinitperiod}}}%
-        {{uniquename=0,hash=900d107125ff0ca84698cb909e4f6c51}{%
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=900d107125ff0ca84698cb909e4f6c51}{%
            family={Leskovec},
            familyi={L\bibinitperiod},
            given={Jure},
-           giveni={J\bibinitperiod}}}%
+           giveni={J\bibinitperiod},
+           givenun=0}}%
       }
       \list{location}{1}{%
         {Rio de Janeiro, Brazil}%
@@ -372,10 +363,12 @@
       }
       \strng{namehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
       \strng{fullhash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \strng{bibnamehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \strng{authorbibnamehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
       \strng{authornamehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
       \strng{authorfullhash}{bbbd2d32814b9c62099e9b96f3c8e78c}
       \field{sortinit}{M}
-      \field{sortinithash}{c26a05ef03e4429073ed5c825140fac3}
+      \field{sortinithash}{cfd219b90152c06204fab207bc6c7cab}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Recommending products to consumers means not only understanding their tastes, but also understanding their level of experience. For example, it would be a mistake to recommend the iconic film Seven Samurai simply because a user enjoys other action movies; rather, we might conclude that they will eventually enjoy it -- once they are ready. The same is true for beers, wines, gourmet foods -- or any products where users have acquired tastes: the `best' products may not be the most `accessible'. Thus our goal in this paper is to recommend products that a user will enjoy now, while acknowledging that their tastes may have changed over time, and may change again in the future. We model how tastes change due to the very act of consuming more products -- in other words, as users become more experienced. We develop a latent factor recommendation system that explicitly accounts for each user's level of experience. We find that such a model not only leads to better recommendations, but also allows us to study the role of user experience and expertise on a novel dataset of fifteen million beer, wine, food, and movie reviews.}
@@ -395,6 +388,9 @@
       \verb{file}
       \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/McAuley, Leskovec - 2013 - From Amateurs to Connoisseurs Modeling the Evolution of User Expertise through Online Reviews.pdf:pdf
       \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1303.4402
+      \endverb
       \verb{url}
       \verb http://arxiv.org/abs/1303.4402
       \endverb
@@ -402,16 +398,18 @@
     \endentry
     \entry{McAuley2013}{inproceedings}{}
       \name{author}{2}{}{%
-        {{uniquename=0,hash=24f98302ee924662159ce29687c18e4e}{%
+        {{uniquename=0,uniquepart=base,hash=24f98302ee924662159ce29687c18e4e}{%
            family={McAuley},
            familyi={M\bibinitperiod},
            given={Julian},
-           giveni={J\bibinitperiod}}}%
-        {{uniquename=0,hash=900d107125ff0ca84698cb909e4f6c51}{%
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=900d107125ff0ca84698cb909e4f6c51}{%
            family={Leskovec},
            familyi={L\bibinitperiod},
            given={Jure},
-           giveni={J\bibinitperiod}}}%
+           giveni={J\bibinitperiod},
+           givenun=0}}%
       }
       \list{location}{1}{%
         {Hong Kong, China}%
@@ -421,10 +419,12 @@
       }
       \strng{namehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
       \strng{fullhash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \strng{bibnamehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
+      \strng{authorbibnamehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
       \strng{authornamehash}{bbbd2d32814b9c62099e9b96f3c8e78c}
       \strng{authorfullhash}{bbbd2d32814b9c62099e9b96f3c8e78c}
       \field{sortinit}{M}
-      \field{sortinithash}{c26a05ef03e4429073ed5c825140fac3}
+      \field{sortinithash}{cfd219b90152c06204fab207bc6c7cab}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{In order to recommend products to users we must ultimately predict how a user will respond to a new product. To do so we must uncover the implicit tastes of each user as well as the properties of each product. For example, in order to predict whether a user will enjoy Harry Potter, it helps to identify that the book is about wiz- ards, as well as the user's level of interest in wizardry. User feedback is required to discover these latent product and user dimensions. Such feedback often comes in the form of a numeric rating accompanied by review text. However, traditional methods often discard review text, which makes user and product latent dimensions difficult to interpret, since they ignore the very text that justifies a user's rating. In this paper, we aim to combine latent rating dimensions (such as those of latent-factor recommender systems) with latent review topics (such as those learned by topic models like LDA). Our approach has several advantages. Firstly, we ob- tain highly interpretable textual labels for latent rating dimensions, which helps us to ‘justify' ratings with text. Secondly, our approach more accurately predicts product ratings by harnessing the informa- tion present in review text; this is especially true for new products and users, who may have too few ratings to model their latent fac- tors, yet may still provide substantial information from the text of even a single review. Thirdly, our discovered topics can be used to facilitate other tasks such as automated genre discovery, and to identify useful and representative reviews.}
@@ -440,6 +440,9 @@
       \verb{file}
       \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Mcauley, Leskovec - Unknown - Hidden Factors and Hidden Topics Understanding Rating Dimensions with Review Text.pdf:pdf
       \endverb
+      \verb{urlraw}
+      \verb http://dx.doi.org/10.1145/2507157.2507163.
+      \endverb
       \verb{url}
       \verb http://dx.doi.org/10.1145/2507157.2507163.
       \endverb
@@ -447,35 +450,42 @@
     \endentry
     \entry{McAuley2015}{article}{}
       \name{author}{4}{}{%
-        {{uniquename=0,hash=24f98302ee924662159ce29687c18e4e}{%
+        {{uniquename=0,uniquepart=base,hash=24f98302ee924662159ce29687c18e4e}{%
            family={McAuley},
            familyi={M\bibinitperiod},
            given={Julian},
-           giveni={J\bibinitperiod}}}%
-        {{uniquename=0,hash=d3d8dd6d94d65c683e17bbbc8a84da47}{%
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=d3d8dd6d94d65c683e17bbbc8a84da47}{%
            family={Targett},
            familyi={T\bibinitperiod},
            given={Christopher},
-           giveni={C\bibinitperiod}}}%
-        {{uniquename=0,hash=4babe5a0322188f1800f7bf84fa9898e}{%
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=4babe5a0322188f1800f7bf84fa9898e}{%
            family={Shi},
            familyi={S\bibinitperiod},
            given={Qinfeng},
-           giveni={Q\bibinitperiod}}}%
-        {{uniquename=0,hash=b53a0ea70213607fcdf8c0d7e4f957c8}{%
+           giveni={Q\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=b53a0ea70213607fcdf8c0d7e4f957c8}{%
            family={Hengel},
            familyi={H\bibinitperiod},
            given={Anton},
            giveni={A\bibinitperiod},
+           givenun=0,
            prefix={van\bibnamedelima den},
-           prefixi={v\bibinitperiod\bibinitdelim d\bibinitperiod}}}%
+           prefixi={v\bibinitperiod\bibinitdelim d\bibinitperiod},
+           prefixun=0}}%
       }
       \strng{namehash}{a5c4f433396f437b34ee954748697db3}
       \strng{fullhash}{a5c4f433396f437b34ee954748697db3}
+      \strng{bibnamehash}{a5c4f433396f437b34ee954748697db3}
+      \strng{authorbibnamehash}{a5c4f433396f437b34ee954748697db3}
       \strng{authornamehash}{a5c4f433396f437b34ee954748697db3}
       \strng{authorfullhash}{a5c4f433396f437b34ee954748697db3}
       \field{sortinit}{M}
-      \field{sortinithash}{c26a05ef03e4429073ed5c825140fac3}
+      \field{sortinithash}{cfd219b90152c06204fab207bc6c7cab}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Humans inevitably develop a sense of the relationships between objects, some of which are based on their appearance. Some pairs of objects might be seen as being alternatives to each other (such as two pairs of jeans), while others may be seen as being complementary (such as a pair of jeans and a matching shirt). This information guides many of the choices that people make, from buying clothes to their interactions with each other. We seek here to model this human sense of the relationships between objects based on their appearance. Our approach is not based on fine-grained modeling of user annotations but rather on capturing the largest dataset possible and developing a scalable method for uncovering human notions of the visual relationships within. We cast this as a network inference problem defined on graphs of related images, and provide a large-scale dataset for the training and evaluation of the same. The system we develop is capable of recommending which clothes and accessories will go well together (and which will not), amongst a host of other applications.}
@@ -490,34 +500,42 @@
       \verb{file}
       \verb :C$\backslash$:/Users/felix/OneDrive/Desktop/1506.04757.pdf:pdf
       \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1506.04757
+      \endverb
       \verb{url}
       \verb http://arxiv.org/abs/1506.04757
       \endverb
     \endentry
     \entry{Plank}{report}{}
       \name{author}{3}{}{%
-        {{uniquename=0,hash=63bd895d4fbba2d503bc308d763e44d4}{%
+        {{uniquename=0,uniquepart=base,hash=63bd895d4fbba2d503bc308d763e44d4}{%
            family={Plank},
            familyi={P\bibinitperiod},
            given={Barbara},
-           giveni={B\bibinitperiod}}}%
-        {{uniquename=0,hash=b874f93d29ad9151e52501b113f21077}{%
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=b874f93d29ad9151e52501b113f21077}{%
            family={S{ø}gaard},
            familyi={S\bibinitperiod},
            given={Anders},
-           giveni={A\bibinitperiod}}}%
-        {{uniquename=0,hash=33b00f3e2f4f1bb310f1cf8d4a4c500a}{%
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=33b00f3e2f4f1bb310f1cf8d4a4c500a}{%
            family={Goldberg},
            familyi={G\bibinitperiod},
            given={Yoav},
-           giveni={Y\bibinitperiod}}}%
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{ffcd48d9d479b2df55f8a166126f031d}
       \strng{fullhash}{ffcd48d9d479b2df55f8a166126f031d}
+      \strng{bibnamehash}{ffcd48d9d479b2df55f8a166126f031d}
+      \strng{authorbibnamehash}{ffcd48d9d479b2df55f8a166126f031d}
       \strng{authornamehash}{ffcd48d9d479b2df55f8a166126f031d}
       \strng{authorfullhash}{ffcd48d9d479b2df55f8a166126f031d}
       \field{sortinit}{P}
-      \field{sortinithash}{24100cef455d7974167575052c29146e}
+      \field{sortinithash}{8d51b3d5b78d75b54308d706b9bbe285}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Bidirectional long short-term memory (bi-LSTM) networks have recently proven successful for various NLP sequence mod-eling tasks, but little is known about their reliance to input representations, target languages, data set size, and label noise. We address these issues and evaluate bi-LSTMs with word, character, and unicode byte embeddings for POS tagging. We compare bi-LSTMs to traditional POS taggers across languages and data sizes. We also present a novel bi-LSTM model, which combines the POS tagging loss function with an auxiliary loss function that accounts for rare words. The model obtains state-of-the-art performance across 22 languages, and works especially well for morphologically complex languages. Our analysis suggests that bi-LSTMs are less sensitive to training data size and label corruptions (at small noise levels) than previously assumed.}
@@ -531,24 +549,30 @@
       \verb{file}
       \verb ::
       \endverb
+      \verb{urlraw}
+      \verb https://github.com/clab/cnn
+      \endverb
       \verb{url}
       \verb https://github.com/clab/cnn
       \endverb
     \endentry
     \entry{Pratt1993}{article}{}
       \name{author}{1}{}{%
-        {{uniquename=0,hash=940038165be71c04e157c5a41f5dc09b}{%
+        {{uniquename=0,uniquepart=base,hash=940038165be71c04e157c5a41f5dc09b}{%
            family={Pratt},
            familyi={P\bibinitperiod},
            given={L\bibnamedelima Y},
-           giveni={L\bibinitperiod\bibinitdelim Y\bibinitperiod}}}%
+           giveni={L\bibinitperiod\bibinitdelim Y\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{940038165be71c04e157c5a41f5dc09b}
       \strng{fullhash}{940038165be71c04e157c5a41f5dc09b}
+      \strng{bibnamehash}{940038165be71c04e157c5a41f5dc09b}
+      \strng{authorbibnamehash}{940038165be71c04e157c5a41f5dc09b}
       \strng{authornamehash}{940038165be71c04e157c5a41f5dc09b}
       \strng{authorfullhash}{940038165be71c04e157c5a41f5dc09b}
       \field{sortinit}{P}
-      \field{sortinithash}{24100cef455d7974167575052c29146e}
+      \field{sortinithash}{8d51b3d5b78d75b54308d706b9bbe285}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Previously, we have introduced the idea of neural network transfer, where learning on a target problem is sped up by using the weights obtained from a network trained for a related source task. Here, we present a new algorithm. called Discriminability-Based Transfer (DBT), which uses an information measure to estimate the utility of hyperplanes defined by source weights in the target network, and rescales transferred weight magnitudes accordingly. Several experiments demonstrate that target networks initialized via DBT learn significantly faster than networks initialized randomly.}
@@ -560,49 +584,60 @@
       \verb{file}
       \verb ::
       \endverb
+      \verb{urlraw}
+      \verb http://papers.nips.cc/paper/641-discriminability-based-transfer-between-neural-networks.pdf
+      \endverb
       \verb{url}
       \verb http://papers.nips.cc/paper/641-discriminability-based-transfer-between-neural-networks.pdf
       \endverb
     \endentry
     \entry{Ramsundar2015}{unpublished}{}
       \name{author}{6}{}{%
-        {{uniquename=0,hash=6846cc99295752b57e920fdc36e377f2}{%
+        {{uniquename=0,uniquepart=base,hash=6846cc99295752b57e920fdc36e377f2}{%
            family={Ramsundar},
            familyi={R\bibinitperiod},
            given={Bharath},
-           giveni={B\bibinitperiod}}}%
-        {{uniquename=0,hash=6b69d0b1ec0a3e7eab2f9f716a2f1b52}{%
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=6b69d0b1ec0a3e7eab2f9f716a2f1b52}{%
            family={Kearnes},
            familyi={K\bibinitperiod},
            given={Steven},
-           giveni={S\bibinitperiod}}}%
-        {{uniquename=0,hash=875f84466ebe1e6693e13c1aff3f4f42}{%
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=875f84466ebe1e6693e13c1aff3f4f42}{%
            family={Riley},
            familyi={R\bibinitperiod},
            given={Patrick},
-           giveni={P\bibinitperiod}}}%
-        {{uniquename=0,hash=814593e049561ed80f4209a83b937bda}{%
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=814593e049561ed80f4209a83b937bda}{%
            family={Webster},
            familyi={W\bibinitperiod},
            given={Dale},
-           giveni={D\bibinitperiod}}}%
-        {{uniquename=0,hash=327b53d3391f639f85cf99daac339c6a}{%
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=327b53d3391f639f85cf99daac339c6a}{%
            family={Konerding},
            familyi={K\bibinitperiod},
            given={David},
-           giveni={D\bibinitperiod}}}%
-        {{uniquename=0,hash=8b199ddaf6c3a6930287f84fc29a82dd}{%
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=8b199ddaf6c3a6930287f84fc29a82dd}{%
            family={Pande},
            familyi={P\bibinitperiod},
            given={Vijay},
-           giveni={V\bibinitperiod}}}%
+           giveni={V\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{7ceed5b76a1fd26aaaf2620b7ee60ece}
       \strng{fullhash}{c2f5e5e022ac7f20d1298b841cad0993}
+      \strng{bibnamehash}{c2f5e5e022ac7f20d1298b841cad0993}
+      \strng{authorbibnamehash}{c2f5e5e022ac7f20d1298b841cad0993}
       \strng{authornamehash}{7ceed5b76a1fd26aaaf2620b7ee60ece}
       \strng{authorfullhash}{c2f5e5e022ac7f20d1298b841cad0993}
       \field{sortinit}{R}
-      \field{sortinithash}{c15bc8eb6936bc6b3c8baa9e8575af53}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Massively multitask neural architectures provide a learning framework for drug discovery that synthesizes information from many distinct biological sources. To train these architectures at scale, we gather large amounts of data from public sources to create a dataset of nearly 40 million measurements across more than 200 biological targets. We investigate several aspects of the multitask framework by performing a series of empirical studies and obtain some interesting results: (1) massively multitask networks obtain predictive accuracies significantly better than single-task methods, (2) the predictive power of multitask networks improves as additional tasks and data are added, (3) the total amount of data and the total number of tasks both contribute significantly to multitask improvement, and (4) multitask networks afford limited transferability to tasks not in the training set. Our results underscore the need for greater data sharing and further algorithmic innovation to accelerate the drug discovery process.}
@@ -617,24 +652,30 @@
       \verb{file}
       \verb ::
       \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1502.02072
+      \endverb
       \verb{url}
       \verb http://arxiv.org/abs/1502.02072
       \endverb
     \endentry
     \entry{Rei2017}{article}{}
       \name{author}{1}{}{%
-        {{uniquename=0,hash=bd651b0a99d219fbbcf0b23d89a85e2e}{%
+        {{uniquename=0,uniquepart=base,hash=bd651b0a99d219fbbcf0b23d89a85e2e}{%
            family={Rei},
            familyi={R\bibinitperiod},
            given={Marek},
-           giveni={M\bibinitperiod}}}%
+           giveni={M\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{bd651b0a99d219fbbcf0b23d89a85e2e}
       \strng{fullhash}{bd651b0a99d219fbbcf0b23d89a85e2e}
+      \strng{bibnamehash}{bd651b0a99d219fbbcf0b23d89a85e2e}
+      \strng{authorbibnamehash}{bd651b0a99d219fbbcf0b23d89a85e2e}
       \strng{authornamehash}{bd651b0a99d219fbbcf0b23d89a85e2e}
       \strng{authorfullhash}{bd651b0a99d219fbbcf0b23d89a85e2e}
       \field{sortinit}{R}
-      \field{sortinithash}{c15bc8eb6936bc6b3c8baa9e8575af53}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{We propose a sequence labeling framework with a secondary training objective, learning to predict surrounding words for every word in the dataset. This language modeling objective incentivises the system to learn general-purpose patterns of semantic and syntactic composition, which are also useful for improving accuracy on different sequence labeling tasks. The architecture was evaluated on a range of datasets, covering the tasks of error detection in learner texts, named entity recognition, chunking and POS-tagging. The novel language modeling objective provided consistent performance improvements on every benchmark, without requiring any additional annotated or unannotated data.}
@@ -649,24 +690,30 @@
       \verb{file}
       \verb ::
       \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1704.07156
+      \endverb
       \verb{url}
       \verb http://arxiv.org/abs/1704.07156
       \endverb
     \endentry
     \entry{Ruder2017}{article}{}
       \name{author}{1}{}{%
-        {{uniquename=0,hash=b468248a20d75c52ee742f4592c2569f}{%
+        {{uniquename=0,uniquepart=base,hash=b468248a20d75c52ee742f4592c2569f}{%
            family={Ruder},
            familyi={R\bibinitperiod},
            given={Sebastian},
-           giveni={S\bibinitperiod}}}%
+           giveni={S\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{b468248a20d75c52ee742f4592c2569f}
       \strng{fullhash}{b468248a20d75c52ee742f4592c2569f}
+      \strng{bibnamehash}{b468248a20d75c52ee742f4592c2569f}
+      \strng{authorbibnamehash}{b468248a20d75c52ee742f4592c2569f}
       \strng{authornamehash}{b468248a20d75c52ee742f4592c2569f}
       \strng{authorfullhash}{b468248a20d75c52ee742f4592c2569f}
       \field{sortinit}{R}
-      \field{sortinithash}{c15bc8eb6936bc6b3c8baa9e8575af53}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Multi-task learning (MTL) has led to successes in many applications of machine learning, from natural language processing and speech recognition to computer vision and drug discovery. This article aims to give a general overview of MTL, particularly in deep neural networks. It introduces the two most common methods for MTL in Deep Learning, gives an overview of the literature, and discusses recent advances. In particular, it seeks to help ML practitioners apply MTL by shedding light on how MTL works and providing guidelines for choosing appropriate auxiliary tasks.}
@@ -680,29 +727,36 @@
       \verb{file}
       \verb ::
       \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/1706.05098
+      \endverb
       \verb{url}
       \verb http://arxiv.org/abs/1706.05098
       \endverb
     \endentry
     \entry{Sang2003}{article}{}
       \name{author}{2}{}{%
-        {{uniquename=0,hash=78af0c309adbb2a1b1a0099e4e58e30a}{%
+        {{uniquename=0,uniquepart=base,hash=78af0c309adbb2a1b1a0099e4e58e30a}{%
            family={Sang},
            familyi={S\bibinitperiod},
            given={Erik\bibnamedelimb F.\bibnamedelimi Tjong\bibnamedelima Kim},
-           giveni={E\bibinitperiod\bibinitdelim F\bibinitperiod\bibinitdelim T\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
-        {{uniquename=0,hash=d76edcbb6f4130ac14c37bf980191905}{%
+           giveni={E\bibinitperiod\bibinitdelim F\bibinitperiod\bibinitdelim T\bibinitperiod\bibinitdelim K\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=d76edcbb6f4130ac14c37bf980191905}{%
            family={{De Meulder}},
            familyi={D\bibinitperiod},
            given={Fien},
-           giveni={F\bibinitperiod}}}%
+           giveni={F\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{ad6b60b5c2cb86783ba02c559cfadcea}
       \strng{fullhash}{ad6b60b5c2cb86783ba02c559cfadcea}
+      \strng{bibnamehash}{ad6b60b5c2cb86783ba02c559cfadcea}
+      \strng{authorbibnamehash}{ad6b60b5c2cb86783ba02c559cfadcea}
       \strng{authornamehash}{ad6b60b5c2cb86783ba02c559cfadcea}
       \strng{authorfullhash}{ad6b60b5c2cb86783ba02c559cfadcea}
       \field{sortinit}{S}
-      \field{sortinithash}{3c1547c63380458f8ca90e40ed14b83e}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{We describe the CoNLL-2003 shared task: language-independent named entity recognition. We give background information on the data sets (English and German) and the evaluation method, present a general overview of the systems that have taken part in the task and discuss their performance.}
@@ -716,39 +770,48 @@
       \verb{file}
       \verb ::
       \endverb
+      \verb{urlraw}
+      \verb http://lcg-www.uia.ac.be/conll2003/ner/ http://arxiv.org/abs/cs/0306050
+      \endverb
       \verb{url}
       \verb http://lcg-www.uia.ac.be/conll2003/ner/%20http://arxiv.org/abs/cs/0306050
       \endverb
     \endentry
     \entry{Toutanova2007}{inproceedings}{}
       \name{author}{4}{}{%
-        {{uniquename=0,hash=b92aa283415413bb8d2a1548716d0c7d}{%
+        {{uniquename=0,uniquepart=base,hash=b92aa283415413bb8d2a1548716d0c7d}{%
            family={Toutanova},
            familyi={T\bibinitperiod},
            given={Kristina},
-           giveni={K\bibinitperiod}}}%
-        {{uniquename=0,hash=9fb237891a1517d36109c68767dd6fae}{%
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=9fb237891a1517d36109c68767dd6fae}{%
            family={Klein},
            familyi={K\bibinitperiod},
            given={Dan},
-           giveni={D\bibinitperiod}}}%
-        {{uniquename=0,hash=1261894eaefc186bfeabf336e05e6294}{%
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=1261894eaefc186bfeabf336e05e6294}{%
            family={Manning},
            familyi={M\bibinitperiod},
            given={Christopher\bibnamedelima D},
-           giveni={C\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
-        {{uniquename=0,hash=300d4990e626d975e0c28630444f63c3}{%
+           giveni={C\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=300d4990e626d975e0c28630444f63c3}{%
            family={Singer},
            familyi={S\bibinitperiod},
            given={Yoram},
-           giveni={Y\bibinitperiod}}}%
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{5782462bc6938878547f0c49c6bb7261}
       \strng{fullhash}{5782462bc6938878547f0c49c6bb7261}
+      \strng{bibnamehash}{5782462bc6938878547f0c49c6bb7261}
+      \strng{authorbibnamehash}{5782462bc6938878547f0c49c6bb7261}
       \strng{authornamehash}{5782462bc6938878547f0c49c6bb7261}
       \strng{authorfullhash}{5782462bc6938878547f0c49c6bb7261}
       \field{sortinit}{T}
-      \field{sortinithash}{2e5c2f51f7fa2d957f3206819bf86dc3}
+      \field{sortinithash}{6f7aff9db9dcfeb7f95fd5bbd2f78df9}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{We present a new part-of-speech tagger that demonstrates the following ideas: (i) explicit use of both preceding and following tag contexts via a dependency network representation, (ii) broad use of lexical features, including jointly conditioning on multiple consecutive words, (iii) effective use of priors in conditional loglinear models, and (iv) ﬁne-grained modeling of unknown word features. Using these ideas together, the resulting tagger gives a 97.24{\%} accuracy on the Penn Treebank WSJ, an error reduction of 4.4{\%} on the best previous single automatically learned tagging result}
@@ -762,44 +825,54 @@
       \verb{file}
       \verb ::
       \endverb
+      \verb{urlraw}
+      \verb https://nlp.stanford.edu/{~}manning/papers/tagging.pdf
+      \endverb
       \verb{url}
       \verb https://nlp.stanford.edu/%7B~%7Dmanning/papers/tagging.pdf
       \endverb
     \endentry
     \entry{Wojatzki}{inproceedings}{}
       \name{author}{5}{}{%
-        {{uniquename=0,hash=a2c8e311473de30e3f6cbaaf47b9cb95}{%
+        {{uniquename=0,uniquepart=base,hash=a2c8e311473de30e3f6cbaaf47b9cb95}{%
            family={Wojatzki},
            familyi={W\bibinitperiod},
            given={Michael},
-           giveni={M\bibinitperiod}}}%
-        {{uniquename=0,hash=ef7ee212acdccc3d74d41d898bd4cb62}{%
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=ef7ee212acdccc3d74d41d898bd4cb62}{%
            family={Ruppert},
            familyi={R\bibinitperiod},
            given={Eugen},
-           giveni={E\bibinitperiod}}}%
-        {{uniquename=0,hash=e579d61b899afa5979e9652af0fe1808}{%
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=e579d61b899afa5979e9652af0fe1808}{%
            family={Holschneider},
            familyi={H\bibinitperiod},
            given={Sarah},
-           giveni={S\bibinitperiod}}}%
-        {{uniquename=0,hash=d2bddcda907ea93d3a82a0623d8d0930}{%
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=d2bddcda907ea93d3a82a0623d8d0930}{%
            family={Zesch},
            familyi={Z\bibinitperiod},
            given={Torsten},
-           giveni={T\bibinitperiod}}}%
-        {{uniquename=0,hash=786eca9f4966307b17cae6c3bba98905}{%
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=786eca9f4966307b17cae6c3bba98905}{%
            family={Biemann},
            familyi={B\bibinitperiod},
            given={Chris},
-           giveni={C\bibinitperiod}}}%
+           giveni={C\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{8bbd00d972f21c5d562f5781bf9c87b5}
       \strng{fullhash}{a634b0dddccd4d827259620c9a118e61}
+      \strng{bibnamehash}{a634b0dddccd4d827259620c9a118e61}
+      \strng{authorbibnamehash}{a634b0dddccd4d827259620c9a118e61}
       \strng{authornamehash}{8bbd00d972f21c5d562f5781bf9c87b5}
       \strng{authorfullhash}{a634b0dddccd4d827259620c9a118e61}
       \field{sortinit}{W}
-      \field{sortinithash}{6d25b3eefe5aa2147d1f339686808918}
+      \field{sortinithash}{ecb89ff85896a47dc313960773ac311d}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{This paper describes the GermEval 2017 shared task on Aspect-Based Sentiment Analysis that consists of four subtasks: rel-evance, document-level sentiment polarity, aspect-level polarity ad opinion target ex-traction. System performance is measured on two evaluation sets – one from the same time period as the training and development set, and a second one, which contains data from a later time period. We describe the subtasks and the data in detail and provide the shared task results. Overall, the shared task attracted over 50 system runs from 8 teams.}
@@ -811,29 +884,36 @@
       \verb{file}
       \verb :C$\backslash$:/Users/felix/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Wojatzki et al. - Unknown - GermEval 2017 Shared Task on Aspect-based Sentiment in Social Media Customer Feedback.pdf:pdf
       \endverb
+      \verb{urlraw}
+      \verb http://www.ltl.uni-due.de/http://lt.informatik.uni-hamburg.de https://www.ltl.uni-due.de/wp-content/uploads/germeval-2017.pdf
+      \endverb
       \verb{url}
       \verb http://www.ltl.uni-due.de/http://lt.informatik.uni-hamburg.de%20https://www.ltl.uni-due.de/wp-content/uploads/germeval-2017.pdf
       \endverb
     \endentry
     \entry{Zhang2017a}{article}{}
       \name{author}{2}{}{%
-        {{uniquename=0,hash=9a4f4a1ff661cd600eb26523a5ba8bb4}{%
+        {{uniquename=0,uniquepart=base,hash=9a4f4a1ff661cd600eb26523a5ba8bb4}{%
            family={Zhang},
            familyi={Z\bibinitperiod},
            given={Yu},
-           giveni={Y\bibinitperiod}}}%
-        {{uniquename=0,hash=55242d2a60270145342841e4d4238da0}{%
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=55242d2a60270145342841e4d4238da0}{%
            family={Yang},
            familyi={Y\bibinitperiod},
            given={Qiang},
-           giveni={Q\bibinitperiod}}}%
+           giveni={Q\bibinitperiod},
+           givenun=0}}%
       }
       \strng{namehash}{6cd6b62eb7a185a0d85f22af0ef449f2}
       \strng{fullhash}{6cd6b62eb7a185a0d85f22af0ef449f2}
+      \strng{bibnamehash}{6cd6b62eb7a185a0d85f22af0ef449f2}
+      \strng{authorbibnamehash}{6cd6b62eb7a185a0d85f22af0ef449f2}
       \strng{authornamehash}{6cd6b62eb7a185a0d85f22af0ef449f2}
       \strng{authorfullhash}{6cd6b62eb7a185a0d85f22af0ef449f2}
       \field{sortinit}{Z}
-      \field{sortinithash}{35589aa085e881766b72503e53fd4c97}
+      \field{sortinithash}{156173bd08b075d7295bc3e0f4735a04}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Multi-Task Learning (MTL) is a learning paradigm in machine learning and its aim is to leverage useful information contained in multiple related tasks to help improve the generalization performance of all the tasks. In this paper, we give a survey for MTL. First, we classify different MTL algorithms into several categories, including feature learning approach, low-rank approach, task clustering approach, task relation learning approach, and decomposition approach, and then discuss the characteristics of each approach. In order to improve the performance of learning tasks further, MTL can be combined with other learning paradigms including semi-supervised learning, active learning, unsupervised learning, reinforcement learning, multi-view learning and graphical models. When the number of tasks is large or the data dimensionality is high, batch MTL models are difficult to handle this situation and online, parallel and distributed MTL models as well as dimensionality reduction and feature hashing are reviewed to reveal their computational and storage advantages. Many real-world applications use MTL to boost their performance and we review representative works. Finally, we present theoretical analyses and discuss several future directions for MTL.}
@@ -846,12 +926,15 @@
       \verb{file}
       \verb ::
       \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/pdf/1707.08114.pdf http://arxiv.org/abs/1707.08114
+      \endverb
       \verb{url}
       \verb https://arxiv.org/pdf/1707.08114.pdf%20http://arxiv.org/abs/1707.08114
       \endverb
       \keyw{Artificial Intelligence !,Index Terms-Multi-Task Learning,Machine Learning}
     \endentry
-  \endsortlist
+  \enddatalist
 \endrefsection
 \endinput
 
