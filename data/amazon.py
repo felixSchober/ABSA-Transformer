@@ -26,7 +26,15 @@ def amazon_dataset(
 				use_cuda=True,
 				verbose=True):
 
+	# make sure token removal 2 is not enbaled together with spellchecker
+	assert not(hyperparameters.token_removal_2 and hyperparameters.use_spell_checkers)
+	assert not(hyperparameters.token_removal_3 and hyperparameters.use_spell_checkers)
 
+	assert not(hyperparameters.token_removal_2 and hyperparameters.token_removal_1)
+	assert not(hyperparameters.token_removal_2 and hyperparameters.token_removal_3)
+	assert not(hyperparameters.token_removal_1 and hyperparameters.token_removal_3)
+
+	
 	logger.debug('Creating splits and load data')
 	data = load_splits(task, hyperparameters, root, train_file, validation_file, test_file, verbose)
 	comment_field = data['fields']['comment']

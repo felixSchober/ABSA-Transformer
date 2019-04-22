@@ -1,1 +1,0 @@
-ssh -N -L 8080:localhost:8080 felix@dsvmal4oeckc2ct4g.westeurope.cloudapp.azure.com

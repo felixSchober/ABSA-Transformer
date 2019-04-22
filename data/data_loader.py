@@ -5,8 +5,19 @@ from torch.nn import Embedding
 from prettytable import PrettyTable
 from misc.run_configuration import RunConfiguration
 import matplotlib.pyplot as plt
-
+import matplotlib as mpl
+import seaborn as sns
 from misc.utils import get_class_variable_table, create_dir_if_necessary, check_if_file_exists
+import pandas as pd
+
+# sns.set(style="whitegrid")
+sns.set_style("white")
+sns.despine()
+
+sns.set_color_codes()
+# sns.set_context("paper")
+sns.set(rc={"font.size":18,"axes.labelsize":22})
+# sns.set(font_scale=1.7)
 
 # see https://github.com/mjc92/TorchTextTutorial/blob/master/01.%20Getting%20started.ipynb
 
@@ -224,6 +235,7 @@ class Dataset(object):
 		self.class_weights = []
 		result_str = '\n\n'
 		target_sentiment_distribution = []
+		target_sentiment_samples = []
 		target_sentiment_distribution_labels = []
 		for name, f in self.target:
 			if name is None or not f.use_vocab:
@@ -239,6 +251,7 @@ class Dataset(object):
 
 				if not l == 'n/a':
 					not_na_samples += freq
+			target_sentiment_samples.append(not_na_samples)
 
 			majority_class_baseline = 0.0
 			class_weight = [0.0] * self.target_size
@@ -272,8 +285,8 @@ class Dataset(object):
 			t.add_row(['Head Weight', '', '', head_weight])
 
 			if self.verbose:
-				self.plot_dataset_stats(sentiment_distributions, labels, f'Sentiment Distribution - {name}', f'{name} sentiments.svg')
-				self.plot_dataset_stats(observation_distribution, observation_distribution_lables, f'Ratio of N/A and sentiment - {name}', f'{name} observations.svg')
+				self.plot_dataset_stats(sentiment_distributions, labels, f'Sentiment Distribution - {name}', f'{name} sentiments.pdf')
+				self.plot_dataset_stats(observation_distribution, observation_distribution_lables, f'Ratio of N/A and sentiment - {name}', f'{name} observations.pdf')
 
 			if not 'majority_class' in self.baselines:
 				self.baselines['majority_class'] = majority_class_baseline
@@ -283,30 +296,48 @@ class Dataset(object):
 			result_str += '\n\n' + t.get_string(title=name) + '\n\n'
 
 		if self.verbose:
-			self.plot_dataset_stats(target_sentiment_distribution, target_sentiment_distribution_labels, f'Dataset Aspect Distribution', 'aspects.svg')
+			self.plot_dataset_stats(target_sentiment_samples, target_sentiment_distribution_labels, f'Dataset Aspects - Distribution', 'aspect_distribution.pdf')
 
 		return result_str
 
-	def plot_dataset_stats(self, fractions, labels, title, fileName):
+	def plot_dataset_stats(self, samples, labels, title, fileName):
 		path = os.path.join(self.img_stats_folder, fileName)
 		# don't generate if already exists
 		if check_if_file_exists(path):
 			return
-		
-		fig1, ax1 = plt.subplots()
-		patches, texts, autotexts = ax1.pie(fractions, pctdistance=0.85, labels=labels, autopct='%1.1f%%',
-				shadow=False, startangle=90)
 
-		for text in texts:
-			text.set_color('grey')
-		for autotext in autotexts:
-			autotext.set_color('white')
+		df = pd.DataFrame({
+			'Samples': samples,
+			'Aspect': labels
+		})
 
-		centre_circle = plt.Circle((0,0),0.70,fc='white')
-		fig = plt.gcf()
-		fig.gca().add_artist(centre_circle)
-		ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+		plt.figure(figsize=(20,10))
+		ax = sns.barplot(data=df, color='b', x='Aspect', y='Samples')
+		plt.title(title, fontsize=20) 
+		plt.xticks(rotation=45, ha="right")
+		ax.get_yaxis().get_major_formatter().set_scientific(False)
+		plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+		ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
 
-		plt.title(title)
-		plt.tight_layout()
 		plt.savefig(path, format=fileName.split('.')[-1])
+
+
+		# IF YOU WANT TO HAVE A PIE, USE THIS
+		# vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+		# fig1, ax1 = plt.subplots()
+		# patches, texts, autotexts = ax1.pie(fractions, pctdistance=0.85, labels=labels, autopct='%1.1f%%',
+		# 		shadow=False, startangle=90)
+
+		# for text in texts:
+		# 	text.set_color('grey')
+		# for autotext in autotexts:
+		# 	autotext.set_color('white')
+
+		# centre_circle = plt.Circle((0,0),0.70,fc='white')
+		# fig = plt.gcf()
+		# fig.gca().add_artist(centre_circle)
+		# ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+		# plt.title(title)
+		# plt.tight_layout(pad=0.8, w_pad=0.8, h_pad=1.0)
+		# plt.savefig(path, format=fileName.split('.')[-1])

@@ -4,8 +4,8 @@ from enum import Enum
 from typing import Dict
 
 class OutputLayerType(Enum):
-        LinearSum = 1
-        Convolutions = 2
+		LinearSum = 1
+		Convolutions = 2
 
 class LearningSchedulerType(Enum):
 		Noam = 1
@@ -287,7 +287,13 @@ class RunConfiguration(object):
 			self.replace_url_tokens = self._get_default('replace_url_tokens', True)
 			self.use_text_cleaner = self._get_default('use_text_cleaner', False)
 			self.contraction_removal = self._get_default('contraction_removal', False)
-			self.organic_text_cleaning = self._get_default('organic_text_cleaning', True)
+			self.organic_text_cleaning = self._get_default('organic_text_cleaning', False)
+
+			# amazon specific
+			self.token_removal_1 = self._get_default('token_removal_1', False)
+			self.token_removal_2 = self._get_default('token_removal_2', False)
+			self.token_removal_3 = self._get_default('token_removal_3', False)
+
 
 			# contraction removal only possible for english language
 			assert self.contraction_removal == False or (self.contraction_removal == True and self.language == 'en')
@@ -334,84 +340,84 @@ class RunConfiguration(object):
 
 def randomize_params(config, param_dict_range) -> RunConfiguration:
 
-        if 'batch_size' in param_dict_range:
-                ranges = param_dict_range['batch_size']
-                config.batch_size = random.randint(ranges[0], ranges[1])
+		if 'batch_size' in param_dict_range:
+				ranges = param_dict_range['batch_size']
+				config.batch_size = random.randint(ranges[0], ranges[1])
 
-        if 'num_encoder_blocks' in param_dict_range:
-                ranges = param_dict_range['num_encoder_blocks']
-                config.n_enc_blocks = random.randint(ranges[0], ranges[1])
+		if 'num_encoder_blocks' in param_dict_range:
+				ranges = param_dict_range['num_encoder_blocks']
+				config.n_enc_blocks = random.randint(ranges[0], ranges[1])
 
-        if 'pointwise_layer_size' in param_dict_range:
-                ranges = param_dict_range['pointwise_layer_size']
-                config.pointwise_layer_size = random.randint(ranges[0], ranges[1])
+		if 'pointwise_layer_size' in param_dict_range:
+				ranges = param_dict_range['pointwise_layer_size']
+				config.pointwise_layer_size = random.randint(ranges[0], ranges[1])
 
-        if 'output_conv_num_filters' in param_dict_range:
-                ranges = param_dict_range['output_conv_num_filters']
-                config.output_conv_num_filters = random.randint(ranges[0], ranges[1])
+		if 'output_conv_num_filters' in param_dict_range:
+				ranges = param_dict_range['output_conv_num_filters']
+				config.output_conv_num_filters = random.randint(ranges[0], ranges[1])
 
-        if 'output_conv_kernel_size' in param_dict_range:
-                ranges = param_dict_range['output_conv_kernel_size']
-                config.output_conv_kernel_size = random.randint(ranges[0], ranges[1])
+		if 'output_conv_kernel_size' in param_dict_range:
+				ranges = param_dict_range['output_conv_kernel_size']
+				config.output_conv_kernel_size = random.randint(ranges[0], ranges[1])
 
-        if 'output_conv_stride' in param_dict_range:
-                ranges = param_dict_range['output_conv_stride']
-                config.output_conv_stride = random.randint(ranges[0], ranges[1])
+		if 'output_conv_stride' in param_dict_range:
+				ranges = param_dict_range['output_conv_stride']
+				config.output_conv_stride = random.randint(ranges[0], ranges[1])
 
-        if 'output_conv_padding' in param_dict_range:
-                ranges = param_dict_range['output_conv_padding']
-                config.output_conv_padding = random.randint(ranges[0], ranges[1])
+		if 'output_conv_padding' in param_dict_range:
+				ranges = param_dict_range['output_conv_padding']
+				config.output_conv_padding = random.randint(ranges[0], ranges[1])
 
-        if 'output_layer_type' in param_dict_range:
-                types = param_dict_range['output_layer_type']
-                config.output_layer_type = random.choice(types)
+		if 'output_layer_type' in param_dict_range:
+				types = param_dict_range['output_layer_type']
+				config.output_layer_type = random.choice(types)
 
-        if 'clip_comments_to' in param_dict_range:
-                ranges = param_dict_range['clip_comments_to']
-                config.clip_comments_to = random.randint(ranges[0], ranges[1])
+		if 'clip_comments_to' in param_dict_range:
+				ranges = param_dict_range['clip_comments_to']
+				config.clip_comments_to = random.randint(ranges[0], ranges[1])
 
-        if 'learning_rate' in param_dict_range:
-                ranges = param_dict_range['learning_rate']
-                config.learning_rate = random.uniform(ranges[0], ranges[1])
+		if 'learning_rate' in param_dict_range:
+				ranges = param_dict_range['learning_rate']
+				config.learning_rate = random.uniform(ranges[0], ranges[1])
 
-        if 'learning_rate_factor' in param_dict_range:
-                ranges = param_dict_range['learning_rate_factor']
-                config.learning_rate_factor = random.uniform(ranges[0], ranges[1])
+		if 'learning_rate_factor' in param_dict_range:
+				ranges = param_dict_range['learning_rate_factor']
+				config.learning_rate_factor = random.uniform(ranges[0], ranges[1])
 
-        if 'learning_rate_warmup' in param_dict_range:
-                ranges = param_dict_range['learning_rate_warmup']
-                config.learning_rate_warmup = random.uniform(ranges[0], ranges[1])
+		if 'learning_rate_warmup' in param_dict_range:
+				ranges = param_dict_range['learning_rate_warmup']
+				config.learning_rate_warmup = random.uniform(ranges[0], ranges[1])
 
-        if 'optim_adam_beta1' in param_dict_range:
-                ranges = param_dict_range['optim_adam_beta1']
-                config.optim_adam_beta1 = random.uniform(ranges[0], ranges[1])
+		if 'optim_adam_beta1' in param_dict_range:
+				ranges = param_dict_range['optim_adam_beta1']
+				config.optim_adam_beta1 = random.uniform(ranges[0], ranges[1])
 
-        if 'optim_adam_beta2' in param_dict_range:
-                ranges = param_dict_range['optim_adam_beta2']
-                config.optim_adam_beta2 = random.uniform(ranges[0], ranges[1])
+		if 'optim_adam_beta2' in param_dict_range:
+				ranges = param_dict_range['optim_adam_beta2']
+				config.optim_adam_beta2 = random.uniform(ranges[0], ranges[1])
 
-        if 'dropout_rate' in param_dict_range:
-                ranges = param_dict_range['dropout_rate']
-                config.dropout_rate = random.uniform(ranges[0], ranges[1])
+		if 'dropout_rate' in param_dict_range:
+				ranges = param_dict_range['dropout_rate']
+				config.dropout_rate = random.uniform(ranges[0], ranges[1])
 
-        if 'last_layers_dropout_rate' in param_dict_range:
-                ranges = param_dict_range['last_layers_dropout_rate']
-                config.last_layers_dropout_rate = random.uniform(ranges[0], ranges[1])
+		if 'last_layers_dropout_rate' in param_dict_range:
+				ranges = param_dict_range['last_layers_dropout_rate']
+				config.last_layers_dropout_rate = random.uniform(ranges[0], ranges[1])
 
-        if 'transformer_config' in param_dict_range:
-                transformer_config = param_dict_range['transformer_config']
+		if 'transformer_config' in param_dict_range:
+				transformer_config = param_dict_range['transformer_config']
 
-                if 'transformer_heads' in transformer_config:                        
-                        config.n_heads = random.choice(transformer_config['transformer_heads'])
+				if 'transformer_heads' in transformer_config:                        
+						config.n_heads = random.choice(transformer_config['transformer_heads'])
 
-                        # based on num_heads choose the d_v, d_k, d_q sizes
-                        # make sure that it will be a valid size
-                        assert(config.model_size % config.n_heads == 0, f'number of heads {config.n_heads} is not a valid number of heads for model size {config.model_size}.')
+						# based on num_heads choose the d_v, d_k, d_q sizes
+						# make sure that it will be a valid size
+						assert(config.model_size % config.n_heads == 0, f'number of heads {config.n_heads} is not a valid number of heads for model size {config.model_size}.')
 
-                        config.d_k = config.model_size // config.n_heads
-                        config.d_v = config.model_size // config.n_heads
+						config.d_k = config.model_size // config.n_heads
+						config.d_v = config.model_size // config.n_heads
 
-        return config
+		return config
 
 def from_hyperopt(hyperopt_params,
 				use_cuda: bool,
@@ -420,16 +426,20 @@ def from_hyperopt(hyperopt_params,
 				num_epochs:int,
 				log_every_xth_iteration: int,
 				language: str) -> RunConfiguration:
+
+	# add all default params
+	hyperopt_params['output_layer_type'] = hyperopt_params['output_layer']['type']
+	hyperopt_params['learning_rate_scheduler_type'] = hyperopt_params['learning_rate_scheduler']['type']
+	hyperopt_params['optimizer_type'] = hyperopt_params['optimizer']['type']
+	hyperopt_params = {**default_params, **hyperopt_params}
+
+	hyperopt_params['language'] = language
+	hyperopt_params['early_stopping'] = early_stopping
+	hyperopt_params['num_epochs'] = num_epochs
+	hyperopt_params['log_every_xth_iteration'] = log_every_xth_iteration
+
 	rc = RunConfiguration(
 		use_cuda,
-		model_size,
-		early_stopping,
-		num_epochs,
-		log_every_xth_iteration,
-		hyperopt_params['output_layer']['type'],
-		hyperopt_params['learning_rate_scheduler']['type'],
-		hyperopt_params['optimizer']['type'],
-		language,
 		**hyperopt_params)
 	return rc
 	

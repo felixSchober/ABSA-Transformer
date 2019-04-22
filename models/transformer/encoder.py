@@ -16,20 +16,20 @@ class TransformerEncoder(nn.Module):
 				hyperparameters: RunConfiguration,
 				d_vocab: int = None):
 		"""Constructor for the tranformer encoder
-        
-        Arguments:
-            src_embeddings {nn.Embedding} -- Embedding for the input. If None an untrained embedding will be generated or elmo is used
-        
-        Keyword Arguments:
-            d_vocab {int} -- Size of source vocabulary. Not needed if src_embeddings is set. (default: {None})
-            n_enc_blocks {int} -- number of encoder blocks (default: {constants.DEFAULT_ENCODER_BLOCKS})
-            n_head {int} -- number of heads (default: {constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS})
-            d_model {int} -- size of model (default: {constants.DEFAULT_LAYER_SIZE})
-            dropout_rate {float} -- dropout rate (default: {constants.DEFAULT_MODEL_DROPOUT})
-            pointwise_layer_size {int} -- size of pointwise layer (default: {constants.DEFAULT_DIMENSION_OF_PWFC_HIDDEN_LAYER})
-            d_k {int} -- size of key / query vector needed for attention (default: {constants.DEFAULT_DIMENSION_OF_KEYQUERY_WEIGHTS})
-            d_v {int} -- size of value vector needeed for attention (default: {constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS})
-        """
+		
+		Arguments:
+			src_embeddings {nn.Embedding} -- Embedding for the input. If None an untrained embedding will be generated or elmo is used
+		
+		Keyword Arguments:
+			d_vocab {int} -- Size of source vocabulary. Not needed if src_embeddings is set. (default: {None})
+			n_enc_blocks {int} -- number of encoder blocks (default: {constants.DEFAULT_ENCODER_BLOCKS})
+			n_head {int} -- number of heads (default: {constants.DEFAULT_NUMBER_OF_ATTENTION_HEADS})
+			d_model {int} -- size of model (default: {constants.DEFAULT_LAYER_SIZE})
+			dropout_rate {float} -- dropout rate (default: {constants.DEFAULT_MODEL_DROPOUT})
+			pointwise_layer_size {int} -- size of pointwise layer (default: {constants.DEFAULT_DIMENSION_OF_PWFC_HIDDEN_LAYER})
+			d_k {int} -- size of key / query vector needed for attention (default: {constants.DEFAULT_DIMENSION_OF_KEYQUERY_WEIGHTS})
+			d_v {int} -- size of value vector needeed for attention (default: {constants.DEFAULT_DIMENSION_OF_VALUE_WEIGHTS})
+		"""
 
 		super(TransformerEncoder, self).__init__()
 
@@ -48,7 +48,7 @@ class TransformerEncoder(nn.Module):
 		self.encoder_blocks = self._initialize_encoder_blocks()
 		self.layer_norm = LayerNorm(self.d_model)
 		self._initialize_embeddings(src_embeddings, hyperparameters, d_vocab)
-        
+		
 
 	def _initialize_encoder_blocks(self) -> nn.ModuleList:
 		blocks = []
@@ -103,16 +103,16 @@ class TransformerEncoder(nn.Module):
 			if p.dim() > 1:
 				p.requires_grad = False
 
-        
+		
 class EncoderBlock(nn.Module):
 
 	def __init__(self,
-                dropout_rate,
-                pointwise_layer_size,
-                d_model,
-                d_k,
-                d_v,
-                num_heads,
+				dropout_rate,
+				pointwise_layer_size,
+				d_model,
+				d_k,
+				d_v,
+				num_heads,
 				use_bias):
 		"""
 		"""
@@ -148,7 +148,7 @@ class EncoderBlock(nn.Module):
 		fcResult = self.layer_norm.forward(fcResult + residual)
 
 		return fcResult
-        
+		
 	def __str__(self):
 		return self.__class__.__name__
 

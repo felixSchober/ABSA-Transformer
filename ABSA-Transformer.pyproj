@@ -406,6 +406,9 @@
     <Compile Include="data\transfer_data_loader.py" />
     <Compile Include="data\__init__.py" />
     <Compile Include="evaluator.py" />
+    <Compile Include="hyperoptExecutor.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="main.py" />
     <Compile Include="misc\experimental_environment.py" />
     <Compile Include="misc\hyperopt_space.py" />
@@ -429,7 +432,6 @@
     <Compile Include="models\transformer\__init__.py" />
     <Compile Include="models\transformer_tagger.py" />
     <Compile Include="models\__init__.py" />
-    <Compile Include="naming.py" />
     <Compile Include="optimizer.py" />
     <Compile Include="trainer\early_stopping.py" />
     <Compile Include="trainer\train.py" />

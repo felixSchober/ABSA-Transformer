@@ -16,6 +16,14 @@ from misc.utils import create_dir_if_necessary, check_if_file_exists
 from data.torchtext.custom_datasets import *
 
 
+def add_tr_prefixes(path:str, sp=False) -> str:
+	fn = path.split('.')
+
+	if sp:
+		fn[0] += '_sp'
+
+	return '.'.join(fn)
+
 ORGANIC_TASK_ALL = 'all'
 ORGANIC_TASK_ENTITIES = 'entities'
 ORGANIC_TASK_ATTRIBUTES = 'attributes'
@@ -144,7 +152,7 @@ class OrganicDataset(Dataset):
 
 	@classmethod
 	def splits(cls, path=None, root='.data', train=None, validation=None,
-			   test=None, **kwargs) -> Tuple[Dataset]:
+			   test=None, hp=None, **kwargs) -> Tuple[Dataset]:
 		"""Create Dataset objects for multiple splits of a dataset.
 		Arguments:
 			path (str): Common prefix of the splits' file paths, or None to use
@@ -168,16 +176,20 @@ class OrganicDataset(Dataset):
 		# lines for splits
 		lengths = (8918, 786, 738)
 
+		train = add_tr_prefixes(train, hp.use_spell_checkers)
+		validation = add_tr_prefixes(validation, hp.use_spell_checkers)
+		test = add_tr_prefixes(test, hp.use_spell_checkers)
+
 		train_data = None if train is None else cls(
-			path=os.path.join(path, train), length=lengths[0], **kwargs)
+			path=os.path.join(path, train), length=lengths[0], hp=hp, **kwargs)
 		# make sure, we use exactly the same fields across all splits
 		train_aspects = train_data.aspects
 
 		val_data = None if validation is None else cls(
-			path=os.path.join(path, validation), a_sentiment=train_aspects, length=lengths[1], **kwargs)
+			path=os.path.join(path, validation), a_sentiment=train_aspects, length=lengths[1], hp=hp, **kwargs)
 
 		test_data = None if test is None else cls(
-			path=os.path.join(path, test), a_sentiment=train_aspects, length=lengths[2], **kwargs)
+			path=os.path.join(path, test), a_sentiment=train_aspects, length=lengths[2], hp=hp, **kwargs)
 
 		return tuple(d for d in (train_data, val_data, test_data)
 					 if d is not None)
@@ -243,10 +255,7 @@ class OrganicDataset(Dataset):
 		else:
 			organic_text_cleaning_dict = {}
 
-		if hp.use_spell_checkers:
-			spell = self.initialize_spellchecker(hp.language)
-		else:
-			spell = None
+		spell = None
 
 		if task.startswith(ORGANIC_TASK_ALL):
 			aspect_example_index = -1
@@ -295,8 +304,7 @@ class OrganicDataset(Dataset):
 				# comment is not relevant
 				if columns[6] == '0' or columns[-1] == '':
 					# skip for now
-					pass
-					# continue
+					continue
 
 				# aspect sentiment is missing
 				if len(columns) == 12:
