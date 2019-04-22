@@ -10,14 +10,7 @@ import seaborn as sns
 from misc.utils import get_class_variable_table, create_dir_if_necessary, check_if_file_exists
 import pandas as pd
 
-# sns.set(style="whitegrid")
-sns.set_style("white")
-sns.despine()
 
-sns.set_color_codes()
-# sns.set_context("paper")
-sns.set(rc={"font.size":18,"axes.labelsize":22})
-# sns.set(font_scale=1.7)
 
 # see https://github.com/mjc92/TorchTextTutorial/blob/master/01.%20Getting%20started.ipynb
 
@@ -165,6 +158,14 @@ class Dataset(object):
 		self.log_parameters()
 
 		if verbose:
+			# sns.set(style="whitegrid")
+			sns.set_style("white")
+			sns.despine()
+
+			sns.set_color_codes()
+			# sns.set_context("paper")
+			sns.set(rc={"font.size":18,"axes.labelsize":22})
+			# sns.set(font_scale=1.7)
 			self.show_stats()
 		else:
 			self._calculate_dataset_stats()
