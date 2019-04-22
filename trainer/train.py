@@ -12,8 +12,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchtext
 from torch.autograd import *
-from tqdm.autonotebook import tqdm
-#from tqdm import tqdm
 
 from trainer.utils import *
 from trainer.train_logger import TrainLogger
@@ -22,6 +20,11 @@ from trainer.early_stopping import EarlyStopping
 from misc.utils import *
 from misc.run_configuration import RunConfiguration
 from data.data_loader import Dataset
+
+if isnotebook():
+	from tqdm.autonotebook import tqdm
+else:
+	from tqdm import tqdm
 
 ModelCheckpoint = Optional[Dict[str, Union[int,
 		float,
