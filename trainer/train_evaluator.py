@@ -197,6 +197,8 @@ class TrainEvaluator(object):
 				del x
 				del y
 				del loss
+				torch.cuda.empty_cache()
+
 
 			avg_loss = np.array(losses).mean()
 			accuracy = float(true_pos) / float(total)
@@ -222,6 +224,8 @@ class TrainEvaluator(object):
 		del predictions
 		del targets
 		del losses
+		torch.cuda.empty_cache()
+
 
 		# calculate micro f1 score
 		f1_micro = (2 * tp) / (2 * tp + fn + fp)
