@@ -397,7 +397,7 @@ else:
 		'embedding_name': hp.choice('embedding_name', ['6B']),
 		'embedding_dim': hp.choice('embedding_dim', [300]),
 		'use_stop_words': hp_bool('use_stop_words'),
-		'use_spell_checker': hp_bool('use_spell_checker'),
+		'use_spell_checker': True,
 		'token_removal_1': hp_bool('token_removal_1'),
 		'task': 'amazon'
 	}

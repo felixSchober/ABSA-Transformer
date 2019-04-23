@@ -42,8 +42,18 @@ class EarlyStopping(object):
 			'hp': self.hp,
 			'df': df
 		}
-		self.best_model_checkpoint = deepcopy(best_model_checkpoint)
-		self._save_checkpoint(iteration)
+
+		try:
+			self.best_model_checkpoint = deepcopy(best_model_checkpoint)
+			self._save_checkpoint(iteration)
+		except Exception as err:
+			self.logger.exception('Could not save best model. Try again without deepcopy')
+			try:
+				self.best_model_checkpoint = best_model_checkpoint
+				self._save_checkpoint(iteration)
+			except expression as identifier:
+				self.logger.exception('Model saving without deepcopy also not possible')
+
 
 		# restore early stopping counter
 		self.early_stopping_counter = self.early_stopping
