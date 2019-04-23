@@ -349,7 +349,7 @@ else:
 	from data.amazon import amazon_dataset as dsl
 
 	search_space = {
-		'batch_size': hp.quniform('batch_size', 10, 100, 1),
+		'batch_size': hp.quniform('batch_size', 10, 45, 1),
 		'num_encoder_blocks': hp.quniform('num_encoder_blocks', 1, 8, 1),
 		'pointwise_layer_size': hp.quniform('pointwise_layer_size', 32, 512, 1),
 		'clip_comments_to': hp.quniform('clip_comments_to', 45, 250, 1),
