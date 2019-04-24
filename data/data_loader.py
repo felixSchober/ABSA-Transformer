@@ -5,6 +5,7 @@ from torch.nn import Embedding
 from prettytable import PrettyTable
 from misc.run_configuration import RunConfiguration
 import matplotlib.pyplot as plt
+matplotlib.use('agg')
 import matplotlib as mpl
 import seaborn as sns
 from misc.utils import get_class_variable_table, create_dir_if_necessary, check_if_file_exists
