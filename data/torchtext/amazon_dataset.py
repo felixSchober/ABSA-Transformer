@@ -6,12 +6,15 @@ from collections import defaultdict
 import re
 import torchtext.data as data
 import torch.utils.data
-from misc.utils import create_dir_if_necessary, check_if_file_exists
-from tqdm import tqdm
-
+from misc.utils import create_dir_if_necessary, check_if_file_exists, isnotebook
 from data.torchtext.custom_fields import ReversibleField
 from data.torchtext.custom_datasets import *
 import pandas as pd
+
+if isnotebook():
+	from tqdm.autonotebook import tqdm
+else:
+	from tqdm import tqdm
 
 def add_tr_prefixes(path:str, tr_1=False, tr_2=False, tr_3=False, sp=False) -> str:
 	fn = path.split('.')
@@ -100,7 +103,9 @@ class AmazonDataset(Dataset):
 
 		if not examples:
 			examples, fields = self._load(path, filename, fields, a_sentiment, hp=hp, **kwargs)
-			self._save(filename.split(".")[0], examples)
+			
+			# disable caching for now... space on Azure Cloud VMs is expensive ;)
+			# self._save(filename.split(".")[0], examples)
 		else:
 			fields = loaded_fields
 			

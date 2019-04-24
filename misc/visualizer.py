@@ -5,9 +5,11 @@ from torch import Tensor
 import torch.nn as nn
 import numpy as np
 from torchtext import data
+import matplotlib as mpl
+mpl.use('agg')
+import matplotlib.pyplot as plt
 
 import itertools
-import matplotlib.pyplot as plt
 
 from sklearn.metrics import confusion_matrix
 
@@ -85,6 +87,7 @@ def plot_confusion_matrix(c_matrix,
 							color_map=plt.cm.Blues):
 	plt.clf()
 	fig = plt.figure()
+
 
 	if normalize:
 		c_matrix = c_matrix.astype('float') / c_matrix.sum(axis=1)[:, np.newaxis]

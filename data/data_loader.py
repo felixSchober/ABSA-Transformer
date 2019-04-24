@@ -4,8 +4,9 @@ from torchtext import data, datasets, vocab
 from torch.nn import Embedding
 from prettytable import PrettyTable
 from misc.run_configuration import RunConfiguration
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+mpl.use('agg')
+import matplotlib.pyplot as plt
 import seaborn as sns
 from misc.utils import get_class_variable_table, create_dir_if_necessary, check_if_file_exists
 import pandas as pd
@@ -307,20 +308,23 @@ class Dataset(object):
 		if check_if_file_exists(path):
 			return
 
-		df = pd.DataFrame({
-			'Samples': samples,
-			'Aspect': labels
-		})
+		try:
+			df = pd.DataFrame({
+				'Samples': samples,
+				'Aspect': labels
+			})
 
-		plt.figure(figsize=(20,10))
-		ax = sns.barplot(data=df, color='b', x='Aspect', y='Samples')
-		plt.title(title, fontsize=20) 
-		plt.xticks(rotation=45, ha="right")
-		ax.get_yaxis().get_major_formatter().set_scientific(False)
-		plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
-		ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
+			plt.figure(figsize=(20,10))
+			ax = sns.barplot(data=df, color='b', x='Aspect', y='Samples')
+			plt.title(title, fontsize=20) 
+			plt.xticks(rotation=45, ha="right")
+			ax.get_yaxis().get_major_formatter().set_scientific(False)
+			plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+			ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
 
-		plt.savefig(path, format=fileName.split('.')[-1])
+			plt.savefig(path, format=fileName.split('.')[-1])
+		except Exception as err:
+			self.logger.exception('Could not plot ' + title)
 
 
 		# IF YOU WANT TO HAVE A PIE, USE THIS

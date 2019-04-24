@@ -79,7 +79,7 @@ hyperOpt_goodParams = {
 	'att_d_k': 300,
 	'att_d_v': 300,
 	'dropout_rate': 0.302424,
-	'pointwise_layer_size': 405,
+	'pointwise_layer_size': 128,
 	'output_dropout_rate': 0.79602089766246,
 	'clip_comments_to': 113,
 	'harmonize_bahn': True,

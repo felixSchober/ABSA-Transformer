@@ -4,15 +4,22 @@ import numpy as np
 import logging
 import torch
 import torchtext
-from tqdm import tqdm
 import math
 from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
 from data.data_loader import Dataset
 from trainer.utils import *
 from trainer.train_logger import TrainLogger
 from trainer.utils import ITERATOR_TEST, ITERATOR_TRAIN, ITERATOR_VALIDATION
+from misc.utils import isnotebook
+
+if isnotebook():
+	from tqdm.autonotebook import tqdm
+else:
+	from tqdm import tqdm
 
 EvaluationResult = Tuple[float, float, np.array]
 
@@ -32,6 +39,8 @@ class TrainEvaluator(object):
 				pre_training: logging.Logger,
 				dataset: Dataset):
 		super().__init__()
+
+		
 
 		self.logger = logging.getLogger(__name__)
 		self.model = model
@@ -188,6 +197,8 @@ class TrainEvaluator(object):
 				del x
 				del y
 				del loss
+				torch.cuda.empty_cache()
+
 
 			avg_loss = np.array(losses).mean()
 			accuracy = float(true_pos) / float(total)
@@ -209,6 +220,12 @@ class TrainEvaluator(object):
 
 		# reset model into training mode
 		self.change_train_mode(True)
+
+		del predictions
+		del targets
+		del losses
+		torch.cuda.empty_cache()
+
 
 		# calculate micro f1 score
 		f1_micro = (2 * tp) / (2 * tp + fn + fp)
