@@ -4,9 +4,9 @@ from torchtext import data, datasets, vocab
 from torch.nn import Embedding
 from prettytable import PrettyTable
 from misc.run_configuration import RunConfiguration
-import matplotlib.pyplot as plt
-matplotlib.use('agg')
 import matplotlib as mpl
+mpl.use('agg')
+import matplotlib.pyplot as plt
 import seaborn as sns
 from misc.utils import get_class_variable_table, create_dir_if_necessary, check_if_file_exists
 import pandas as pd
