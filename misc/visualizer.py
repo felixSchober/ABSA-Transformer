@@ -5,6 +5,9 @@ from torch import Tensor
 import torch.nn as nn
 import numpy as np
 from torchtext import data
+import matplotlib as mpl
+mpl.use('agg')
+import matplotlib.pyplot as plt
 
 import itertools
 
@@ -82,7 +85,6 @@ def plot_confusion_matrix(c_matrix,
 							normalize=True,
 							title='Confusion Matrix',
 							color_map=plt.cm.Blues):
-	import matplotlib.pyplot as plt
 	plt.clf()
 	fig = plt.figure()
 
