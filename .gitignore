@@ -384,3 +384,7 @@ TSWLatexianTemp*
 
 # standalone packages
 *.sta
+
+# https://stackoverflow.com/a/7532131/3756803
+[alias]
+apply-gitignore = !git ls-files -ci --exclude-standard -z | xargs -0 git rm --cached
