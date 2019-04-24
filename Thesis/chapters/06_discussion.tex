@@ -53,9 +53,18 @@ It is possible that the hyperparameter search space which Hyperopt uses to gener
 
 \subsubsection*{Comparison with a Random Search}
 
-To confirm the findings above a completely random search was performed by hyperopt on the same number of iterations. 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{figures/06_results/06_hp_ge_vio_tpeRand}
+	\caption{Comparison of HyperOpt TPE algorithm against a classical random search. The results for TPE are light blue on the left, whereas results for the random search are a deep blue on the right.}
+	\label{fig:06_HpOptimTpe_Rand}
+\end{figure}
+
+To confirm the findings above a completely random search was performed by Hyperopt on the same number of iterations. The result of this comparison is plotted in figure \ref{fig:06_HpOptimTpe_Rand}. This violinplot visualizes the result of both optimization runs. The light blue density curve on the left shows the F1 scores from the \gls{tpe} generated models. A wider body on the density curve means that more observations for this particular score value were recorded at this part. The black dots correspond to the actual individual F1-Score observations. The dark blue parts and the white dots correspond to the F1-scores which originated by randomly generated hyperparameters.
 
 \subsection{Model Parameters}
+
+Due to the high dimensionality of the hyperparameter search space, statistical significance tests will not show any significant correlations between the parameter and an improval of the F1-Score. For each single parameter change, all other parameters will also change and they influence the model as well. While not possible to evaluate the results with statistical significance it is possible to derive certain assumptions from the data which will be discussed in the following sections.
 
 \subsubsection{Aspect Heads}
 
@@ -80,6 +89,15 @@ This dimensionality reduction is similar in moti- vation and implementation to t
 
 \subsection{Data Preprocessing}
 \label{subsec:06_dataPreprocessing}
+In the following section we discuss the impact of the preprocessing steps and how they affect the overall model performance. 
+
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{figures/06_results/06_hp_ge_vio_data}
+	\caption{Comparison of preprocessing techniques - Impact of Spell checking and Stop Word Removal on Validation Micro F1-Score}
+	\label{fig:06_PreprocessingHp}
+\end{figure}
 
 \subsubsection{Spell Checking}
 
