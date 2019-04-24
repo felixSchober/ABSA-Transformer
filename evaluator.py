@@ -15,7 +15,7 @@ from models.transformer.encoder import TransformerEncoder
 from models.jointAspectTagger import JointAspectTagger
 from trainer.train import Trainer, create_padding_masks
 import pprint
-
+import pickle
 import torchtext
 import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
@@ -106,7 +106,7 @@ def produce_test_gold_labels(iterator: torchtext.data.Iterator, dataset: Dataset
 
 					asp_field = ET.SubElement(options_elem, 'Opinion', {
 						'category': a_name,
-						'target': sentiment
+						'polarity': sentiment
 					})
 
 		#print(BeautifulSoup(ET.tostring(tree), "xml").prettify())
@@ -115,6 +115,8 @@ def produce_test_gold_labels(iterator: torchtext.data.Iterator, dataset: Dataset
 
 def write_evaluation_file(iterator: torchtext.data.Iterator, dataset: Dataset, trainer: Trainer, filename='prediction.xml'):
 	fields = dataset.fields
+	all_predictions = []
+	all_targets = []
 	with torch.no_grad():
 		iterator.init_epoch()
 		
@@ -140,6 +142,9 @@ def write_evaluation_file(iterator: torchtext.data.Iterator, dataset: Dataset, t
 
 			source_mask = create_padding_masks(padding, 1)
 			prediction = trainer.model.predict(comment, source_mask)
+
+			all_predictions.append(prediction)
+			all_targets.append(target_aspect_sentiment)
 
 			p = torch.t(prediction)
 			t = torch.t(target_aspect_sentiment)
@@ -216,6 +221,12 @@ def write_evaluation_file(iterator: torchtext.data.Iterator, dataset: Dataset, t
 		f1 = 2.0 * precision * recall / (precision + recall)
 		print(f'F1 - Aspect: {f1}')
 
+		with open('all_predictions.pkl', 'wb') as f:
+			pickle.dump(all_predictions, f) 
+
+		with open('all_targets.pkl', 'wb') as f:
+			pickle.dump(all_targets, f) 
+
 # experiment_name = utils.create_loggers(experiment_name='testing')
 # logger = logging.getLogger(__name__)
 
@@ -233,7 +244,9 @@ experiment_name = utils.create_loggers(experiment_name=experiment_name)
 logger = logging.getLogger(__name__)
 
 baseline = {**default_params, **hyperOpt_goodParams}
-rc = get_default_params(use_cuda=True, overwrite={}, from_default=baseline)
+test_params = {**baseline, **{'num_epochs': 1, 'language': 'de', 'batch_size': 45, 'task': 'germeval', 'token_removal_2': True, 'log_every_xth_iteration': -1}}
+
+rc = get_default_params(use_cuda=True, overwrite={}, from_default=test_params)
 logger = logging.getLogger(__name__)
 
 dataset_logger = logging.getLogger('data_loader')
@@ -246,7 +259,7 @@ trainer = load_model(dataset, rc, experiment_name)
 logger.debug('model loaded')
 
 
-trainer.load_model(custom_path='C:\\Users\\felix\\OneDrive\\Studium\\Studium\\6. Semester\\MA\\Project\\ABSA-Transformer\\logs\\GermEval7_Experiments\\20190401\\0\\checkpoints')
+trainer.load_model(custom_path='/Users/felix/Documents/Repositories/TUM/ABSA-Transformer/logs/t3st/20190421/13/checkpoints')
 trainer.set_cuda(True)
 #result = trainer.perform_final_evaluation(use_test_set=True, verbose=False)
 
@@ -256,3 +269,5 @@ trainer.set_cuda(True)
 # trainer.load_model(custom_path=path)
 # trainer.set_cuda(True)
 write_evaluation_file(dataset.test_iter, dataset, trainer)
+produce_test_gold_labels(dataset.test_iter, dataset)
+print('Finished')
