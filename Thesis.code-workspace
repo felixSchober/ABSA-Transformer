@@ -3,5 +3,10 @@
 		{
 			"path": "Thesis"
 		}
-	]
+	],
+	"settings": {
+		"cSpell.words": [
+			"Hyperopt"
+		]
+	}
 }

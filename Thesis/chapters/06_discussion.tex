@@ -1,21 +1,132 @@
 \chapter{Discussion of Results}
 \label{ch:discussion}
 
+%TODO: Idee: Attention visualisieren am Anfang und am Ende des Transformers: Hat er während des Trainings gelernt?
+
 \section{Hyper Parameter Optimization}
+
+The following presents the results of the hyper parameter optimization on GermEval-2017 Task C and the Organic-2019 Coarse category dataset. We evaluate the performance of Hyperopt compared to a random search. Then, the next sections show how certain parameters impact the model performance. 
+
+\subsection{Hyperopt Evaluation}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.49\textwidth]{figures/06_results/06_hp_ge_lm_loss-iteration_validation}
+	\includegraphics[width=0.49\textwidth]{figures/06_results/06_hp_ge_lm_loss-iteration_test}
+	\caption{Validation- {(blue - left)} and test {(red - right)} losses during 100 Hyperopt iterations on GermEval-2017 dataset}
+	\label{fig:06_ValidationLossGermEvalHp}
+\end{figure}
+
+To evaluate Hyperopt three evaluation runs with 100 iterations were performed.
+
+\begin{enumerate}
+	\item GermEval-2017 - \gls{tpe} on validation loss
+	\item GermEval-2017 - Random search
+	\item Organic Coarse Grained - \gls{tpe} on validation loss
+\end{enumerate}
+
+Figure \ref{fig:06_ValidationLossGermEvalHp} visualizes the improvement of the validation- and test losses on the GermEval-2017 dataset after 100 Hyperopt iterations. Is seems as if the regression line is negative in both cases which means that the \gls{tpe} algorithm Hyperopt uses suggests better results as the time moves on.
+
+Unfortunately, the \gls{ols} analysis \ref{tab:08_olsLossItVal} and \ref{tab:08_olsLossItTest} in the appendix show that the negative correlation is in fact not significant. This implies that the \gls{tpe} algorithm does not sample parameters from the space which actually improve the loss of the model. This is even more obvious in figure \ref{fig:06_F1GermEvalHp}. This figure shows the development of F1-Score during optimization. While the results on the left for GermEval might look like they improve over the course of the optimization the results\footnote{The improvement is still not significant {(0.340)}} for the optimization of the coarse organic dataset clearly show no improvement.
+\medskip
+
+There are several possible explanations which could contribute to this behaviour:
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.49\textwidth]{figures/06_results/06_hp_ge_lm_f1time}
+	\includegraphics[width=0.49\textwidth]{figures/06_results/06_hp_og_lm_f1time}
+	\caption{F1 Scores of the hyperparamter optimization of GermEval-2017 {(left)} and Coarse Organic 2019 datasets {(right)}.}
+	\label{fig:06_F1GermEvalHp}
+\end{figure}
+
+\subsubsection*{Iterations}
+
+First, it could be possible that 100 iterations are not enough to provide a stochastic model which is able to make good predictions in the hyperparameter space. It is worth noting that Bergstra et. al. show that hyperopt outperforms random search within 200 trials \cite{Bergstra2013}. However, for most architectures it is not feasible to run an optimization search for much longer than 200 iterations let alone the 1000 iterations they claim as the point where hyperopt converges. 
+\medskip
+
+It is also worth mentioning that the Hyperopt module uses a random sampler for the first 10 iterations to get data points to initialize the \glspl{tpe}. Decreasing this number could yield to better results for computational expensive models since the algorithm is forced to suggest values earlier.
+
+\subsubsection*{Hyperparamter Search Space}
+
+It is possible that the hyperparameter search space which Hyperopt uses to generate new parameters is too large. Table \ref{tab:08_hpSpace} shows the hyperparameter search space for the optimization of the GermEval-2017 dataset. There are parameters which do not change the outcome by a huge margin and then there are parameters which decide whether or not the model trains at all. However, finding those parameters is a challenging task.
+
+\subsubsection*{Warmup Phase}
+\label{sec:06_hp_warmup}
+\begin{table}[]
+	\centering
+	\begin{tabular}{lrrrrr}
+	\multicolumn{6}{c}{GermEval-2017} \\
+
+	\toprule
+	{} &  count &      mean &       std &       min &       max \\
+	Aspect Head &        &           &           &           &           \\
+	\midrule
+	\multicolumn{6}{c}{Warmup Iterations 1 - 10*} \\
+	CNN-A    &    6 &  0.267644 &  0.050316 &  0.212655 &  0.330922 \\
+	MLS-A    &    3 &  0.294608 &  0.032134 &  0.258432 &  0.319838 \\
+	\midrule
+	\multicolumn{6}{c}{\gls{tpe} Iterations 1 - 100} \\
+	CNN-A    &   67 &  0.249094 &  0.066835 &  0.065565 &  0.386465 \\
+	MLS-A    &   23 &  0.261533 &  0.044603 &  0.181078 &  0.356296 \\
+	\bottomrule
+	\end{tabular}
+	\caption{Result of sampling of Aspect Head choices during \gls{tpe} Hyperopt optimization. Values show micro F1-score achieved by models on the GermEval-2017 dataset. * The 10th iteration failed which is the reason why the warmup does not sum up to 10.}
+	\label{tab:08_hpAspectHeadsSpace}	
+\end{table}
+
+\gls{tpe} supports tree structures for the search space. In the search space used for the optimization there is one tree-like parameter which is the choice of the aspect head architecture. \gls{tpe} can either choose a \gls{mlsa} or a \gls{cnna}. The \gls{mlsa} does not have additional parameter nodes, whereas the \gls{cnna} has 4 additional parameters.
+\medskip
+
+\gls{mlsa} has a higher mean F1-score of 0.263 compared to \gls{cnna} which achieves 0.250. Despite the higher mean score, \gls{tpe} only sampled \gls{mlsa} 23 times compared to 67 times.
+
+This becomes even more interesting when looking at the \gls{tpe} warmup phase. During warmup, \gls{mlsa} is chosen 3 times and \gls{cnna} is chosen 6 times. This is roughly the same distribution compared to the later \gls{tpe} iterations. 
+
+For greater detail refer to table \ref{tab:08_hpAspectHeadsSpace}. There is also a violinplot which visualizes the impact of the aspect head choice in the appendix as figure \ref{fig:06_ge_aspectHeadChoices}.
+\medskip
+
+In contrast, during the warmup phase of the hyperopt run on the coarse organic dataset, Hyperopt sampled \gls{cnna} 2 times and \gls{mlsa} 7 times which is exactly the other way around. During the \gls{tpe} iterations, \gls{cnna} was sampled 14- and \gls{mlsa} 71 times. Again, this is the exact opposite of the previous optimization on the GermEval-2017 dataset.
+\medskip
+
+This leads to the following conclusion: During the warmup phase of Hyperopt the search space is randomly sampled. This random sampling distribution is adhered to during the whole \gls{tpe} suggestion phase. This leads to results which are heavily dependent on the first 10 random iterations.
+
+\subsubsection*{Comparison with a Random Search}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{figures/06_results/06_hp_ge_vio_tpeRand}
+	\caption{Comparison of HyperOpt TPE algorithm against a classical random search. The results for TPE are light blue on the left, whereas results for the random search are a deep blue on the right.}
+	\label{fig:06_HpOptimTpe_Rand}
+\end{figure}
+
+To confirm the findings above a completely random search was performed by Hyperopt on the same number of iterations. The result of this comparison is plotted in figure \ref{fig:06_HpOptimTpe_Rand}. This violinplot visualizes the result of both optimization runs. The light blue density curve on the left shows the F1 scores from the \gls{tpe} generated models. A wider body on the density curve means that more observations for this particular score value were recorded at this part. The black dots correspond to the actual individual F1-Score observations. The dark blue parts and the white dots correspond to the F1-scores which originated by randomly generated hyperparameters.
 
 \subsection{Model Parameters}
 
+Due to the high dimensionality of the hyperparameter search space, statistical significance tests will not show any significant correlations between the parameter and an improvement of the F1-Score. For each single parameter change, all other parameters will also change and they influence the model as well. While not possible to evaluate the results with statistical significance it is possible to derive certain assumptions from the data which will be discussed in the following sections.
+
 \subsubsection{Aspect Heads}
 
-see \cite{Ramsundar2015}
+As discussed in section \ref{sec:06_hp_warmup} it is not entirely possible to favor one or the other aspect head. Both can provide similar results. 
 
-\subsubsection{Pointwise Layer Size}
 
-Why smaller than model? -> 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{figures/06_results/06_hp_ge_lm_cnnParams_test}
+	\caption{Impact of CNN parameters on micro F1-score. The graph on the left shows the impact of the kernel size on the model performance. The graph on the right depicts the influence of the number of filters on the F1-score.}
+	\label{fig:06_HpOptim_CnnParams}
+\end{figure}
 
-This dimensionality reduction is similar in moti- vation and implementation to the 1x1 convolutions in the GoogLeNet architecture (Szegedy et al., 2014). The wide lower layer allows for complex, expressive features to be learned while the narrow layer limits the parameters spe- cific to each task.
+Figure \ref{fig:06_HpOptim_CnnParams} shows the impact of the two parameters 'Kernel Size' and 'Number of Filters'.
 
-\cite{Ramsundar2015}
+\subsubsection{Point-wise Feed-Forward Layer Size}
+
+In the original transformer model the inner \acrfull{pwfc} has a dimensionality of 1024 while the model size has a dimensionality of 512 \cite{Vaswani2017c}. This is a 2x increase over the model size. Due to the availability of pretrained Glove or Fasttext embeddings our \gls{absat} model only uses a model size of 300. Consequently, the inner \gls{pwfc} layer dimensionality should be around 600. However, layer sizes above 300-400 neurons quickly lead to interesting model behavior. After a few training iterations the \glspl{pwfc} transform every input to the exact same output. In other words, no matter what the model gets as input it always predicts the same output.
+\medskip
+
+The solution for this overfitting behavior is to use a smaller inner \gls{pwfc}. Values from 100 to 200 neurons lead to the best results.
+
+This is extremely interesting since it completely changes the task of the \glspl{pwfc}. From a layer with a higher dimensionality than the model to a bottleneck layer with a lower dimensionality. A bigger layer may allow for more complex and expressive features to be learned while a smaller bottleneck layer limits the expressiveness and forces the network to focus on crucial features \cite{Ramsundar2015}.
 
 \subsubsection{Transformer Architecture}
 
@@ -28,6 +139,15 @@ This dimensionality reduction is similar in moti- vation and implementation to t
 
 \subsection{Data Preprocessing}
 \label{subsec:06_dataPreprocessing}
+In the following section we discuss the impact of the preprocessing steps and how they affect the overall model performance. 
+
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{figures/06_results/06_hp_ge_vio_data}
+	\caption{Comparison of preprocessing techniques - Impact of Spell checking and Stop Word Removal on Validation Micro F1-Score}
+	\label{fig:06_PreprocessingHp}
+\end{figure}
 
 \subsubsection{Spell Checking}
 
