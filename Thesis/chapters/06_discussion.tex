@@ -110,6 +110,13 @@ Due to the high dimensionality of the hyperparameter search space, statistical s
 As discussed in section \ref{sec:06_hp_warmup} it is not entirely possible to favor one or the other aspect head. Both can provide similar results. 
 
 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{figures/06_results/06_hp_ge_lm_cnnParams_test}
+	\caption{Impact of CNN parameters on micro F1-score. The graph on the left shows the impact of the kernel size on the model performance. The graph on the right depicts the influence of the number of filters on the F1-score.}
+	\label{fig:06_HpOptim_CnnParams}
+\end{figure}
+
 Figure \ref{fig:06_HpOptim_CnnParams} shows the impact of the two parameters 'Kernel Size' and 'Number of Filters'.
 
 \subsubsection{Point-wise Feed-Forward Layer Size}
