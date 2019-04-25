@@ -100,8 +100,6 @@
 	\label{tab:08_olsLossItTest}	
 \end{table}
 
-% Please add the following required packages to your document preamble:
-% \usepackage{booktabs}
 \begin{table}[]
 	\centering
 	\begin{tabular}{@{}lll@{}}
@@ -136,3 +134,10 @@
 	\caption{Hyperparameter Search space for GermEval-2017. * marks parameters which are only sampled if CNN is chosen as the output layer.}
 	\label{tab:08_hpSpace}	
 \end{table}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{figures/06_results/06_hp_ge_vio_aspectHead_test}
+	\caption{Hyperopt - Comparison and impact of aspect head choices and sampling amount}
+	\label{fig:06_ge_aspectHeadChoices}
+\end{figure}
