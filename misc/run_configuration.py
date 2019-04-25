@@ -85,7 +85,6 @@ hyperOpt_goodParams = {
 	'harmonize_bahn': True,
 	'model_size': 300,
 	'organic_text_cleaning': False
-
 }
 
 elmo_params = {

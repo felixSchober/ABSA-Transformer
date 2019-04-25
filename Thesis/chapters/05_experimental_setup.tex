@@ -20,11 +20,12 @@ The first step of the data preprocessing pipeline is the removal of all unknown 
 \subsubsection*{Contraction Expansion}
 
 Before we remove any special characters all contractions are expanded with the goal of reducing the vocabulary size and language normalization. Contractions are shortened versions of several words or syllables. In the English language, vowels are often replaced by an apostrophe.  Especially in social media and spoken language a lot of contractions are used. '\textit{I'll've}' and '\textit{I will have}' have the same meaning but if they are not expanded they produce a completely different embedding. '\textit{I'll've}' will produce a (300)-dimensional vector (for glove and fasttext) whereas '\textit{I will have}' will be interpreted as 3 300-dimensional vectors.
+\medskip
 
 % TODO: Cite and/or check fasttext and glove naming
 
 The contraction expansion is followed by the replacement of \glspl{url} with the token '<URL>' and e-mail addresses with the token '<MAIL>'. E-Mails and URLs are always out-of vocabulary and contain very little information that is worth encoding. 
-
+\medskip
 
 In addition any special characters are completely removed. Dashes ('-') are kept because there are compound-words which rely on dashes (e.g. non-organic).
 
@@ -33,7 +34,7 @@ In addition any special characters are completely removed. Dashes ('-') are kept
 When writing comments in social media people tend to make spelling mistakes. Unfortunately, each spelling mistake is an out-of vocabulary word which we want to reduce as much as possible.
 
 Therefore, a spell checker is used to prevent these mistakes. The first spell checker\footnote{PySpellchecker: \url{https://pyspellchecker.readthedocs.io/en/latest/}} which was evaluated relies on the Levenshtein Distance \cite{Levenshtein1966} and a dictionary to determine if a word is spelled incorrectly and to make suggestions which word was meant originally. Although, word replacement suggestions are good, the spell checking is slow especially with large dictionaries.
-\newline
+\medskip
 
 The second spell checker is called Hunspell developed by László Németh\footnote{Hunspell: \hyperlink{http://hunspell.github.io/}{http://hunspell.github.io/}}. Hunspell is used in a variety of open- and closed sourced projects such as OpenOffice, Google Chrome or macOS. Hunspell also utilizes the Levenshtein Distance in addition to several other measurements. Both spell checkers suffer from false positives {(word is incorrectly flagged as negative)} as well as incorrect suggestions. Below are examples of Hunspells suggestions for words it did not recognize:
 
@@ -68,8 +69,10 @@ The transformer works with different input sequence lengths within one batch. Th
 \subsection{Sentence Combination}
 
 Some datasets feature sentence annotations instead of comment annotations. In this case important information for the aspect and sentiment classification could be encoded in previous sentences. Refer to figure XX for an example.
+\medskip
 
 Therefore, $n$ previous sentences are prepended to the current sentence where $n$ is a hyper parameter which can be optimized. Similar to the clipping of comment wise annotations described in the previous section, these sentence combinations are also clipped and padded. 
+\medskip
 
 The process starts by repeatedly adding sentences to a stack. All $n-1$ sentences which are too long are cut at the front. The $n$-th sentence is cut in the back instead. This is done so that in the case of $n=2$ 
 
@@ -83,19 +86,20 @@ See section \ref{subsec:06_CommentClipping} for the evaluation of this preproces
 This section describes the four datasets which were used for the evaluation of the ABSA-Transformer architecture described previously.
 
 The first dataset - CoNLL-2003 - is used to evaluate just the transformer model without the use of aspect heads. The task of this dataset is word level \gls{ner} prediction. Since the original transformer model provides predictions on the word level this is good task to evaluate just the transformer part.
-\newline
+\medskip
 
 GermEval-2017 described in section \ref{sec:05_germeval} is a dataset for aspect-based sentiment analysis and contains over 25,000 review documents from social media.
-\newline
+\medskip
 
 Organic-2019 is a very recent dataset, also providing an aspect-based sentiment analysis task in the domain of organic food. Whereas, GermEval-2017 contains document level annotations, Organic-2019 contains word level over 10,000 annotated sentences. Organic-2019 is described in section \ref{sec:05_organic2019}.
-\newline
+\medskip
 
 Finally, section \ref{sec:05_amazonReviews} describes a new dataset consisting of Amazon reviews which was created with the goal to provide a big dataset as the source for transfer learning. The dataset contains almost 1.2 million reviews with 20 domains spanning the Amazon product catalog.
 
 \subsection{CoNLL-2003 - Named Entity Recognition}
 
 The CoNLL-2003 shared task contains datasets in English and German for \acrfull{ner} \cite{Erik2003}. \gls{ner} describes the task of assigning labels to individual words. The four labels which are used for CoNLL-2003 are \textit{persons}, \textit{locations}, \textit{organizations} and \textit{names} \cite{Erik2003}. For example the sentence "Gerry is a researcher at TUM in Munich" would be labeled as "[\textit{PER} Gerry] is a researcher at [\textit{ORG} TUM] in [\textit{LOC} Munich]".
+\medskip
 
 The English data which was used for this research consists of news stories which occurred between August 1996 and August 1997 \cite{Erik2003}. The English dataset contains a total of 22,137 sentences with 301,421 tokens and is reasonably balanced in comparison to the datasets described in the next sections. Table \ref{tab:05_conll2003DatasetStats} shows the distribution of the labels and the number of samples for each data split.
 
@@ -118,6 +122,7 @@ The English data which was used for this research consists of news stories which
 \subsection{GermEval-2017 - Customer Feedback on Deutsche Bahn}
 \label{sec:05_germeval}
 GermEval 2017 is a dataset for Aspect-Based Sentiment Analysis on customer feedback about \textit{"Deutsche Bahn"} in German \cite{Wojatzki2017}. \textit{"Deutsche Bahn"} is the largest railway operator in Europe\footnote{Financial Earnings Presentation 2014: \url{https://ir.deutschebahn.com/fileadmin/Deutsch/2014/Anhaenge/2014_finanzpraesentation_asien_de.pdf}}. All data is collected from social media, blogs and Q\&A pages over the course of one year from May 2015 till June 2016. Each document is annotated with a relevance flag, a document-level sentiment polarity as well as up to 19 different aspect-sentiment combinations such as atmosphere {(\textit{Atmosphäre})} or the experience of buying a ticket {(\textit{Ticketkauf})}.
+\medskip
 
 GermEval-2017 is a shared dataset for four different tasks: 
 
@@ -129,12 +134,12 @@ GermEval-2017 is a shared dataset for four different tasks:
 \end{enumerate}
 
 This work focuses on Subtask C and results for the aspect-based sentiment analysis are reported in section \ref{sec:06_ResultsGermEval}.
-\newline
+\medskip
 
 Beating the baseline systems of GermEval is not trivial since the dataset is extremely skewed towards the dominant category 'general' {(\textit{Allgemein})}. This category makes up 62.2\% of all the samples in the dataset. Some categories contain less than 50 samples which is only 2\% of the whole data. Almost half of the aspects have less than 1\% share of the total amount of samples. There is even one aspect \textit{QR-Code} which has a total of two samples and none in the training split. Table \ref{tab:05_germevalDatasetStats} provides the detailed breakdown of the number of samples per aspect.
 
 This imbalance is the reason why the GermEval-2017 majority class baseline is extremely strong. In fact, during the GermEval-2017 challenge there was only one other model submission from Lee et al \cite{Lee2017} that could outperform the baseline models \cite{Wojatzki2017}.
-\newline
+\medskip
 
 In addition, there are some issues with the evaluation metric that the organizers of GermEval-2017 provide. Section \ref{sec:05_GermEvalEvaluation} deals with this issue in detail.
 \begin{table}
@@ -173,12 +178,14 @@ In addition, there are some issues with the evaluation metric that the organizer
 
 \subsection{Organic-2019 - Organic Comments}
 \label{sec:05_organic2019}
-This dataset was collected and annotated in the end of 2018 and the beginning of 2019. It contains 1,373 comments and 10,439 annotated sentences from Quora, a social question-and-answer website. 
+This dataset was collected and annotated in the end of 2018 and the beginning of 2019. It contains 1,373 comments and 10,439 annotated sentences from Quora, a social question-and-answer website.
+\medskip
 
 Each sentence is annotated with a domain relevance flag, a sentiment and at least one entity-attribute-sentiment triplet. Out of the 10,439 sentences, 5560 sentences are marked as domain relevant. Out of the relevant sentences 668 contain two or more aspect triplets.
+\medskip
 
 There are 9 possible entities, each entity can have one of 14 attributes and the entity-attribute combination is annotated with a three-class sentiment polarity. In theory this combines to a total of 378 possible triplet combinations and 126 entity-attribute combinations. However, there are only 113 actual entity-attribute combinations and some of these combinations only have a few examples in total which makes this dataset even harder to train than GermEval-2017. The appendix contains two figures which show the distribution of the entities {(figure \ref{fig:05_organic2019_Entities})} and the attributes {(figure\ref{fig:05_organic2019_Attributes})}.
-\newline
+\medskip
 
 Since training on the full number of entities and attributes is very challenging the dataset also provides a coarse-grained version which combines both aspects and entities into a total of 18 bigger sets. The distribution for this dataset version is visualized in figure \ref{fig:05_organic2019_coarse}.
 
@@ -192,14 +199,15 @@ Since training on the full number of entities and attributes is very challenging
 \subsection{Amazon Reviews Dataset}
 \label{sec:05_amazonReviews}
 The Amazon Reviews Dataset consists of over 130 million Amazon product reviews from 1995 until 2015. Therefore, this dataset is one of the richest data sources for sentiment analysis or other related \gls{nlp} tasks. The raw data is available directly through amazon.\footnote{\url{https://s3.amazonaws.com/amazon-reviews-pds/readme.html}} The reviews are grouped into 45 product categories such as "Grocery", "Luggage" or "Video Games". 
-\newline
+\medskip
 
 In 2013 McAuley and Leskovec compiled a subset of Amazon reviews \cite{McAuley2013}. This dataset contains 34,7 million reviews ranging from 1995 till 2013 grouped into 33 categories\footnote{Available through Stanford \url{https://snap.stanford.edu/data/web-Amazon.html}}. The authors also created a "Fine Food" Dataset from Amazon reviews \cite{McAuley2013a} \footnote{Available through Kaggle \url{https://www.kaggle.com/snap/amazon-fine-food-reviews}}. This dataset consists of 568,454 Amazon reviews from 1995 till 2012. The domain of this specific dataset is related to the organic domain with 273 occurrences of the word 'organic'. Unfortunately, it does not contain predefined aspects so \gls{absa} is not possible without extensive pre-processing to generate aspects out of the reviews.
-\newline
+\medskip
 
 The datasets created in 2013 contains duplicates so McAuley et. al. generated an improved Amazon Reviews dataset in 2015 without duplicates \cite{McAuley2015}\cite{He2016}. This iteration of the dataset contains 142.8 million reviews from 1996 till 2014\footnote{Available here: \url{http://jmcauley.ucsd.edu/data/amazon/}}. Due to the size of this dataset the authors provide a smaller dataset which only contains reviews from users who wrote exactly 5 reviews. This 5-core subset features 18 million reviews. The distribution of the domain categories is visualized in figure \ref{fig:05_amazonDatasetDistributin}. As one can observe the dataset is substantially skewed towards the largest domain 'books' which makes up of 49\% of the data.
+\medskip
 
-\begin{figure}[ht]
+\begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{figures/05_setup/05_amazonReviewsCategories}
 	\caption{Number of reviews per domain category in the amazon review dataset by McAuley et. al. \cite{McAuley2015}}
@@ -207,7 +215,7 @@ The datasets created in 2013 contains duplicates so McAuley et. al. generated an
 \end{figure}
 
 To combat data imbalance and the sheer size of the dataset we propose a balanced subset of the 5-core dataset with 60000 reviews for each domain aside from \textit{Musical Instruments}, \textit{Amazon Instant Video}, \textit{Automotive} and \textit{Patio, Lawn and Garden}. These categories contain less than 50000 reviews so including them would skew the dataset again. In addition, we also transformed the star-rating to the common negative-neutral-positive rating schema. Similar to Blitzer et. al. we interpret $1-2$ stars as negative, 3 stars as neutral and $4-5$ stars as positive sentiment \cite{Blitzer2007}.
-\newline
+\medskip
 
 To create a balanced dataset not only on domains but also on sentiment we sampled 20000 reviews for each sentiment for each domain. Overall, there are more positive reviews than neutral or negative reviews. Thus, some domains contain less than 20000 reviews per sentiment category. To prevent data imbalance, reviews from the remaining other sentiment categories are sampled so that each domain contains 60000 reviews in sum. This distribution and additional statistics about the dataset are documented in table \ref{tab:05_amazonDatasetStats}.
 \begin{table}	
@@ -279,10 +287,12 @@ Most of these rare tokens are either incorrectly written {(\textit{nthis})}, are
 \subsection{Evaluation}
 
 The models that are used in this thesis are stochastic models since model parameters are randomly initialized. In addition, samples within the training batches are randomly shuffled. Therefore running the model multiple times leads to different results.
+\medskip
 
 This means that it is necessary to collect model results multiple times. Unfortunately, k-fold cross validation is not possible for three out of the four datasets since the creators of the datasets provide a predefined split and changing the split during k-fold cross validation would prevent comparability with other results.
 
 Therefore, for each dataset-result we repeat the experiment 5-times and report the mean and standard deviation. Iyer and Rhinehart suggest to run an experiment up to a 1000 times to get an optimal result \cite{Iyer1999}. However, this is not possible for our models due to computational constraints.
+\medskip
 
 All experiments on hyper parameters are performed once with a fixed seed of 42. This should make sure that all experiments on hyper parameters are reproducible. There are however some cudnn functions which are non-deterministic which means that even though a random seed is set the results could differ when running the same model with the same parameters multiple times.
 
@@ -290,7 +300,7 @@ All experiments on hyper parameters are performed once with a fixed seed of 42. 
 \label{sec:05_GermEvalEvaluation}
 Wojatzki et al. \cite{Wojatzki} provide an evaluation script for their dataset GermEval-2017. All results from the GermEval 2017 challenge were evaluated using this dataset. Therefore, all results reported in this thesis also use the evaluation script to calculate the f1 score. This is done to be able to compare the results on this datasets to other approaches on this data.
 
-\begin{table}[hbt]
+\begin{table}
 	\centering
 	\label{tab:05_germevalEvaluationExample}
 	\caption{Example for GermEval-2017 evaluation. None sentiment is not shown. Document 1 is predicted correctly. Document 2 has a correct prediction for aspect A but an incorrect prediction for the sentiment of aspect B {(in bold)}.}
@@ -307,6 +317,7 @@ Wojatzki et al. \cite{Wojatzki} provide an evaluation script for their dataset G
 \end{table}
 
 Unfortunately, there are irregularities in the calculation of the micro f1 score. The evaluation script first creates every possible permutation of the combination of aspect and sentiment. If there are just two aspects {(Aspect A and Aspect B)} and four sentiments {(n/a, negative, neutral, positive)} this will generate 8 combinations {(A-n/a, A-negative, ..., B-positive)}. This is used as the first input {(\textit{aspect\_sentiment\_combinations})} of the GermEval-2017 evaluation algorithm shown in \ref{algo:05_germeval}.
+\medskip
 
 In the next step, all gold-labels and predictions are paired together for each document based on the specific aspect-sentiment combination. The example in table \ref{tab:05_germevalEvaluationExample} will produce the following combinations where the left side represents the gold labels and the right side the predictions. This would be the second input parameter \textit{golds\_predictions} for algorithm \ref{algo:05_germeval}: 
 
@@ -327,6 +338,7 @@ Using these inputs the algorithm will compute the following results:
 \end{itemize}
 
 which results in an f1-score of $0.5$. In this example there is one misclassification where instead of predicting a pos. sentiment for aspect B the classifier predicted a neg. sentiment. When looking at the combination B:pos as the \textit{'true class'} the model predicts a negative {(NOT pos. sentiment)} when in reality this is a positive {(pos. sentiment)} which is the definition of a \textit{'False Negative'}. When looking at the combination B:neg as the \textit{'true class'} the model predicts a positive {(neg. sentiment)} when in reality this is a negative {(NOT neg. sentiment)} which is the definition of a \textit{' False Positive'}.
+\medskip
 
 One could therefore argue that instead of producing two False Positives and two False Negatives the correct evaluation should be one False Positive and one False Negative.
 
@@ -370,23 +382,23 @@ One could therefore argue that instead of producing two False Positives and two 
 	\label{algo:05_germeval}
 \end{algorithm}
 
-
-
 \subsection{Hardware}
 
 % TODO: Add hardware details
 Training and evaluation of the models was done on four different machines. One of the servers belongs to the faculty of applied informatics, one is a local desktop machine and the last two are cloud instances. One is an Azure virtual compute instance with 8 \gls{cpu} cores and 28 \gls{gb} of \gls{ram} and the other is a Google Cloud \gls{gpu} compute instance instance with an Intel Xeon E5-2670 processor, 15 \gls{gb} of \gls{ram} and a NVIDIA Grid K520 \gls{gpu}. See table \ref{tab:05_usedHardware} for more details.
-\begin{table}[hbt]
+\begin{table}
 	\centering
 	\caption{Hardware used for model training}
 	\label{tab:05_usedHardware}
-	\begin{tabular}{@{}ccccc@{}}
+	\begin{tabular}{@{}cclrl@{}}
 		\toprule
 		\multicolumn{1}{c}{\textbf{}}    & \multicolumn{1}{c}{\textbf{OS}} & \multicolumn{1}{c}{\textbf{CPU}}                    & \multicolumn{1}{c}{\textbf{RAM}} & \multicolumn{1}{c}{\textbf{GPU}}     \\ \midrule
-		Schlichter 2 & Ubuntu 12.04              & Intel Core i7-3930K @ 3.20GHz   & 63 GB        & NVIDIA Titan X \\ \midrule
-		Schlichter 4 & Ubuntu 14.04              & Intel Xeon E5-2620 @ 2.00GHz    & 28 GB        & -                \\ \midrule
-		Azure        & Ubuntu 15.10              & Intel Xeon E5-2673 v3 @ 2.40GHz & 28 GB        & -                \\ \midrule
-		Amazon AWS   & Ubuntu 14.04              & Intel Xeon E5-2670              & 15 GB        & NVIDIA K520 \\ \bottomrule
+		Desktop      & Windows 10 (17134)        & Core i5-6500 @ 3.20GHz     & 16 GB        & GTX 1060 \\
+		Social 5     & Ubuntu 16.04.5            & Xeon E5-2643 v3 @ 3.40GHz  & 126 GB        & GTX 970 \\ 
+		Azure        & Ubuntu 16.04.5            & Xeon E5-2690 v3 @ 2.60GHz  & 55 GB        & Tesla K80 \\ 
+		Google        & Ubuntu 16.04.5            & Xeon E5-2670 v3 @ 2.60GHz  & 15 GB        & Grid K520 \\
+		
+		\bottomrule
 	\end{tabular}
 \end{table}
 
@@ -400,9 +412,10 @@ Training and evaluation of the models was done on four different machines. One o
 \end{figure}
 
 Docker\footnote{Docker: \url{https://www.docker.com}} is a framework for container virtualisation. Docker containers use the same kernel as the host system but an isolated file system with own system libraries. 
-
+\medskip
 
 Since training was performed on four different environments a Docker image was created which automates the installation of all required frameworks, environments, drivers and versions. An automated build pipeline builds a new image as soon as a new code version is pushed to the repository. Users can install or update an image directly from Docker Hub without rebuilding it every time locally.
+\medskip
 
 The main concern of using docker for resource intensive task is the loss of performance due to the virtualization overhead. To evaluate this, epoch training time was measured with and without docker. The experiment was performed on machine-1 displayed in table \ref{tab:05_usedHardware}. For both experiments a complete model was trained for 5 epochs on the Organic2019 dataset. Figure \ref{fig:05_dockerExecution} visualizes the time each part of the training took. For both environments the mean execution time was around 195 seconds. This means that there is no difference between running a model inside a docker container or just locally. However, this is only the case when the host is running on a linux environment. On Windows and macOS, Docker has to virtualize part of the linux kernel. Therefore, there is no advantage of running on the exact same kernel as the host system. In addition, At the time of writing, the NVIDIA-runtime\footnote{NVIDIA Docker Runtime: \url{https://github.com/NVIDIA/nvidia-docker}} is only supported for linux environments.
 
