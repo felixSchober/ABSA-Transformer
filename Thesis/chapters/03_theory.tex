@@ -7,11 +7,71 @@ This chapter attends to the theoretical background for the technologies used in 
 
 \section{Word Representations}
 
+While it is trivial to use images as input for machine learning techniques the same can not be said for language. Images already come in matrix form while words appear as discrete objects. Before language can be used for machine learning, words have to be transformed into a matrix first. A function $W(\text{word}) \rightarrow \mathbb{R}^n \quad \text{word} \in V$  which encodes words from a vocabulary $V$ into a $n$-dimensional matrix is called a word embedding.
+\medskip
+
+The easiest way to achieve this is a one-hot encoding of a vocabulary. We just take the vocabulary which is a list of $N$ words and number the words sequentially. A word vector is created by getting the index of the word from the vocabulary and setting the value of the word vector at the word-index to one.
+
+\begin{equation*}
+	\begin{aligned}
+		W(\text{"dog"}) = [1, 0, 0] \\
+		W(\text{"cat"}) = [0, 1, 0] \\
+		W(\text{"bee"}) = [0, 0, 1] \\
+	\end{aligned}
+\end{equation*}
+
+
+While this works for small vocabulary sizes, with larger vocabularies one will encounter problems. When having a vocabulary size of $N=10,000$ this approach will produce $10,000$-dimensional vectors for each word. What makes matters even worse is that those vectors are extremely sparse since they only have one non-zero entry.
+\medskip
+
+In 1992 Schütze {(and to some extend Hinton in 1986 \cite{Hinton1986})} pioneered the idea of an universal word vector space \cite{Schutze1992}. The general idea is that instead of having sparse, high dimensional word encodings it would be better to have low-dimensional, dense word vectors where semantically similar words appear close together in the word vector space. Unrelated words should be far away from each other. For example, the distance between the words "dog" and "cat" should be low while the distance between "bed" and "rocket" should be high.
+\medskip
+
+To achieve this, Schütze suggested to count co-occurrence and construct a co-occurrence matrix \cite{Schutze1992}. While this makes the word-matrix dense {(only 2\% of the entries are zero)} the resulting matrix is still extremely large and several dimensionality reduction techniques had to be applied.
+\medskip
+
+Of course, this task can also be solved by neural networks. Imagine $W$ to be a matrix $W^{N\times n}$ where each row corresponds to a word and $n$ is the dimension of the desired word vector equivalent to a lookup table. We initialize the weights of $W$ randomly and use $W$ to transform words into dense vectors so that they look something like this:
+
+\begin{equation*}
+	\begin{aligned}
+		W(\text{"dog"}) = [0.3, -0.8, 0.1, \dots] \\
+		W(\text{"cat"}) = [-0.1, 0.0, 0.2, \dots] \\
+		W(\text{"bee"}) = [0.3, 0.6, -0.9, \dots] \\
+	\end{aligned}
+\end{equation*}
+
+Instead of improving $W$ directly, we use $W$ to train a network on an auxiliary task like predicting the next word in a sequence. Instead of training $W$ supervised we use an unsupervised task and train $W$ indirectly. This is the basic principle how many word embeddings are trained and interestingly, this produces fascinating results. 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.33\textwidth]{figures/03_theory/03_wordEmbeddings1}
+	\includegraphics[width=0.33\textwidth]{figures/03_theory/03_wordEmbeddings2}
+	\includegraphics[width=0.33\textwidth]{figures/03_theory/03_wordEmbeddings3}
+	\caption{F1 Scores of the hyperparamter optimization of GermEval-2017 {(left)} and Coarse Organic 2019 datasets {(right)}.}
+	\label{fig:03_WordEmbeddings}
+\end{figure}
+
+"The use of word representations… has become a key “secret sauce” for the success of many NLP systems in recent years, across tasks including named entity recognition, part-of-speech tagging, parsing, and semantic role labeling." \cite{Luong2013}
+
+explain why we need word representations
+
+
+
+
+visualization \cite{Turian2010} http://metaoptimize.com/projects/wordreprs/
+
+\subsection{Word2Vec}
+
+\cite{Mikolov2013c}
+
 \subsection{Glove}
+
+\cite{Pennington2014a}
 
 \subsection{FastText}
 
-\subsection{Elmo}
+\cite{Joulin2016}
+
 
 \section{Google Transformer Architecture}
 \subsection{Positional Encoding}
