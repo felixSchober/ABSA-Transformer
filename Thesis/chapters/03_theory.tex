@@ -24,10 +24,13 @@ The easiest way to achieve this is a one-hot encoding of a vocabulary. We just t
 While this works for small vocabulary sizes, with larger vocabularies one will encounter problems. When having a vocabulary size of $N=10,000$ this approach will produce $10,000$-dimensional vectors for each word. What makes matters even worse is that those vectors are extremely sparse since they only have one non-zero entry.
 \medskip
 
+\subsection{Vector Space}
+\label{sec:03_vectorSpace}
+
 In 1992 Schütze {(and to some extend Hinton in 1986 \cite{Hinton1986})} pioneered the idea of an universal word vector space \cite{Schutze1992}. The general idea is that instead of having sparse, high dimensional word encodings it would be better to have low-dimensional, dense word vectors where semantically similar words appear close together in the continuos word vector space. Unrelated words should be far away from each other. For example, the distance between the words "dog" and "cat" should be low while the distance between "bed" and "rocket" should be high. Figure \ref{fig:03_WordEmbeddings} shows a visualization of a word vector space which has been reduced by t-SNE to two dimensions.
 \medskip
 
-To achieve this, Schütze suggested to count co-occurrence of words and their neighbors and construct a co-occurrence matrix \cite{Schutze1992}. While this makes the word-matrix dense {(only 2\% of the entries are zero)} the resulting matrix is still extremely large and several dimensionality reduction techniques had to be applied.
+To achieve this, Schütze suggested to count co-occurrence of words and their neighbors and construct a co-occurrence matrix \cite{Schutze1992}. While this makes the word-matrix dense {(only 2\% of the entries are zero)} the resulting matrix is still extremely large. To get more useful vectors dimensionality reduction techniques like \gls{lsa} have to be applied.
 \medskip
 
 Of course, this task can also be solved by neural networks. Imagine $W$ to be a matrix $W^{N\times n}$ where each row corresponds to a word and $n$ is the dimension of the desired word vector equivalent to a lookup table. We initialize the weights of $W$ randomly and use $W$ to transform words into dense vectors so that they look something like this:
@@ -59,6 +62,7 @@ Word vectors even allow for basic vector arithmetic. $W(\text{"King"})-W(\text{"
 For many \gls{nlp} tasks, word representations have become indispensable and one of the factors of success for many systems \cite{Luong2013}. The next sections will showcase a few of the most popular embedding techniques.
 
 \subsection{Word2Vec}
+\label{sec:03_word2vec}
 
 Word2Vec by Mikolov et. al. is a very popular method which learns to produce word embeddings unsupervised from raw text \cite{Mikolov2013}. The authors propose two approaches to learn an embedding. Both are very similar and rely on shallow neural networks to generate good embeddings. Moreover, these methods are computationally much more efficient than previous architectures without sacrificing performance. This allows word2vec to be applied on much bigger corpora with billions of words which was not possible before \cite{Mikolov2013c}.
 
@@ -75,14 +79,58 @@ $T$ is the number of words in the corpus, $c$ is the context window size and $p(
 
 \subsubsection*{\acrfull{cbow}}
 
-\gls{cbow} is very similar to the skip-gram model. However, instead of predicting context words for source word, \gls{cbow} predicts the next word $w_{t}$ in a sequence, given the previous words $w_{t-j}$ \cite{Mikolov2013c}. In other words, the objective of \gls{cbow} is to predict a word given it's context.
+\gls{cbow} is very similar to the skip-gram model. However, instead of predicting context words for a source word, \gls{cbow} predicts the next word $w_{t}$ in a sequence, given the previous words $w_{t-j}$ \cite{Mikolov2013c}. In some instances the surrounding words are taken as the context instead of just the previous words. In other words, the objective of \gls{cbow} is to predict a word given it's context.
 \medskip
 
 Skip-gram works better for smaller datasets than \gls{cbow} since it is possible to generate more training pairs from a sequence. In addition, it is also able to represent rare words better than \gls{cbow}. However, \gls{cbow} is faster to train than skip-gram and yields slightly better accuracy for more frequent words.
 
-\subsection{Glove}
+\subsection{\acrfull{glove}}
 
-\cite{Pennington2014a}
+There are two methods for create word vectors: word co-occurrence counting {(section \ref{sec:03_vectorSpace})} and the window based skip-gram / \gls{cbow} methods {(section \ref{sec:03_word2vec})}. Co-occurrence is relatively fast and efficient to collect and train unless the vocabulary is very big. A co-occurrence matrix also captures a lot of global statistical information whereas local window based models only capture the statistics for the window. However, most of the information a co-occurrence matrix provides is about the word similarity and not necessarily about the semantics. In addition, frequent words like "the" or "a" co-occur with a lot of other words. Therefore, they have huge co-occurrence counts with many words without providing any useful information \cite{Pennington2014a}.
+
+Local window based models like word2vec have the disadvantage that training is not as efficient and a lot of statistical information is not captured \cite{Pennington2014a}. 
+\medskip
+
+\gls{glove} which was introduced by Pennington et. al. tries to combine the advantages of both model families \cite{Pennington2014a}. \gls{glove} captures the global corpus statistics directly by creating a co-occurence matrix $X$ where the entry $X_{ij}$ denotes how often the word $j$ occurs together with $i$. The probability that $i$ appears in the context of $j$ is 
+
+\begin{equation}
+	P_{ij}=P(j|i)=\frac{X_{ij}}{X_i}=\frac{X_{ij}}{\sum_k X_{ik}}\quad.
+\end{equation}
+
+To put it simply, $P_{ij}$ is just the number of times $i$ and $j$ appeared together divided by the sum of all words that $i$ appeared with \cite{Pennington2014a}.
+
+Pennington et. al. demonstrate that the ratio of probabilities $P_{ik} / P_{jk}$  encodes a lot of the meaning that is lost in traditional co-occurence based methods \cite{Pennington2014a}.
+\medskip
+
+The authors use $F$ to describe this ratio as
+
+\begin{equation}
+	F(w_i, w_j, \widetilde{w}_k) \approx \frac{P_{ik}}{P_{jk}}
+\end{equation}
+
+$w$ are just word vectors of $i$, $j$ and $k$ {($\widetilde{w}$)} is a context vector. In the end the goal is to get a good candidate for $F$ that fulfills all our requirements. By adding vector differences {($w_i - w_j$)} and linear relations {(dot-product)} $F$ becomes
+
+\begin{equation}
+	F((w_i - w_j)^T \cdot \widetilde{w}_k) \approx \frac{P_{ik}}{P_{jk}} \quad .
+\end{equation}
+
+By replacing the probability ratio with logarithms we arrive at
+
+\begin{equation}
+	w_i^T \cdot \widetilde{w}_k = log(P_{ik}) = log(X_{ik}) - log(X_i) \quad .
+\end{equation}
+
+The weighted least squares objective function is then finally
+
+\begin{equation}
+	J = \sum_{i,j=1}^V f(X_{ij}) (w_i^T \cdot \widetilde{w}_k + b_i+\widetilde{b}_j - log(X_{ij})^2)
+\end{equation}
+
+where $V$ is the vocabulary size and $b$ and $\widetilde{b}$ are bias terms that are added.
+\medskip
+
+The last problem is solved by a weighting function $f(X_{ij})$. Co-occurences which are infrequent will contain a lot of noise. Therefore it is important to reduce the influence of noisy words and prevent frequent words like "the" from dominating the model. Therefore, they weight each word to make sure that words are not over or underrepresented.
+
 
 \subsection{FastText}
 

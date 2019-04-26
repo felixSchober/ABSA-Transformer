@@ -31,7 +31,7 @@ Usually, lexicon approaches used to work in combination with scoring functions w
 \acrfull{absa} takes Sentiment Analysis one step further. Instead of just predicting sentiment for a sentence of document, \gls{absa} predicts sentiment for a specific aspect. This solves a major dilemma for normal sentiment analysis when a sentence or document contains multiple contradictive sentiments. For instance, the sentence "\textit{The food tasted great but the price was too high}" contains two conflicting sentiment instances {(Positive: great food - Negative: High Price)}. A classifier just modelling sentiment anaylsis would have to label this sentence as beeing neutral whereas an \gls{absa} system could classify the aspect \textit{food} as positive and \textit{price} as negative. In addition \gls{absa} is also much more useful for consumers and companies alike as discussed in the previous section.
 \medskip
 
-\subsection*{Datasets}
+\subsection{Datasets}
 
 There are several datasets which provide tasks that include \gls{absa}. Most widely used are the SemEval datasets. Task 4 of SemEval-2014 contains 7686 annotated sentences about restaurants and laptops \cite{Pontiki2014}. 
 
@@ -42,7 +42,7 @@ Lastly, Task 5 of SemEval-2016 adds additional subtasks for \gls{absa} and text-
 
 Since annotating \gls{absa} datasets is very expensive in term of annotation costs, even the biggest SemEval datasets only contain less than 10,000 sentences over all splits. In contrast, GermEval-2017 is a shared task dataset which contains more than 25,000 comments \cite{Wojatzki2017}.  
 
-\subsection*{Deep Learning on \gls{absa}}
+\subsection{Deep Learning on \gls{absa}}
 
 One crucial element for deep neural network training on natural language is the ability to transform a sequence of words from sparse high dimesional vectors to dense sentence embeddings. The majority of recent publications on \gls{absa} use sentence embeddings as their first input layer \cite{Ruder2016, Tang2016, Lee2017, Schmitt2018, Ma2018, Xue2018} in combination with \gls{lstm} architectures \cite{Ruder2016, Tang2016, Ma2018}.
 \medskip
