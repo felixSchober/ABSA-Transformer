@@ -131,11 +131,27 @@ where $V$ is the vocabulary size and $b$ and $\widetilde{b}$ are bias terms that
 
 The last problem is solved by a weighting function $f(X_{ij})$. Co-occurences which are infrequent will contain a lot of noise. Therefore it is important to reduce the influence of noisy words and prevent frequent words like "the" from dominating the model. Therefore, they weight each word to make sure that words are not over or underrepresented.
 
-
 \subsection{FastText}
 
-\cite{Joulin2016}
+FastText is an embedding technique which focuses on efficiency but is still on par with other word embedding techniques \cite{Joulin2016}.
+\medskip
 
+FastText is based on Word2Vec. However, whereas word2vec treats each word as an atomic entity, FastText splits words into several character n-grams. The word "where" consists of the following 5 $n$-grams for $n=3$ \cite{Bojanowski2017}: 
+
+\begin{center}
+	"<wh", "whe", "her", "ere", "re>"
+\end{center}
+
+The special characters "<" and ">" are boundary symbols to differentiate prefixes and suffixes from the beginning and ending of words \cite{Bojanowski2017}.
+\medskip
+
+This notion is very powerful since it provides several advantages over previous models. For one, out of vocabulary words are better recognized since their $n$-grams are still known. Unknown words can therefore be partly constructed by known $n$-grams. \cite{Bojanowski2017}. 
+\medskip
+
+Some languages like German which heavily rely on compound words also profit from this technique since those words can also be constructed using known $n$-grams \cite{Bojanowski2017}.
+\medskip
+
+Lastly, FastText represents rare words a lot better than word2vec. Even if a word is very rare and only occurs in a sentence a few times in total, there is a high chance that the model consists of $n$-grams which appear in other, more frequent words \cite{Bojanowski2017}.
 
 \section{Google Transformer Architecture}
 \subsection{Positional Encoding}
