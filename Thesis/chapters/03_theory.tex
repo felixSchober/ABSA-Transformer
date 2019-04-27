@@ -154,8 +154,66 @@ Some languages like German which heavily rely on compound words also profit from
 Lastly, FastText represents rare words a lot better than word2vec. Even if a word is very rare and only occurs in a sentence a few times in total, there is a high chance that the model consists of $n$-grams which appear in other, more frequent words \cite{Bojanowski2017}.
 
 \section{Google Transformer Architecture}
-\subsection{Positional Encoding}
+
+The Google transformer architecture is a novel neural network architecture for automatic machine translation tasks by Vaswani et. al. \cite{Vaswani2017d}. Instead of relying on \gls{rnn} based architectures with recurrence, the transformer uses an attention mechanism to achieve state-of-the-art results on machine translation tasks. Like most of sequence-to-sequence models the transformer also uses the encoder-decoder pattern to translate a sentence from the source to the target language. We will mostly focus on the encoder part of the model since this is the part, we use to perform \gls{absa} classification.
+\medskip
+
+The issue when training many \gls{rnn}-based architectures is the problem of long-range dependencies. These dependencies may lead to either vanishing or exploding gradient \cite{Hochreiter2009}. The dilemma is, that language translations features a lot of long dependencies. For some translations like "I like planes" to "Ich mag Flugzeuge" each token exactly matches the position of the translation. However, in many cases the positioning of words is different. Take the sentence "I think I \underline{saw} you at the airport \emph{yesterday}". This would translate to "Ich glaube, dass ich dich \emph{gestern} im Flughafen \underline{gesehen habe}".
+
+When translating this sentence from English to German, a recurrent architecture has to keep the dependency of "\underline{saw}" of all the way until the end of the German sentence when it has to output the tokens "\underline{gesehen habe}".
+\medskip
+
+Besides the issue with long-term dependencies, \gls{rnn} architectures are also almost impossible to parallelize which is especially important for long sequences \cite{Vaswani2017d}.
+\medskip
+
+The transformer model tries to fix both problems. It is the first transduction model to completely gives up on recurrence or convolutions to compute sequence representations \cite{Vaswani2017d}. 
+
+Instead it relies on attention and specifically multi-head attention. Attention allows a model to focus on relevant information and the idea of multi-head attentions enables parallelization as well as attention heads which focus on their attention on different aspects \cite{Vaswani2017d}.
+
+\subsection{Transformer Encoder-Decoder Architecture}
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/03_theory/03_transformer_Architecture_HighLevel}
+	\caption{High-level overview of the transformer Encoder-Decoder architecture, translating the sentence "I mag Flugzeuge" from German to English. The model is at the step where it translates the last word "Flugzeug" to plane.}
+	\label{fig:03_transformer_HighlevelOverview}
+\end{figure}
+
+A high level architecture overview of the transformer is depicted in figure \ref{fig:03_transformer_HighlevelOverview}. As already mentioned the transformer resembles an encoder-decoder architecture. Yet, in contrast to traditional encoder-decoders, the transformer consists of $n$ encoder- and $n$ decoder blocks. 
+\medskip
+
+The encoder blocks always get the whole input sequence encoded as word vectors. This sequence is then propagated until it reaches the top encoder. From there, the encoder output is passed to all decoder blocks. Furthermore, the decoder blocks also receive the output of the decoder blocks below them. In addition, the first decoder block {(in figure \ref{fig:03_transformer_HighlevelOverview} this block is named "Decoder 1")} receives the sequence of tokens the transformer already predicted. 
+\medskip
+
+Following the example in figure \ref{fig:03_transformer_HighlevelOverview} the translation would start by passing the sentence "Ich mag Flugzeuge" through all encoder blocks until it reaches the top block. All 1 to $n$ decoder blocks receive the encoded sentence. The encoded sentence then flows up from the bottom to the top where it outputs the first token "I". 
+
+Decoder 1 now gets two inputs: 
+
+\begin{enumerate}
+	\item the encoded source sentence it previously also received
+	\item the previous predicted output which is the token "I"
+\end{enumerate}
+
+Decoder 2 uto $n$ now get the encoded input {(as before)} as well as the output of the decoders below. The top encoder will then output "like" as the next token in the sequence. 
+
+The step that would follow this one is shown in figure \ref{fig:03_transformer_HighlevelOverview} where "I like" is already predicted and only the last token is missing.
+\bigskip
+
+Figure \ref{fig:03_transformer_overview} shows a detailed overview of one encoder and one decoder block. This is useful to comprehend the information flow on the decoder side.
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/03_theory/03_transformerArchitectureOverview}
+	\caption{Overview of the whole Transformer architecture.}
+	\label{fig:03_transformer_overview}
+\end{figure}
+
+
+
 \subsection{Attention Mechanism}
+
+
+\subsection{Positional Encoding}
 \subsection{Point-wise Layer}
 
 \subsection{Xavier Initialization}
