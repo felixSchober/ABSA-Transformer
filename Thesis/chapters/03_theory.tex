@@ -33,7 +33,7 @@ In 1992 Schütze {(and to some extend Hinton in 1986 \cite{Hinton1986})} pioneer
 To achieve this, Schütze suggested to count co-occurrence of words and their neighbors and construct a co-occurrence matrix \cite{Schutze1992}. While this makes the word-matrix dense {(only 2\% of the entries are zero)} the resulting matrix is still extremely large. To get more useful vectors dimensionality reduction techniques like \gls{lsa} have to be applied.
 \medskip
 
-Of course, this task can also be solved by neural networks. Imagine $W$ to be a matrix $W^{N\times n}$ where each row corresponds to a word and $n$ is the dimension of the desired word vector equivalent to a lookup table. We initialize the weights of $W$ randomly and use $W$ to transform words into dense vectors so that they look something like this:
+Of course, this task can also be solved by neural networks. Imagine $W$ to be a matrix $W \in \mathbb{R}^{N\times n}$ where each row corresponds to a word and $n$ is the dimension of the desired word vector equivalent to a lookup table. We initialize the weights of $W$ randomly and use $W$ to transform words into dense vectors so that they look something like this:
 
 \begin{equation*}
 	\begin{aligned}
@@ -139,7 +139,7 @@ FastText is an embedding technique which focuses on efficiency but is still on p
 FastText is based on Word2Vec. However, whereas word2vec treats each word as an atomic entity, FastText splits words into several character n-grams. The word "where" consists of the following 5 $n$-grams for $n=3$ \cite{Bojanowski2017}: 
 
 \begin{center}
-	"<wh", "whe", "her", "ere", "re>"
+	"\verb|<wh|", "\verb|whe|", "\verb|her|", "\verb|ere|", "\verb|re>|"
 \end{center}
 
 The special characters "<" and ">" are boundary symbols to differentiate prefixes and suffixes from the beginning and ending of words \cite{Bojanowski2017}.
@@ -170,7 +170,7 @@ The transformer model tries to fix both problems. It is the first transduction m
 
 Instead it relies on attention and specifically multi-head attention. Attention allows a model to focus on relevant information and the idea of multi-head attentions enables parallelization as well as attention heads which focus on their attention on different aspects \cite{Vaswani2017d}.
 
-\subsection{Transformer Encoder-Decoder Architecture}
+\subsection{Encoder-Decoder Architecture}
 
 \begin{figure}[htp]
 	\centering
@@ -194,24 +194,48 @@ Decoder 1 now gets two inputs:
 	\item the previous predicted output which is the token "I"
 \end{enumerate}
 
-Decoder 2 uto $n$ now get the encoded input {(as before)} as well as the output of the decoders below. The top encoder will then output "like" as the next token in the sequence. 
+Decoder 2 to $n$ now get the encoded input {(as before)} as well as the output of the decoders below. The top encoder will then output "like" as the next token in the sequence. 
 
 The step that would follow this one is shown in figure \ref{fig:03_transformer_HighlevelOverview} where "I like" is already predicted and only the last token is missing.
 \bigskip
 
 Figure \ref{fig:03_transformer_overview} shows a detailed overview of one encoder and one decoder block. This is useful to comprehend the information flow on the decoder side.
 
-\begin{figure}[htp]
+\begin{figure}[t]
 	\centering
 	\includegraphics[width=\textwidth]{figures/03_theory/03_transformerArchitectureOverview}
 	\caption{Overview of the whole Transformer architecture.}
 	\label{fig:03_transformer_overview}
 \end{figure}
 
-
-
 \subsection{Attention Mechanism}
 
+The transformer uses attention to focus on the important and relevant information in a sequence. The question what is regarded as important is learned.
+
+The specific attention mechanism, the transformer uses is called "Scaled Dot-Product Attention". The input for the attention function are three matrices called "Queries" $Q'$, "Keys" $K'$ and "Values" $V'$. We get these matrices from the input embeddings. We just multiply the embeddings with $W^Q$, $W^K$ and $W^V$. These projection matrices are learned and project our input to a lower dimension so that we get $Q', K', V'$.
+\bigskip
+
+We then take the dot-product of $Q'$ and $K'$ and scale the result by dividing by the square root of $d_k$ where $d_k$ is the dimension of $Q'$ and $K'$. Next, we can finally apply the attention. From the softmax we get a vector of probabilities which are the attention values. When we apply the dot product on those attentions and the values we scale the values with the attentions. 
+\medskip
+
+Words which are deemed important by the attention mechanism are multiplied with values near 1 while unimportant words are multiplied with small values and therefore become unimportant for the next layers.
+\medskip
+
+One aspect which was not mentioned is the "mask"-step. After the scaling operation we set some values to 0. This is done because every input sequence needs to have the same length which we achieve by adding <pad> tokens to sentences which are not long enough. Those tokens carry no information so we can safly discard them in this step. 
+
+In the decoder part we need to mask specific parts of the sentence which the transformer has not predicted yet. This is done to prevent the model from cheating by just replaying the input sequence.
+\begin{align}
+	\text{Attention}(Q', K', V') & = \text{softmax}(\frac{Q \cdot K^T}{\sqrt{d_k}}) \cdot V \\
+	\text{AttentionHead}_i(Q, K, V) & = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)
+\end{align}
+
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=0.5\textwidth]{figures/03_theory/03_transformer_ScaledDot}
+	\caption{left: single scaled dot-product attention mechanism. right: multiple scaled dot-product attention heads stacked together. Each head receives its representation of $Q$, $K$ and $V$ by using projection layers.}
+	\label{fig:03_transformer_scaledDotProduct}
+\end{figure}
 
 \subsection{Positional Encoding}
 \subsection{Point-wise Layer}
