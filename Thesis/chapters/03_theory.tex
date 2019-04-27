@@ -179,10 +179,10 @@ Instead it relies on attention and specifically multi-head attention. Attention 
 	\label{fig:03_transformer_HighlevelOverview}
 \end{figure}
 
-A high level architecture overview of the transformer is depicted in figure \ref{fig:03_transformer_HighlevelOverview}. As already mentioned the transformer resembles an encoder-decoder architecture. Yet, in contrast to traditional encoder-decoders, the transformer consists of $n$ encoder- and $n$ decoder blocks. 
+A high level architecture overview of the transformer is depicted in figure \ref{fig:03_transformer_HighlevelOverview}. As already mentioned the transformer resembles an encoder-decoder architecture. Yet, in contrast to traditional encoder-decoders, the transformer consists of $n$ encoder- and $n$ decoder blocks \cite{Vaswani2017d}. 
 \medskip
 
-The encoder blocks always get the whole input sequence encoded as word vectors. This sequence is then propagated until it reaches the top encoder. From there, the encoder output is passed to all decoder blocks. Furthermore, the decoder blocks also receive the output of the decoder blocks below them. In addition, the first decoder block {(in figure \ref{fig:03_transformer_HighlevelOverview} this block is named "Decoder 1")} receives the sequence of tokens the transformer already predicted. 
+The encoder blocks always get the whole input sequence encoded as word vectors. This sequence is then propagated until it reaches the top encoder. From there, the encoder output is passed to all decoder blocks. Furthermore, the decoder blocks also receive the output of the decoder blocks below them. In addition, the first decoder block {(in figure \ref{fig:03_transformer_HighlevelOverview} this block is named "Decoder 1")} receives the sequence of tokens the transformer already predicted \cite{Vaswani2017d}. 
 \medskip
 
 Following the example in figure \ref{fig:03_transformer_HighlevelOverview} the translation would start by passing the sentence "Ich mag Flugzeuge" through all encoder blocks until it reaches the top block. All 1 to $n$ decoder blocks receive the encoded sentence. The encoded sentence then flows up from the bottom to the top where it outputs the first token "I". 
@@ -210,41 +210,58 @@ Figure \ref{fig:03_transformer_overview} shows a detailed overview of one encode
 
 \subsection{Attention Mechanism}
 
-The transformer uses attention to focus on the important and relevant information in a sequence. The question what is regarded as important is learned.
+The transformer uses attention to focus on the important and relevant information in a sequence. The question what is regarded as important is learned \cite{Vaswani2017d}.
 
-The specific attention mechanism, the transformer uses is called "Scaled Dot-Product Attention". The input for the attention function are three matrices called "Queries" $Q'$, "Keys" $K'$ and "Values" $V'$. We get these matrices from the input embeddings. We just multiply the embeddings with $W^Q$, $W^K$ and $W^V$. These projection matrices are learned and project our input to a lower dimension so that we get $Q', K', V'$.
+The specific attention mechanism, the transformer uses is called "Scaled Dot-Product Attention" {(Figure \ref{fig:03_transformer_scaledDotProduct} left)}. The input for the attention function are three matrices called "Queries" $Q'$, "Keys" $K'$ and "Values" $V'$. We get these matrices from the input embeddings. We just multiply the embeddings with $W^Q$, $W^K$ and $W^V$. These projection matrices are learned and project our input to a lower dimension so that we get $Q', K', V'$ \cite{Vaswani2017d}.
 \bigskip
 
-We then take the dot-product of $Q'$ and $K'$ and scale the result by dividing by the square root of $d_k$ where $d_k$ is the dimension of $Q'$ and $K'$. Next, we can finally apply the attention. From the softmax we get a vector of probabilities which are the attention values. When we apply the dot product on those attentions and the values we scale the values with the attentions. 
+We then take the dot-product of $Q'$ and $K'$ and scale the result by dividing by the square root of $d_k$ where $d_k$ is the dimension of $Q'$ and $K'$. Next, we can finally apply the attention. From the softmax we get a vector of probabilities which are the attention values. When we apply the dot product on those attentions and the values we scale the values with the attentions \cite{Vaswani2017d}. 
 \medskip
 
-Words which are deemed important by the attention mechanism are multiplied with values near 1 while unimportant words are multiplied with small values and therefore become unimportant for the next layers.
+Words which are deemed important by the attention mechanism are multiplied with values near 1 while unimportant words are multiplied with small values and therefore become unimportant for the next layers \cite{Vaswani2017d}.
 \medskip
 
-One aspect which was not mentioned is the "mask"-step. After the scaling operation we set some values to 0. This is done because every input sequence needs to have the same length which we achieve by adding <pad> tokens to sentences which are not long enough. Those tokens carry no information so we can safly discard them in this step. 
+One aspect which was not mentioned is the "mask"-step. After the scaling operation we set some values to 0. This is done because every input sequence needs to have the same length which we achieve by adding <pad> tokens to sentences which are not long enough. Those tokens carry no information so we can safely discard them in this step \cite{Vaswani2017d}. 
 
-In the decoder part we need to mask specific parts of the sentence which the transformer has not predicted yet. This is done to prevent the model from cheating by just replaying the input sequence.
+In the decoder part we need to mask specific parts of the sentence which the transformer has not predicted yet. This is done to prevent the model from cheating by just replaying the input sequence \cite{Vaswani2017d}.
+\medskip
+
+The transformer is constructed to use multiple "attention-heads" where each "head" performs its own dot-product attention {(Figure \ref{fig:03_transformer_scaledDotProduct} right)}. To get different values, each head $i$ has its own set of $W_i^Q$, $W_i^K$ and $W_i^V$ matrices. The main idea behind the concept of multi head dot-product attention is that each head specializes on some aspect. One head might pay attention to entities while another head looks out for actions \cite{Vaswani2017d}. This being said in practice this is not as clear and the distinction is more fuzzy.
+
+The following equation summarizes the process which is described above:
 \begin{align}
-	\text{Attention}(Q', K', V') & = \text{softmax}(\frac{Q \cdot K^T}{\sqrt{d_k}}) \cdot V \\
+	\text{Attention}(Q', K', V') & = \text{softmax}(\frac{Q' \cdot K'^T}{\sqrt{d_k}}) \cdot V' \\
 	\text{AttentionHead}_i(Q, K, V) & = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)
 \end{align}
 
-
 \begin{figure}[htp]
 	\centering
-	\includegraphics[width=0.5\textwidth]{figures/03_theory/03_transformer_ScaledDot}
+	\includegraphics[width=0.7\textwidth]{figures/03_theory/03_transformer_ScaledDot}
 	\caption{left: single scaled dot-product attention mechanism. right: multiple scaled dot-product attention heads stacked together. Each head receives its representation of $Q$, $K$ and $V$ by using projection layers.}
 	\label{fig:03_transformer_scaledDotProduct}
 \end{figure}
 
 \subsection{Positional Encoding}
+
+The transformer always gets the complete sequence of words as the input. However, since the transformer has no recurrence it has no memory. This means that it does not know which word is at which position. Yet, this information is very important to understand sentences \cite{Vaswani2017d}. 
+\medskip
+
+This issue is solved by a "positional encoding". This encoding is added to the word embeddings at the bottom of the encoders and decoders. It has the same dimension as the embedding so it can be added element-wise \cite{Vaswani2017d}.
+
+For the positional encoding the authors use a combination of sine and cosine functions. They also experimented with a learned encoding but this approach did not perform significantly better \cite{Vaswani2017d}.
+
 \subsection{Point-wise Layer}
 
-\subsection{Xavier Initialization}
+After the input is passed through the attention heads, a pair of fully connected layers with nonlinearities are used \cite{Vaswani2017d}. 
 
-\subsection{Adam}
+The first linear layer scales the input to the inner layer dimensionality of 2048 and the second layer scales the input back to the previous model size of 512 \cite{Vaswani2017d}.
 
-\subsection{NOAM}
+\subsection{\gls{adam}}
+
+Vaswani et. al. propose to use the \acrfull{adam} optimizer \cite{Kingma2014}. \gls{adam} is an extension to the popular \gls{sgd} optimizer. However, instead of having a fixed learning rate like \gls{sgd}, Adam computes a learning rate for each trainable network parameter. Those learning rates are directly obtained by the decaying mean and uncentered variance of the past gradients \cite{Kingma2014}.
+\medskip
+
+This is different to AdaGrad \cite{Duchi2011} and RMSProp \cite{Hinton} which also maintain a learning rate for each parameter. However, RMSProp only use the mean and AdaGrad updates parameters based on how frequent the specific parameter is used as a feature.
 
 \section{Multi-Task Learning}
 
