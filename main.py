@@ -7,7 +7,7 @@ from misc.transfer_learning_experiment import TransferLearningExperiment
 import argparse
 import traceback
 
-def run(args):
+def run(args, parser):
 	dataset_choice = args.dataset
 	runs = args.runs
 	epochs = args.epochs
@@ -31,10 +31,10 @@ def run(args):
 			file_format='csv',
 			language='de'
 		)
-		
+		from misc.run_configuration import hyperOpt_goodParams
 
 		specific_hp = {**hyperOpt_goodParams, **{
-			'task': 'germeval',
+			'task': task,
 			'use_stop_words': True,
 			'language': 'de',
 			'embedding_type': 'fasttext'
@@ -146,5 +146,5 @@ if __name__ == "__main__":
 						help='Specify the task to execute. Only applicable when using the organic dataset')
 	args = parser.parse_args()
 
-	run(args)
+	run(args, parser)
 	print('Exit')

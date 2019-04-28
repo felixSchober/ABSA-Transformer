@@ -14,6 +14,22 @@
 			"args": ["organic", "--runs", "1", "--task", "coarse"]
 		},
 		{
+            "name": "GermEval-2017",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["germeval", "--runs", "1", "--task", "germeval"]
+		},
+		{
+            "name": "GermEval-2017 - MT",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["germeval", "--runs", "1", "--task", "germeval_multitask"]
+		},
+		{
             "name": "CoNLL-2003 - NER",
             "type": "python",
             "request": "launch",

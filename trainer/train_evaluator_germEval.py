@@ -4,7 +4,14 @@ class TrainEvaluatorGermEval(TrainEvaluator):
 
 	def __init__(self, *args):
 		super(TrainEvaluatorGermEval, self).__init__(*args)
-		self.combinations = self._create_gold_combinations(len(self.dataset.target_names), self.dataset.target_size)
+
+		# don't evaluate on general
+		if self.dataset.name == 'germeval_multitask':
+			num_aspects = len(self.dataset.target_names) - 1
+		else:
+			num_aspects = len(self.dataset.target_names)
+
+		self.combinations = self._create_gold_combinations(num_aspects, self.dataset.target_size)
 
 
 	def _create_gold_combinations(self, num_aspects=19, num_sentiments=4):

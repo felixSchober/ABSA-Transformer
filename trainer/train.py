@@ -120,7 +120,7 @@ class Trainer(object):
 			self.loss.name)		
 
 		# use special evaluator for germeval
-		if self.dataset.name == 'germeval':
+		if self.dataset.name == 'germeval' or self.dataset.name == 'germeval_multitask':
 			from trainer.train_evaluator_germEval import TrainEvaluatorGermEval
 			self.evaluator = TrainEvaluatorGermEval(
 				self.model,

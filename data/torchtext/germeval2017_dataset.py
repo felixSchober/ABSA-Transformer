@@ -242,6 +242,11 @@ class GermEval2017Dataset(Dataset):
 		# process the aspect sentiment
 		if len(self.aspects) == 0:
 			aspect_sentiment_categories.add('QR-Code')
+
+			# if multitask, add general sentiment field
+			if self.hp.task == 'germeval_multitask':
+				aspect_sentiment_categories.add('_General_MT')
+
 			self.aspects = list(aspect_sentiment_categories)
 
 			# make sure the list is sorted. Otherwise we'll have a different
@@ -260,6 +265,10 @@ class GermEval2017Dataset(Dataset):
 				ss[pos] = s
 				nas -= 1
 
+			# if multitask set last category to the sentiment
+			if self.hp.task == 'germeval_multitask':
+				ss[-1] = raw_example[3]
+				
 			self.na_labels += nas
 			raw_example[6] = ss
 			

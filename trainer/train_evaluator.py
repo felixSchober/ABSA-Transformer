@@ -299,8 +299,14 @@ class TrainEvaluator(object):
 		fn = 0
 		fp = 0
 
+		# if we use the germeval_multitask task we don't want to evaluate on the multitask task
+		if self.dataset.name == 'germeval_multitask':
+			num_aspects = len(self.dataset.target) - 1
+		else:
+			num_aspects = len(self.dataset.target)
+
 		# iterate over all target heads and get true positives, false positives, etc for each aspect
-		for i in range(len(self.dataset.target)):
+		for i in range(num_aspects):
 			try:
 				y_pred = predictions[i]
 				y_true = targets[i]
