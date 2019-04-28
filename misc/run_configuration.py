@@ -248,7 +248,7 @@ class RunConfiguration(object):
 			self.pointwise_layer_size = self._get_default('pointwise_layer_size', cast_int=True)
 
 			# Output Layer
-			self.last_layer_dropout = kwargs['output_dropout_rate']
+			self.last_layer_dropout = self._get_default('output_dropout_rate', 0.0)
 
 			# - Convolutions:	
 			if output_layer_type == OutputLayerType.Convolutions:
