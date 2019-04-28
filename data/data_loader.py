@@ -300,7 +300,7 @@ class Dataset(object):
 					self.plot_dataset_stats(sentiment_distributions, labels, f'Sentiment Distribution - {name}', f'{name} sentiments.pdf')
 					self.plot_dataset_stats(observation_distribution, observation_distribution_lables, f'Ratio of N/A and sentiment - {name}', f'{name} observations.pdf')
 				except Exception as err:
-					logger.exception('Could not plot aspect dataset stats')
+					self.logger.exception('Could not plot aspect dataset stats')
 				
 			if not 'majority_class' in self.baselines:
 				self.baselines['majority_class'] = majority_class_baseline
@@ -313,7 +313,7 @@ class Dataset(object):
 			try:
 				self.plot_dataset_stats(target_sentiment_samples, target_sentiment_distribution_labels, f'Dataset Aspects - Distribution', 'aspect_distribution.pdf')
 			except Exception as err:
-				logger.exception('Could not plot aspect dataset stats')
+				self.logger.exception('Could not plot aspect dataset stats')
 
 
 		return result_str
