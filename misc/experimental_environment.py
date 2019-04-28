@@ -10,12 +10,11 @@ from data.data_loader import Dataset
 from misc.preferences import PREFERENCES
 from misc.run_configuration import get_default_params, randomize_params, OutputLayerType, hyperOpt_goodParams, elmo_params, good_organic_hp_params
 from misc import utils
-
+import traceback
 from optimizer import get_optimizer
 from criterion import NllLoss, LossCombiner
 
 from models.transformer.encoder import TransformerEncoder
-from models.jointAspectTagger import JointAspectTagger
 from trainer.train import Trainer
 
 import pprint
@@ -59,10 +58,24 @@ class Experiment(object):
 		assert self.hp.seed is None
 
 	def load_model(self, dataset, rc, experiment_name):
-		loss = LossCombiner(4, dataset.class_weights, NllLoss)
+
 		transformer = TransformerEncoder(dataset.source_embedding,
 										hyperparameters=rc)
-		model = JointAspectTagger(transformer, rc, 4, 20, dataset.target_names)
+
+		# NER or ABSA-task?
+		if rc.task == 'ner':
+			from models.transformer_tagger import TransformerTagger
+			from models.output_layers import SoftmaxOutputLayer
+			loss = NllLoss(dataset.target_size, dataset.class_weights[0])
+			softmax = SoftmaxOutputLayer(rc.model_size, dataset.target_size)
+			model = TransformerTagger(transformer, softmax)
+
+		else:
+			from models.jointAspectTagger import JointAspectTagger
+			loss = LossCombiner(4, dataset.class_weights, NllLoss)
+			model = JointAspectTagger(transformer, rc, 4, 20, dataset.target_names)
+
+
 		optimizer = get_optimizer(model, rc)
 		trainer = Trainer(
 							model,
@@ -122,7 +135,8 @@ class Experiment(object):
 		try:
 			dataset = self.load_dataset(rc, dataset_logger, rc.task)
 		except Exception as err:
-			print('Could load dataset: ' + str(err))
+			print('Could load dataset: ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
 			logger.exception("Could not load dataset")
 			return {
 				'status': STATUS_FAIL,
@@ -137,7 +151,9 @@ class Experiment(object):
 		try:
 			trainer = self.load_model(dataset, rc, experiment_name)
 		except Exception as err:
-			print('Could not load model: ' + str(err))
+			print('Could not load model: ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
+
 			logger.exception("Could not load model")
 			return {
 				'status': STATUS_FAIL,
@@ -154,7 +170,8 @@ class Experiment(object):
 			tr_end = time.time()
 			model = result['model']
 		except Exception as err:
-			print('Exception while training: ' + str(err))
+			print('Exception while training: ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
 			logger.exception("Could not complete iteration")
 			return {
 				'status': STATUS_FAIL,
@@ -180,7 +197,8 @@ class Experiment(object):
 			result = trainer.perform_final_evaluation(use_test_set=True, verbose=False)
 		except Exception as err:
 			logger.exception("Could not complete iteration evaluation.")
-			print('Could not complete iteration evaluation: ' + str(err))
+			print('Could not complete iteration evaluation: ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
 			return {
 				'status': STATUS_FAIL,
 				'eval_time': time.time() - run_time,
@@ -265,12 +283,14 @@ class Experiment(object):
 		try:
 			self.data_frame.to_csv(e_path + 'df.csv')
 		except Exception as err:
-			logger.exception('Could not export dataframe to csv')
+			logger.exception('Could not export dataframe to csv ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
 
 		try:
 			self.data_frame.to_pickle(e_path + 'df.pkl')
 		except Exception as err:
-			logger.exception('Could not pickle dataframe')
+			logger.exception('Could not pickle dataframe ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
 
 		print('TEST F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
 		logger.info('\n' + str(self.data_frame.test_f1.describe()))

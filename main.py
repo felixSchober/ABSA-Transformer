@@ -15,7 +15,7 @@ def run(args):
 	description = args.description
 	task = args.task
 
-	possible_dataset_values = ['germeval', 'organic', 'amazon']
+	possible_dataset_values = ['germeval', 'organic', 'coNLL-2003', 'amazon']
 	if dataset_choice not in possible_dataset_values:
 		parser.error('The dataset argument was not in the allowed range of values: ' + str(possible_dataset_values))
 
@@ -60,7 +60,28 @@ def run(args):
 				language='en'
 			)
 			specific_hp = good_organic_hp_params
-			specific_hp['task'] = task
+			specific_hp['task'] = task			
+
+	elif dataset_choice == possible_dataset_values[2]:
+		PREFERENCES.defaults(
+
+			data_root='./data/data/conll2003',
+			data_train='eng.train.txt',
+			data_validation='eng.testa.txt',
+			data_test='eng.testb.txt',
+			source_index=0,
+			target_vocab_index=1,
+			file_format='txt',
+			language='en'
+		)
+		from data.conll import conll2003_dataset as dsl
+		from misc.run_configuration import hyperOpt_goodParams
+
+		specific_hp = {**hyperOpt_goodParams, **{
+			'task': 'ner',
+			'language': 'en',
+			'embedding_type': 'fasttext'
+		}}
 	
 	else:
 		PREFERENCES.defaults(

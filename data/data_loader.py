@@ -205,6 +205,9 @@ class Dataset(object):
 
 	def _show_ds_split_stats(self):
 
+		if self.ds_stats is None:
+			return ''
+
 		result = ''
 		split_names = ('Train', 'Validation', 'Test')
 

@@ -131,6 +131,17 @@ class Trainer(object):
 				self.train_logger,
 				self.pre_training,
 				dataset)
+		elif self.dataset.name == 'ner':
+			from trainer.train_evaluator_conll import TrainEvaluatorCoNLL
+			self.evaluator = TrainEvaluatorCoNLL(
+				self.model,
+				self.loss,
+				self.iterations_per_epoch_train,
+				self.log_every_xth_iteration,
+				(dataset.train_iter, dataset.valid_iter, dataset.test_iter),
+				self.train_logger,
+				self.pre_training,
+				dataset)
 		else:
 			from trainer.train_evaluator import TrainEvaluator
 
@@ -313,8 +324,14 @@ class Trainer(object):
 					self.model.train()
 
 					#x, _, padding, y = batch.comments, batch.general_sentiments, batch.padding, batch.aspect_sentiments
-					x, padding, y = batch.comments, batch.padding, batch.aspect_sentiments
-					source_mask = create_padding_masks(padding, 1)
+					x, y = batch.comments, batch.aspect_sentiments
+
+					if hasattr(batch, 'padding'):
+						padding = batch.padding
+						source_mask = create_padding_masks(padding, 1)
+					else:
+						source_mask = None
+						padding = None
 
 					train_loss = self._step(x, y, source_mask)
 					self.train_logger.log_scalar(self.evaluator.train_loss_history, train_loss.item(), 'loss', 'train', self.current_sample_iteration)

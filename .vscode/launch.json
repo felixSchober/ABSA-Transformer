@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [        
+
         {
             "name": "Coarse Organic",
             "type": "python",
@@ -11,6 +12,14 @@
             "program": "${workspaceFolder}/main.py",
 			"console": "integratedTerminal",
 			"args": ["organic", "--runs", "1", "--task", "coarse"]
+		},
+		{
+            "name": "CoNLL-2003 - NER",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["coNLL-2003", "--runs", "1", "--task", "ner"]
 		},
 		{
             "name": "hyperOpt",
