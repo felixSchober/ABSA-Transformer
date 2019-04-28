@@ -154,7 +154,7 @@ class TrainEvaluator(object):
 				e_iteration += 1
 				x, y, padding = batch.comments, batch.aspect_sentiments, batch.padding
 				source_mask = create_padding_masks(padding, 1)
-
+				
 				loss = self.get_loss(x, source_mask, y)
 
 				# divide by batch size so that we can compare losses regardless of batch size (a higher batch size will produce a nummerically higher loss than a batch size of 1)
@@ -195,6 +195,7 @@ class TrainEvaluator(object):
 				del batch
 				del prediction
 				del x
+				del padding
 				del y
 				del loss
 				torch.cuda.empty_cache()
