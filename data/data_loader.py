@@ -297,7 +297,7 @@ class Dataset(object):
 
 			if self.verbose:
 				try:
-					self.plot_dataset_stats(sentiment_distributions, labels, f'Sentiment Distribution - {name}', f'{name} sentiments.pdf')
+					selffix.plot_dataset_stats(sentiment_distributions, labels, f'Sentiment Distribution - {name}', f'{name} sentiments.pdf')
 					self.plot_dataset_stats(observation_distribution, observation_distribution_lables, f'Ratio of N/A and sentiment - {name}', f'{name} observations.pdf')
 				except Exception as err:
 					self.logger.exception('Could not plot aspect dataset stats')
