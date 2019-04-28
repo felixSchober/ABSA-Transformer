@@ -296,9 +296,12 @@ class Dataset(object):
 			t.add_row(['Head Weight', '', '', head_weight])
 
 			if self.verbose:
-				self.plot_dataset_stats(sentiment_distributions, labels, f'Sentiment Distribution - {name}', f'{name} sentiments.pdf')
-				self.plot_dataset_stats(observation_distribution, observation_distribution_lables, f'Ratio of N/A and sentiment - {name}', f'{name} observations.pdf')
-
+				try:
+					self.plot_dataset_stats(sentiment_distributions, labels, f'Sentiment Distribution - {name}', f'{name} sentiments.pdf')
+					self.plot_dataset_stats(observation_distribution, observation_distribution_lables, f'Ratio of N/A and sentiment - {name}', f'{name} observations.pdf')
+				except Exception as err:
+					logger.exception('Could not plot aspect dataset stats')
+				
 			if not 'majority_class' in self.baselines:
 				self.baselines['majority_class'] = majority_class_baseline
 				self.majority_class_baseline = majority_class_baseline
@@ -307,7 +310,11 @@ class Dataset(object):
 			result_str += '\n\n' + t.get_string(title=name) + '\n\n'
 
 		if self.verbose:
-			self.plot_dataset_stats(target_sentiment_samples, target_sentiment_distribution_labels, f'Dataset Aspects - Distribution', 'aspect_distribution.pdf')
+			try:
+				self.plot_dataset_stats(target_sentiment_samples, target_sentiment_distribution_labels, f'Dataset Aspects - Distribution', 'aspect_distribution.pdf')
+			except Exception as err:
+				logger.exception('Could not plot aspect dataset stats')
+
 
 		return result_str
 
