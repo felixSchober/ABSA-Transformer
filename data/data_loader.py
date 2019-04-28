@@ -186,7 +186,7 @@ class Dataset(object):
 			stats = self._show_field_stats()
 			self.logger.info('\n' + stats)
 			print(stats)
-		except expression as err:
+		except Exception as err:
 			self.logger.exception('Could not show dataset stats')
 		
 		stats = self._calculate_dataset_stats()
@@ -197,7 +197,7 @@ class Dataset(object):
 			stats = self._show_ds_split_stats()
 			self.logger.info('\n' + stats)
 			print(stats)
-		except expression as err:
+		except Exception as err:
 			self.logger.exception('Could not print dataset stats')
 
 	def _show_split_stats(self) -> str:
