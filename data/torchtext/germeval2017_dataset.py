@@ -5,7 +5,6 @@ from typing import Dict, List, Tuple, Union
 import pickle
 from collections import defaultdict
 import re
-from unidecode import unidecode
 
 import torchtext.data as data
 from data.torchtext.custom_fields import ReversibleField
@@ -268,7 +267,7 @@ class GermEval2017Dataset(Dataset):
 			# if multitask set last category to the sentiment
 			if self.hp.task == 'germeval_multitask':
 				ss[-1] = raw_example[3]
-				
+
 			self.na_labels += nas
 			raw_example[6] = ss
 			
