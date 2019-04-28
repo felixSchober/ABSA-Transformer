@@ -178,21 +178,27 @@ class Dataset(object):
 		self.logger.info('\n' + parameter_table)
 
 	def show_stats(self):
-		stats = self._show_split_stats()
-		self.logger.info('\n' + stats)
-		print(stats)
+		try:
+			stats = self._show_split_stats()
+			self.logger.info('\n' + stats)
+			print(stats)
 
-		stats = self._show_field_stats()
-		self.logger.info('\n' + stats)
-		print(stats)
-
+			stats = self._show_field_stats()
+			self.logger.info('\n' + stats)
+			print(stats)
+		except expression as err:
+			self.logger.exception('Could not show dataset stats')
+		
 		stats = self._calculate_dataset_stats()
-		self.logger.info('\n' + stats)
-		print(stats)
 
-		stats = self._show_ds_split_stats()
-		self.logger.info('\n' + stats)
-		print(stats)
+		try:
+			self.logger.info('\n' + stats)
+			print(stats)
+			stats = self._show_ds_split_stats()
+			self.logger.info('\n' + stats)
+			print(stats)
+		except expression as err:
+			self.logger.exception('Could not print dataset stats')
 
 	def _show_split_stats(self) -> str:
 		t = PrettyTable(['Split', 'Size'])
