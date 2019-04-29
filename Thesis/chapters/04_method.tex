@@ -19,7 +19,7 @@ However, sentiment analysis is one of the few tasks where \gls{gpt}-1 is not abl
 
 This will be the first architecture which uses a transformer to perform multi-task aspect-based sentiment analysis. The next section describes the architecture of the \gls{absat} model. Section \ref{sec:04_multitask} describes how \gls{absat} is used in combination with multi task learning and finally, section \ref{sec:04_transferLearning} explains how we used transfer learning to boost the training performance.
 
-\section{Architecture}
+\section{General Model Architecture}
 
 The following section describes the proposed \acrfull{absat} architecture. As the name suggests this design is based on the transformer model \cite{Vaswani2017}. The second model characteristic is influenced by the work of Schmitt et. al. and their concept of separate aspect heads \cite{Schmitt2018}.
 \bigskip
@@ -43,7 +43,9 @@ Figure \ref{fig:04_t-absa} visualizes a simplified \gls{absat} model. This speci
 Each aspect head is isolated from the rest which allows the transformer to perform multi-label \gls{absa}. When a document or sentence contains a specific aspect the corresponding aspect head outputs either \textit{negative}, \textit{neutral} or \textit{positive}. If this aspect is not part of the sentence, the output is \textit{not applicable}.
 
 We propose two different versions of aspect heads which are described in section \ref{sec:04_aspectHeads} in detail.
-\bigskip
+
+\section{Transformer}
+\label{sec:04_transformer}
 
 The original transformer uses undisclosed word embeddings which output a 512-dimensional vector\footnote{They also experiment with 256 and 1024 dimensional vectors}. It is possible that the original transformer does not use pretrained embeddings. We performed experiments with \gls{absat} and untrained word embeddings but concluded that pretrained word embeddings outperform untrained word embeddings. 
 
@@ -61,28 +63,96 @@ Similar to the vanilla transformer, \gls{absat} also uses an \gls{adam} optimize
  
 Contrary to the transformer model, we do not use label smoothing as a regularization technique. Experiments showed that this impacted the F1-score negatively. Instead, \gls{absat} uses weight decay with a decay value of $\epsilon_w = 1e-8$.
 
-\subsection{Transformer}
-\label{sec:04_transformer}
 
-\subsection{Aspect Heads}
+\section{Aspect Heads}
 \label{sec:04_aspectHeads}
 
-\subsubsection{Linear Mean-Head}
+The transformer is designed as an encoder-decoder architecture with multiple stacks of encoders and decoders. Therefore, the input of an encoder {(or decoder)} has the same dimensionality as the output. Consequently, the input of an aspect head has the following dimensionality: $[batch\_size, s, d_{model}]$ where $d_{model}$ is the model size and $s$ is the sequence lenght. In other words, the transformer provides a $d_{model}$ dimensional vector for each word $w_i$ in a sequence.
+\medskip
 
-why mean? -> bring loss to similar value regardless of a) word length and b) aspect head choice (linear vs cnn)
+The aspect heads have the role of transforming this vector to a vector which can be used for sentiment classification. For aspect-based sentiment classification this dimension is $[batch\_size, 4]$.
 
-\subsubsection{Projection Mean-Head}
+\subsection{\acrfull{lmh}}
 
-\subsubsection{CNN-Head}
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=0.7\textwidth]{figures/04_method/04_lmh}
+	\caption{Visualization of the operations of an \gls{absa} \acrfull{lmh}}
+	\label{fig:04_lmh}
+\end{figure}
 
-\subsubsection*{Weighted Loss}
+The first aspect head design is called \acrfull{lmh}. This head consists of a linear layer which projects the $d_{model}$ dimensional word vector to a 4-dimensional word vector. This reduces the tensor to $[batch\_size, sequence\_lenght, 4]$. The tensor is then summed up along the second dimension and the mean is taken. Finally, a softmax operation calculates the log probabilities.
+
+Similar to the transformer layers, optional masking is applied on the tensor. Predictions for words in the sequence which are only padding tokens are replaced by zeros.
+
+\subsubsection*{Mean Operation}
+
+The mean after the sum acts as a normalization for the prediction values before they pass through the softmax. The log softmax is defined as 
+
+\begin{equation}
+	\sigma(y_i)=log(\frac{e^{y_i}}{\sum_{j=1}^{K}e^{y_j}})\quad .
+\end{equation}
+
+As a consequence, large values for $y_{ij}$ result in very large negative values after the log softmax. This has two effects on the NllLoss:
+
+\begin{enumerate}
+	\item Long sequences will get a larger loss than shorter sequences. The reason for this is, that the sum-function will sum up all predictions for every word in a sequence. Of course, a longer sentence will have a larger sum. Therefore, the result of the softmax will be more negative which results in a higher loss.
+	\item It is not possible to compare the loss of \gls{lmh} and \gls{cnnh}. \gls{cnnh} uses  a combination of convolutions and max pooling. Therefore, the numerical value of a prediction before the log softmax will usually be lower than for \glspl{cnnh}, since max pooling takes the maximum and not the sum.
+\end{enumerate}
+
+Using a mean operation before the log softmax solves both problems.
+
+\subsection{\acrfull{cnnh}}
+The \acrfull{cnnh} uses convolutions in combination with max pooling to perform the final prediction. Figure \ref{fig:04_ch1} visualizes the operations and how the tensor size changes during a forward pass through the head. 
+\medskip
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=0.7\textwidth]{figures/04_method/04_ch}
+	\caption{Visualization of the operations of an exemplary \gls{absa} \acrfull{cnnh}. This specific head uses a kernel size of 5 and 300 filters.}
+	\label{fig:04_ch1}
+\end{figure}
+
+First, the tensor is passed through a convolutional layer. The filter size, the number of filters, stride and padding are controlled through hyperparameters. This means the size of subsequent layers depends on these parameters. The output size $c_out$ of the convolutional layer is given as:
+
+\begin{equation}
+	c_{out} = \frac{s+2*P-F}{S} + 1
+\end{equation}
+
+where $F$ is the filter size, $S$ is the stride and $P$ is the padding amount. The max pooling layer reduces the tensor from $[.., d_{d_model}, c_{out}]$ to $[.., d_{model}]$ along the first dimension. Finally, a linear layer projects the output to class predictions and the log softmax scales the values.
+\medskip
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=0.7\textwidth]{figures/04_method/04_ch2}
+	\caption{Visualization of the convolutional and max pooling operations of an \gls{absat} \gls{cnnh} in detail. $w_1$ to $w_s$ are the words in a sequence with length $s$. This figure does not include the batch size as an extra dimension.}
+	\label{fig:04_ch2}
+\end{figure}
+
+Figure \ref{fig:04_ch2} depicts the convolution and the pooling in more detail.
+
+\subsection{Weighted Loss}
+
+Each aspect head calculates its own loss value using the predictions for the aspect the the targets. To combat data imbalance, we use a weighted NLL loss which is given as
 
 \begin{equation}
 \mathcal{L}_\text{NLL}=-\frac{1}{n}\sum_{i=1}^{n} w_i * (y_i \cdot log(\hat{y}_i))
 \label{eq:04_nll}
 \end{equation}
 
-where $n$ is the number of classes, $w_i$ is the class weight, $y_i$ is the ground truth and $\hat{y}_i$ is the prediction.
+where $n$ is the number of classes, $w_i$ is the specific class weight, $y_i$ is the ground truth and $\hat{y}_i$ is the prediction. Since we only use the aspect heads for sentiment classification, $i$ will always be either a sentiment or not applicable. Therefore $i \in \{\text{negative}, \text{neutral}, \text{positive}, \text{not applicable\}}$ and $n=4$.
+\medskip
+
+The class weights are calculated during data loading. The equation for the calculation of a weight scalar for a class weight for $i$ is given as
+
+\begin{equation}
+	w_i = 1 - \frac{x_i}{N}
+\label{eq:04_cls_weight}
+\end{equation}
+
+where $x_i$ is the sum of all of $i$-s occurrences for the aspect. $N$ is the total number of times an aspect occurred in the dataset.
+\medskip
+
+Equation \ref{eq:04_cls_weight} assigns a low numerical value to classes which occur more frequently. As a consequence, the nll loss will be lower for frequent classes with low class weights which reduces the influence of those frequent classes.  
 
 \section{Multi-Task Learning}
 \label{sec:04_multitask}
@@ -93,7 +163,7 @@ The way the \gls{absa}-Transformer is build, inevitably necessitates multi-task 
 \label{eq:04_multiheadLoss}
 \end{equation}
 
-where $\mathcal{L}(f(x), y_m)$ is the \gls{nll}-loss of the model $f$ with input the $x$.
+where $\mathcal{L}(f(x), y_m)$ is the \gls{nll}-loss of the model $f$ with input the $x$ defined in equation \ref{eq:04_nll}.
 
 \subsection*{Multitask Task Data Augmentation}
 
@@ -110,7 +180,9 @@ There are three possible auxiliary tasks to consider:
 
 This thesis will focus on the first type of auxiliary task where we will try predict an additional label for the source dataset. As the source dataset we choose the GermEval-2017 data since this dataset provides an additional document-wide sentiment label. This label was choosen since the other aspect heads already perform sentiment ananlisis so this task is very similar on the one hand but can provide additional datapoints for the training of the model. In addition the dataset provides a reasonable amnount of training data.
 
-Training with the auxiliary sentiment label is performed by adding an additional sentiment head to the model.
+Training with the auxiliary sentiment label is performed by adding an additional sentiment head to the model. During training the loss of the auxiliary tasks contributes to the improvement of the transformer base.
+
+However, during evaluation this task is ignored when calculating the F1-score for the model.
 
 %We also experiment with the weighting of the tasks in the loss
 
