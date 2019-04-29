@@ -64,17 +64,26 @@ Each of the four sentences contains the word "\textit{high}" but in each sentenc
 
 Ruder et. al. use a hierarchical, bidirectional \gls{lstm} for \gls{absa} \cite{Ruder2016}. Although they also assume a pipeline approach where aspects have to be fed in one after another they propose a interesting architecture. Usually, sentiment analyisis in combination with aspect detection is either done by having multiple heads for each aspect \cite{Schmitt2018} or by using a big softmax layer with every possible combination of aspect and sentiment which runs into issues when classifying multiple aspects at the same time \cite{Lakkaraju2014}. Ruder et. al. propose a third alternative where the aspect itself is fed into the network as an embedding alongside the actual text. After feeding the sentence embeddings through one bidirectional \gls{lstm} the text features and the aspect embedding are combined again. Together they are passed to the last bidirectional \gls{lstm} layer and classified in a last output layer. They report competitive results against two non-hierarchical baselines and achieve state of the art for multi-domain datasets.
 \medskip
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=0.5\textwidth]{figures/02_relatedWork/02_jabsa}
+	\caption{Aspect Heads proposed by Schmitt et al. Source: Schmitt et. al. \cite{Schmitt2018}}
+	\label{fig:02_j-absa}
+\end{figure}
 
 In 2018 Schmitt et. al. propose a novel approach to classify aspect and sentiment jointly \cite{Schmitt2018}. Similar to Lakkaraju they also compare joint-approaches and pipeline approaches. In both instances the joint approaches significantly outperform their corresponding pipeline approaches. 
 
-The architecture they use consists of two main components. The first layers are either bi-\gls{lstm} or \gls{cnn}. Sentiment and aspect classification is then performed with aspect heads. For each aspect in the dataset one aspect head is constructed. Each aspect head consists of a final softmax layer which produces a four-dimesional vector where three dimensions are polarity labels {(negative, neutral, positive)} and the last label indicates whether or not the aspect is relevant for this specific sentence. 
+The architecture they use consists of two main components. The first layers are either bi-\gls{lstm} or \gls{cnn}. 
+
+Sentiment and aspect classification is then performed with aspect heads {(Figure \ref{fig:02_j-absa})}. For each aspect in the dataset one aspect head is constructed. Each aspect head consists of a final softmax layer which produces a four-dimensional vector where three dimensions are polarity labels {(negative, neutral, positive)} and the last label indicates whether or not the aspect is relevant for this specific sentence. 
+\medskip
 
 By using aspect heads this architecture is not only able to classifiy aspect and sentiment together but also cabalble of multilabel classification.
 
-Ruder et. al. tested this architecture on the GermEval-2017 \cite{Wojatzki2017}. They report results that significantly outperform any submission on this task for this dataset. Their End-to-end \gls{cnn} is able to achieve an F1-score of 0.423 and 0.465 on both test sets which is huge increase over the former state-of-the art of 0.354 and 0.401 reported by Lee et. al. \cite{Lee2017}.
+Ruder et. al. tested this architecture on the GermEval-2017 \cite{Wojatzki2017}. They report results that significantly outperform any submission on this task for this dataset. Their End-to-end \gls{cnn} is able to achieve an F1-score of 0.423 and 0.465 on both test sets which is huge increase over the former \acrfull{sota} of 0.354 and 0.401 reported by Lee et. al. \cite{Lee2017}.
 \medskip
 
 To the best of our knowledge there are no papers which use a transformer based architecture to perform joint aspect based sentiment analysis. There is one very recent publication which uses a BERT \cite{Devlin2018} model to perform a pipeline \gls{absa} task where they model those tasks as a sequence labeling problem \cite{Xu2019}. Peters et al. use BERT for binary sentiment anaylsis with the Stanford Sentiment Treebank \cite{Socher2013} on movie reviews \cite{Peters2019} but none of those researches use the transformer directly.
 \medskip
 
-Recently, a new extension to \gls{absa} has emerged which combines \gls{absa} with target-dependent sentiment classification \cite{Tang2016}. The task of Target dependent sentiment classification is to infer sentiment based on a sentence and a given target. This is very similar to aspects but in constrast to \gls{absa} the targets are not predefined. A target string resemlbles closely resemlbles a search string which makes this problem even more challenging since a model has to first understand the target string.
+Recently, a new extension to \gls{absa} has emerged which combines \gls{absa} with target-dependent sentiment classification \cite{Tang2016}. The task of Target dependent sentiment classification is to infer sentiment based on a sentence and a given target. This is very similar to aspects but in contrast to \gls{absa} the targets are not predefined. A target string resemlbles closely resemlbles a search string which makes this problem even more challenging since a model has to first understand the target string.

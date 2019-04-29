@@ -179,6 +179,13 @@ This observation seems to be reasonable since GermEval-2017 contains a mix of ve
 The following section contains the final results for the \acrfull{ner} task of the CoNLL-2003 dataset.
 
 Since this task was an auxiliary training task to assess the performance of the transformer part, no hyperparameter tuning was performed.
+\medskip
+
+For this dataset the architecture is slightly different since CoNLL-2003 has annotations for each word. Since the transformer makes predictions per word there is no need for separate aspect heads.
+
+Therefore this architecture follows the original transformer and just consists of a single linear layer to project the 300-dimensional per-word prediction down to the amount of classes to predict. Finally, a log-softmax is used to provide the log probabilities for the class labels.
+
+
 
 \section{Results for Aspect-Based Sentiment Analysis}
 The following sections outline the results on \acrfull{absa}. The first section contains the results for the GermEval-2017 dataset. This dataset uses a special evaluation method. To be able to compare our results we also use the evaluation method that GermEval-2017 provides.
@@ -203,6 +210,7 @@ Due to the large size of the dataset no hyperparameter tuning was performed. Par
 \medskip
 
 The vocabulary size of the amazon dataset after all reductions consists of $389,371$ unique tokens. This creates an embedding layer which maps the vocabulary size of $389,371$ to a 300-dimensional vector. Unfortunately, a lot of those tokens are not part of the pretrained embedding so the parameters of the embedding layer can not be locked during training. Therefore, the embedding layer has a size of $116,811,300$ trainable parameters. As a result, the first embedding layer makes up over 99\% of the overall number of model parameters which is $117,710,780$.
+
 
 
 \section{Impact of Multitask Learning}
