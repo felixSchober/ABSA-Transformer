@@ -87,7 +87,7 @@ def plot_confusion_matrix(c_matrix,
 							color_map=plt.cm.Blues):
 	plt.clf()
 	mpl.rcParams.update(mpl.rcParamsDefault)
-	fig = plt.figure()
+	fig = plt.figure(figsize=(20,20))
 
 
 	if normalize:

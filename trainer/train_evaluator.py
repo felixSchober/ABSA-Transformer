@@ -464,8 +464,9 @@ class TrainEvaluator(object):
 
 		if tr_c_matrices is not None:
 			from misc.visualizer import plot_confusion_matrix
-			fig = plot_confusion_matrix(tr_c_matrices, self.dataset.class_labels)
-			plt.show()
+			fig = plot_confusion_matrix(tr_c_matrices, self.dataset.class_labels, title='Confusion Matrix - TRAIN')
+			p = os.path.join(self.train_logger.log_image_dir, 'final_train_c_matrix.pdf')
+			plt.savefig(p)
 
 		self.pre_training.debug('--- Valid Scores ---')
 
@@ -505,8 +506,8 @@ class TrainEvaluator(object):
 
 		if val_c_matrices is not None:
 			from misc.visualizer import plot_confusion_matrix
-			fig = plot_confusion_matrix(val_c_matrices, self.dataset.class_labels)
-			p = os.path.join(self.train_logger.log_image_dir, 'final_valid_c_matrix.png')
+			fig = plot_confusion_matrix(val_c_matrices, self.dataset.class_labels, title='Confusion Matrix - DEV')
+			p = os.path.join(self.train_logger.log_image_dir, 'final_valid_c_matrix.pdf')
 			plt.savefig(p)
 
 		te_loss = -1
@@ -547,8 +548,8 @@ class TrainEvaluator(object):
 
 			if te_c_matrices is not None:
 				from misc.visualizer import plot_confusion_matrix
-				fig = plot_confusion_matrix(te_c_matrices, self.dataset.class_labels)
-				p = os.path.join(self.train_logger.log_image_dir, 'final_test_c_matrix.png')
+				fig = plot_confusion_matrix(te_c_matrices, self.dataset.class_labels, title='Confusion Matrix - TEST')
+				p = os.path.join(self.train_logger.log_image_dir, 'final_test_c_matrix.pdf')
 				plt.savefig(p)				
 
 		self.train_logger.complete_iteration(-1, -1, -1, -1,  -1, -1, -1, -1, -1, -1, -1, True)
