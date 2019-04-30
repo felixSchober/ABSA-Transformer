@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import *
+from stop_words import get_stop_words
 
 import torchtext
 from torchtext import data
@@ -12,7 +13,7 @@ import numpy as np
 import random
 import logging
 import spacy
-from data.data_loader import get_embedding
+from data.data_loader import get_embedding, get_embedding_size
 from data.torchtext.custom_fields import ReversibleField
 from data.torchtext.sequence_tagging_dataset import CustomSequenceTaggingDataSet
 
@@ -57,16 +58,30 @@ def conll2003_dataset(task:str,
 			vocabs: (Inputs word vocabulary, Inputs character vocabulary, 
 					Tag vocabulary )
 	"""
+
+	assert hyperparameters.language == 'en'
 	
 	# Setup fields with batch dimension first
-	comments_field = ReversibleField(batch_first=True, lower=True,
+	comments_field = data.Field(batch_first=True,
+								lower=True, 
+								stop_words=None,
+								init_token=None,
+								eos_token=None,
+								is_target=False,
 								preprocessing=data.Pipeline(preprocess_test))           
 
 	# the label constits of three parts:
 	#   - Part of speech tag
 	#   - syntactic chunk tag   (I-TYPE)
 	#   - named entity tag      (I-TYPE)
-	aspect_sentiments = ReversibleField(batch_first=True, is_target=True)
+	aspect_sentiments = data.Field(batch_first=True,
+									is_target=True,
+									sequential=True,
+									init_token=None,
+									eos_token=None,
+									pad_token=None,
+									unk_token=None,
+									use_vocab=True)
 
 	words_field = [('comments', comments_field)]
 	labels_field = [('aspect_sentiments', aspect_sentiments) if label == task else (None, None) 
@@ -105,19 +120,11 @@ def conll2003_dataset(task:str,
 	val_iter.repeat = False
 
 	# add embeddings
-	embedding_size = comments_field.vocab.vectors.shape[1]
-	source_embedding = get_embedding(comments_field.vocab, embedding_size, 'glove')
+	embedding_size = get_embedding_size(comments_field, hyperparameters.embedding_type)
+	source_embedding = get_embedding(comments_field.vocab, embedding_size, hyperparameters.embedding_type)
 	
 	examples = train.examples[0:3] + val.examples[0:3] + test.examples[0:3]
-	# return {
-	#     'task': 'conll2003.%s'%task,
-	#     'iters': (train_iter, val_iter, test_iter), 
-	#     'vocabs': (comments.vocab, aspect_sentiments.vocab),
-	#     'word_field': comments,
-	#     'examples': examples,
-	#     'embeddings': (source_embedding, None),
-	#     'dummy_input': Variable(torch.zeros((batch_size, 42), dtype=torch.long))
-	#     }
+
 	return {
 		'task': task,
 		'stats': None,
