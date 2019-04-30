@@ -84,7 +84,7 @@ class Experiment(object):
 							rc,
 							dataset,
 							experiment_name,
-							enable_tensorboard=True,
+							enable_tensorboard=False,
 							verbose=True)
 		return trainer
 
