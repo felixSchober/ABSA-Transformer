@@ -559,7 +559,7 @@ class TrainEvaluator(object):
 										total_time: float) -> bool:
 		epoch = self.epoch
 		self.logger.debug('Starting evaluation in epoch {}. Current Iteration {}'.format(epoch, iteration))
-		mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self.evaluate_and_log_train(iteration, show_c_matrix=True)
+		mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self.evaluate_and_log_train(iteration, show_c_matrix=False)
 		self.logger.debug('Evaluation completed')
 		self.logger.info('Iteration {}'.format(iteration))
 		self.logger.info('Mean train loss: {}'.format(mean_train_loss))
