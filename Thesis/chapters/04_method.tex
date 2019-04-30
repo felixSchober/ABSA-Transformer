@@ -31,7 +31,7 @@ The following section describes the proposed \acrfull{absat} architecture. As th
 	\label{fig:04_t-absa}
 \end{figure}
 
-Figure \ref{fig:04_t-absa} visualizes a simplified \gls{absat} model. This specific instance consists one encoder block which contains 3 attention heads. To the right of the encoder block are four aspect heads. Each aspect head is trained to classifiy the sentiment for one aspect. In figure \ref{fig:04_t-absa} those aspects are \textit{GMOs}, \textit{Quality}, \textit{Price} and \textit{Taste}. Each aspect has four output classes {(visualized in the figure for the "Pesticides"-aspect)}:
+Figure \ref{fig:04_t-absa} visualizes a simplified \gls{absat} model. This specific instance consists one encoder block which contains 3 attention heads. To the right of the encoder block are four aspect heads. Each aspect head is trained to classify the sentiment for one aspect. In figure \ref{fig:04_t-absa} those aspects are \textit{GMOs}, \textit{Quality}, \textit{Price} and \textit{Taste}. Each aspect has four output classes {(visualized in the figure for the "Pesticides"-aspect)}:
 
 \begin{itemize}
 	\item negative
@@ -93,7 +93,7 @@ The mean after the sum acts as a normalization for the prediction values before 
 	\sigma(y_i)=log(\frac{e^{y_i}}{\sum_{j=1}^{K}e^{y_j}})\quad .
 \end{equation}
 
-As a consequence, large values for $y_{ij}$ result in very large negative values after the log softmax. This has two effects on the NllLoss:
+As a consequence, large values for $y_{ij}$ result in very large negative values after the log softmax. This has two effects on the \gls{nll}-loss:
 
 \begin{enumerate}
 	\item Long sequences will get a larger loss than shorter sequences. The reason for this is, that the sum-function will sum up all predictions for every word in a sequence. Of course, a longer sentence will have a larger sum. Therefore, the result of the softmax will be more negative which results in a higher loss.
@@ -132,7 +132,7 @@ Figure \ref{fig:04_ch2} depicts the convolution and the pooling in more detail.
 
 \subsection{Weighted Loss}
 
-Each aspect head calculates its own loss value using the predictions for the aspect the the targets. To combat data imbalance, we use a weighted NLL loss which is given as
+Each aspect head calculates its own loss value using the predictions for the aspect as the targets. To combat data imbalance, we use a weighted NLL loss which is given as
 
 \begin{equation}
 \mathcal{L}_\text{NLL}=-\frac{1}{n}\sum_{i=1}^{n} w_i * (y_i \cdot log(\hat{y}_i))
@@ -142,7 +142,7 @@ Each aspect head calculates its own loss value using the predictions for the asp
 where $n$ is the number of classes, $w_i$ is the specific class weight, $y_i$ is the ground truth and $\hat{y}_i$ is the prediction. Since we only use the aspect heads for sentiment classification, $i$ will always be either a sentiment or not applicable. Therefore $i \in \{\text{negative}, \text{neutral}, \text{positive}, \text{not applicable\}}$ and $n=4$.
 \medskip
 
-The class weights are calculated during data loading. The equation for the calculation of a weight scalar for a class weight for $i$ is given as
+The class weights are calculated during data loading. The equation for the calculation of a weight scalar for a class weight for class $i$ is given as
 
 \begin{equation}
 	w_i = 1 - \frac{x_i}{N}
@@ -152,11 +152,11 @@ The class weights are calculated during data loading. The equation for the calcu
 where $x_i$ is the sum of all of $i$-s occurrences for the aspect. $N$ is the total number of times an aspect occurred in the dataset.
 \medskip
 
-Equation \ref{eq:04_cls_weight} assigns a low numerical value to classes which occur more frequently. As a consequence, the nll loss will be lower for frequent classes with low class weights which reduces the influence of those frequent classes.  
+Equation \ref{eq:04_cls_weight} assigns a low numerical value to classes which occur more frequently. As a consequence, the \gls{nll}-loss will be lower for frequent classes with low class weights which reduces the influence of those frequent classes.  
 
 \section{Multi-Task Learning}
 \label{sec:04_multitask}
-The way the \gls{absa}-Transformer is build, inevitably necessitates multi-task learning since for each aspect-head a separate \gls{nll}-loss is computed. For each of the $m$ classes a loss value is calculated. In the end the mean of all losses is taken as shown in equation \ref{eq:04_multiheadLoss}.
+The way the \gls{absa}-Transformer is build, inevitably necessitates multi-task learning since for each aspect-head a separate \gls{nll}-loss is computed. For each of the $m$ aspect classes a loss value is calculated. In the end the mean of all losses is taken as shown in equation \ref{eq:04_multiheadLoss}:
 
 \begin{equation}
 \mathcal{L}_\text{MultiTask} = \frac{1}{m}\sum_{j=1}^{m}\mathcal{L}(f(x), y_m)
@@ -165,7 +165,7 @@ The way the \gls{absa}-Transformer is build, inevitably necessitates multi-task 
 
 where $\mathcal{L}(f(x), y_m)$ is the \gls{nll}-loss of the model $f$ with input the $x$ defined in equation \ref{eq:04_nll}.
 
-\subsection*{Multitask Task Data Augmentation}
+\subsection{Multitask Task Data Augmentation}
 
 As described in section \ref{sec:03_mtlAdvantages} it is also possible to augment the data by using an auxiliary task in addition to the regular classification tasks.
 
@@ -178,18 +178,70 @@ There are three possible auxiliary tasks to consider:
 	\item Predict additional aspects of the source data which can be trained unsupervised.
 \end{enumerate}
 
-This thesis will focus on the first type of auxiliary task where we will try predict an additional label for the source dataset. As the source dataset we choose the GermEval-2017 data since this dataset provides an additional document-wide sentiment label. This label was choosen since the other aspect heads already perform sentiment ananlisis so this task is very similar on the one hand but can provide additional datapoints for the training of the model. In addition the dataset provides a reasonable amnount of training data.
+This thesis will focus on the first type of auxiliary task where we will try predict an additional label for the source dataset. As the source dataset we choose the GermEval-2017 data since this dataset provides an additional document-wide sentiment label. This label was chosen since the other aspect heads already perform sentiment analysis so this task is very similar on the one hand but can provide additional data points for the training of the model. In addition, the dataset provides a reasonable amount of training data.
 
 Training with the auxiliary sentiment label is performed by adding an additional sentiment head to the model. During training the loss of the auxiliary tasks contributes to the improvement of the transformer base.
 
 However, during evaluation this task is ignored when calculating the F1-score for the model.
+\medskip
+
+The results for this experiment is located in section \ref{sec:06_ResultsMultitask}.
 
 %We also experiment with the weighting of the tasks in the loss
 
 
 \section{Transfer Learning}
 \label{sec:04_transferLearning}
-comparison to image first layer features which are very similar regardless of target domain. \cite{Yosinski2014} -> Embedding layer, Transformer
 
-However, last layer usually very dependet on domain and dataset -> good for model because last layer -> heads only domain relevant. So keep Embedding and transformer and exchange heads.
+Besides, multi-task learning we also perform transfer learning to test if the transformer is able to transfer knowledge from one domain to another domain. The transformer model is often used for language modelling and language understanding. These tasks are essential for every \gls{nlp} task and in general and sentiment analysis specifically. Hence, the transformer base should be domain independent. 
+\medskip
+
+It has been already shown that transferring knowledge from the word embedding layer from one domain to another is not only possible but beneficial for the overall performance \cite{Yosinski2014}. Therefore, in addition to the transformer base we will also use pretrained word embeddings.
+\medskip
+
+Due to the nature of the aspect heads we can not transfer knowledge from one domain to another. Not only are the aspect heads highly domain specific but also aspect specific. 
+\smallskip
+
+We performed experiments to test this theory. To do this we trained the model on a dataset, stopped training and then reshuffled the aspect heads so that they would need to predict different aspects from there on. 
+
+This experiment was performed to answer two questions: 
+
+\begin{itemize}
+	\item How much predictive power originates from the transformer and how much is produced by the aspect heads in comparison.
+	\item Is it possible to transfer knowledge from aspect heads to a different domain?
+\end{itemize}
+
+In other words, this was a transfer learning experiment on the same dataset.
+
+The results were in line with our theories that the transformer produces the majority of the domain independent knowledge. After the training was stopped and the aspects were reshuffled, the evaluation score dropped back to a level which would usually be achieved after the first or second epoch. Of course, this experiment did not improve upon the F1 score of the model. After a few epochs the evaluation score was back to the levels were training was previously stopped. This being said, the number of iterations it took to reach that score was shorter than on the first run.
+\medskip
+
+\subsection{Knowledge Transfer from Amazon Reviews}
+
+In section \ref{sec:06_ResultsTransfer} we will perform experiments to asses the theory about the transferability of the transformer base. We will train a transformer model on the amazon reviews dataset {(section \ref{sec:05_amazonReviews})} which we collected just for this experiment. This dataset is very large and balanced along the aspects.
+\medskip
+
+After training is completed we take the models embedding and transformer base and exchange the aspect heads with new heads for the training on the target dataset. For the target dataset we use  the organic-2019 dataset {(section \ref{sec:05_organic2019})}.
+\bigskip
+
+\subsubsection*{Transfer of Knowledge from Word Embeddings}
+
+A lot of information is encoded in the word embeddings. In fact it makes up a vast majority of the trainable network parameters {(see section \ref{sec:06_ResultsAmazon})}. Furthermore, the transformer is conditioned on the word vectors the embedding produces as they shift from the pretrained embeddings to more domain specific embeddings. This can be observed when we freeze the embeddings during training so that they do not change. This significantly impacts the performance negatively.
+\medskip
+
+Unfortunately, this is a threat for the transferability of the embedding layer. When the embeddings are first created, they are initialized with the vocabulary of the dataset. Especially, for the amazon dataset there is a huge number of infrequent words {(see section \ref{sec:05_amazonTokens})} that do not necessarily occur in the target dataset. Even when removing the most infrequent tokens a large percentage of the vocabulary from the amazon dataset is not used for the target dataset which makes a large portion of the embedding domain specific. 
+\medskip
+
+On the other hand, there are tokens in the target dataset which do not occur in the amazon reviews dataset. For the organic dataset these tokens are highly domain specific. Most of these tokens are chemical compounds and other words like "Glyphosate" which are very important for this dataset.
+\medskip
+
+To solve this dilemma we combine both vocabularies before we start with the training on the amazon dataset. By doing this we ensure that both tasks are able to use the same embedding layer. 
+
+Unfortunately, due to computational restraints on the \gls{gpu} memory we have to further restrict the size of the shared vocabulary. This means that we can not create embeddings for every token in the dataset and some infrequent tokens are replaced with \textit{<UNK>}.
+\medskip
+
+For this reason, the results of the transfer learning experiments can not be directly compared to the best results on the individual datasets. However, we perform a baseline run with the same vocabulary restrictions so that we are able to asses the effect of the transfer learning experiment.
+
+
+
 
