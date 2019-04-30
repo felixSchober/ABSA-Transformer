@@ -32,16 +32,20 @@ class EarlyStopping(object):
 		self.evaluator.best_f1 = mean_valid_f1
 
 		# Save best model
-		best_model_checkpoint = {
-			'iteration': iteration,
-			'epoch': self.evaluator.epoch,
-			'state_dict': self.model.state_dict(),
-			'val_acc': mean_valid_f1,
-			'optimizer': self.optimizer.optimizer.state_dict(),
-			'f1': self.evaluator.best_f1,
-			'hp': self.hp,
-			'df': df
-		}
+		try:
+			best_model_checkpoint = {
+				'iteration': iteration,
+				'epoch': self.evaluator.epoch,
+				'state_dict': self.model.state_dict(),
+				'val_acc': mean_valid_f1,
+				'optimizer': self.optimizer.optimizer.state_dict(),
+				'f1': self.evaluator.best_f1,
+				'hp': self.hp,
+				'df': df
+			}
+		except Exception as err:
+			self.logger.exception('Could not generate checkpoint')
+			return
 
 		try:
 			self.best_model_checkpoint = deepcopy(best_model_checkpoint)

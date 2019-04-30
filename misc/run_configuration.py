@@ -202,6 +202,10 @@ good_germeval_params = {
 	'dropout_rate': 0.3116352148277839,
 	'pointwise_layer_size': 199,
 	'output_dropout_rate': 0.1410769136750667,
+	'output_conv_num_filters': 117,
+	'output_conv_kernel_size': 5,
+	'output_conv_stride': 9,
+	'output_conv_padding': 0,
 	'clip_comments_to': 230,
 	'model_size': 300,
 	'use_spell_checkers': False,
@@ -234,6 +238,10 @@ class RunConfiguration(object):
 			assert kwargs['batch_size'] > 0
 			assert early_stopping == -1 or early_stopping > 0
 			assert kwargs['task'] != None and kwargs['task'] != ''
+
+
+			# switch for a random classifier
+			self.use_random_classifier = self._get_default('use_random_classifier', default=False)
 
 			self.model_size = model_size
 			self.early_stopping = early_stopping

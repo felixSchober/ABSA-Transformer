@@ -38,6 +38,22 @@
 			"args": ["coNLL-2003", "--runs", "1", "--task", "ner"]
 		},
 		{
+            "name": "CoNLL-2003 - NER - RANDOM",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["coNLL-2003", "--runs", "1", "--task", "ner", "--random", "true"]
+		},
+		{
+            "name": "GermEval-2017 - RANDOM",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["germeval", "--runs", "1", "--task", "germeval", "--random", "true"]
+		},
+		{
             "name": "hyperOpt",
             "type": "python",
             "request": "launch",

@@ -62,18 +62,25 @@ class Experiment(object):
 		transformer = TransformerEncoder(dataset.source_embedding,
 										hyperparameters=rc)
 
-		# NER or ABSA-task?
-		if rc.task == 'ner':
-			from models.transformer_tagger import TransformerTagger
-			from models.output_layers import SoftmaxOutputLayer
+		if rc.use_random_classifier:
+			from models.random_model import RandomModel
+			model = RandomModel(rc, dataset.target_size, len(dataset.target_names), dataset.target_names)
 			loss = NllLoss(dataset.target_size, dataset.class_weights[0])
-			softmax = SoftmaxOutputLayer(rc.model_size, dataset.target_size)
-			model = TransformerTagger(transformer, softmax)
 
+			
 		else:
-			from models.jointAspectTagger import JointAspectTagger
-			loss = LossCombiner(4, dataset.class_weights, NllLoss)
-			model = JointAspectTagger(transformer, rc, 4, 20, dataset.target_names)
+			# NER or ABSA-task?
+			if rc.task == 'ner':
+				from models.transformer_tagger import TransformerTagger
+				from models.output_layers import SoftmaxOutputLayer
+				loss = NllLoss(dataset.target_size, dataset.class_weights[0])
+				softmax = SoftmaxOutputLayer(rc.model_size, dataset.target_size)
+				model = TransformerTagger(transformer, softmax)
+
+			else:
+				from models.jointAspectTagger import JointAspectTagger
+				loss = LossCombiner(dataset.target_size, dataset.class_weights, NllLoss)
+				model = JointAspectTagger(transformer, rc, dataset.target_size, len(dataset.target_names), dataset.target_names)
 
 
 		optimizer = get_optimizer(model, rc)
