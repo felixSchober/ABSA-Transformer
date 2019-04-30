@@ -49,12 +49,17 @@ def amazon_dataset(
 
 	logger.info('Building Vocabularies for comments')
 	print('Comment Vocabulary building')
-	comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[pretrained_vectors])
+	comment_field.build_vocab(
+		train.comments,
+		val.comments,
+		test.comments, 
+		min_freq=3,
+		max_size=40000,
+		vectors=[pretrained_vectors])
 	print('Comment Vocabulary building finished')
 
 	padding_field.build_vocab(train.padding, val.padding, test.padding)
 	aspect_sentiment_field.build_vocab(train.aspect_sentiments, val.aspect_sentiments, test.aspect_sentiments)
-	# id_field.build_vocab(train.id, val.id, test.id)
 
 	# build aspect fields
 	aspect_sentiment_fields = []
