@@ -88,6 +88,7 @@ hyperOpt_goodParams = {
 }
 
 conll_params = {
+	'task': 'ner',
 	'embedding_type': 'fasttext',
 	'learning_rate_scheduler': {
 		'noam_learning_rate_warmup': 3500,

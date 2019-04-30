@@ -112,6 +112,8 @@ def conll2003_dataset(task:str,
 	logger.info('Input vocab size:%d'%(len(comments_field.vocab)))
 	logger.info('Tagset size: %d'%(len(aspect_sentiments.vocab)))
 
+	assert len(aspect_sentiments.vocab) > 0, "TEST train.aspect_sentiments: " +  repr(train.aspect_sentiments)
+
 	# Get iterators
 	train_iter, val_iter, test_iter = data.BucketIterator.splits(
 							(train, val, test), batch_size=batch_size, shuffle=True,

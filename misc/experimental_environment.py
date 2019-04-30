@@ -299,23 +299,23 @@ class Experiment(object):
 
 	def _print_result(self, result, i):
 		if result['status'] == STATUS_OK:
-			print(f"       .---.\n \
-	/     \\\n\
-	\\.@-@./\t\tExperiment: [{i}/{self.runs}]\n\
-	/`\\_/`\\\t\tStatus: {result['status']}\n\
-	//  _  \\\\\tLoss: {result['best_loss']}\n\
-	| \\     )|_\tf1: {result['best_f1']}\n\
-	/`\\_`>  <_/ \\\n\
-	\\__/'---'\\__/\n")
+			print(f".---.\n \
+/     \\\n\
+ \\.@-@./\t\tExperiment: [{i}/{self.runs}]\n\
+ /`\\_/`\\\t\tStatus: {result['status']}\n\
+ //  _  \\\\\tLoss: {result['best_loss']}\n\
+ | \\     )|_\tf1: {result['best_f1']}\n\
+ /`\\_`>  <_/ \\\n\
+ \\__/'---'\\__/\n")
 		else:
-			print(f"       .---.\n \
-	/     \\\n\
-	\\.@-@./\tExperiment: [{i}/{self.runs}] (FAIL)\n\
-	/`\\_/`\\\n\
-	//  _  \\\\\\n\
-	| \\     )|_\n\
-	/`\\_`>  <_/ \\\n\
-	\\__/'---'\\__/\n")
+			print(f"  .---.\n \
+/     \\\n\
+ \\.@-@./\tExperiment: [{i}/{self.runs}] (FAIL)\n\
+ /`\\_/`\\\n\
+ //  _  \\\\\n\
+| \\     )|_\n\
+ /`\\_`>  <_/ \\\n\
+ \\__/'---'\\__/\n")
 
 
 

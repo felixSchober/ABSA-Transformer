@@ -83,7 +83,8 @@ def run(args, parser):
 
 		specific_hp = {**conll_params, **{
 			'task': 'ner',
-			'language': 'en'
+			'language': 'en',
+			'embedding_type': 'glove'
 		}}
 	
 	# amazon reviews
