@@ -120,7 +120,7 @@ class TrainEvaluator(object):
 	# 		losses.append(loss.item())
 	# 	return np.array(losses).mean()
 
-	def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=True, show_progress: bool=False,
+	def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False,
 				 progress_label: str="Evaluation", f1_strategy: str='micro', iterator_name: str = 'unknwn', iteration:int=-1) -> Tuple[float, float, float, np.array, float, Tuple[int, int, int]]:
 		self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(
 			iterator.epoch, len(iterator)))
@@ -241,7 +241,7 @@ class TrainEvaluator(object):
 			avg_loss, np.mean(f1_macro_scores), f1_micro, c_matrices))
 		return (avg_loss, f1_macro_scores, accuracy, c_matrices, f1_micro, (tp, fn, fp))
 
-	def evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=True, f1_strategy='micro') -> Tuple[float, float, float, float]:
+	def evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=False, f1_strategy='micro') -> Tuple[float, float, float, float]:
 		mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
 		self.train_logger.log_scalar(
 			None, mean_train_loss, 'loss', ITERATOR_TRAIN + '/mean', iteration)
