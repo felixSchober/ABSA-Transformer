@@ -50,7 +50,7 @@ class Trainer(object):
 	early_stopping : EarlyStopping
 	checkpoint_dir : str
 	log_dir: str
-	log_imgage_dir : str
+	log_image_dir : str
 	seed : int
 	enable_tensorboard : bool
 	log_every_xth_iteration : int
@@ -100,7 +100,7 @@ class Trainer(object):
 
 		self.log_dir = os.path.join(os.getcwd(), 'logs', experiment_name)
 		self.checkpoint_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
-		self.log_imgage_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'images')
+		self.log_image_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'images')
 		self.seed = hyperparameters.seed
 		self.log_every_xth_iteration = hyperparameters.log_every_xth_iteration
 
@@ -116,7 +116,7 @@ class Trainer(object):
 			verbose,
 			hyperparameters,
 			dataset,
-			self.log_imgage_dir,
+			self.log_image_dir,
 			self.loss.name)		
 
 		# use special evaluator for germeval

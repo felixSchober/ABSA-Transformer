@@ -18,7 +18,7 @@ class TrainPlotter(object):
 		self.experiment_name = experiment_name
 		self.dataset_name = dataset_name
 
-		self.confusion_matrix_path = os.path.join(image_path, 'confusion matices')
+		self.confusion_matrix_path = os.path.join(image_path, 'confusion matrices')
 		self.loss_path_general = os.path.join(image_path, 'loss curves')
 		self.f1_path_heads = os.path.join(image_path, 'f1', 'heads')
 		self.f1_path_heads_sentiment = os.path.join(image_path, 'f1', 'heads sentiment')

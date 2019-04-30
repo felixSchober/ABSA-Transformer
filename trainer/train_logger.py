@@ -57,7 +57,7 @@ class TrainLogger(object):
 		self.hyperparameters = hp
 		self.progress_bar = None
 		self.dataset = dataset
-		self.log_imgage_dir = log_image_dir
+		self.log_image_dir = log_image_dir
 		self.git_commit = get_current_git_commit()
 		self._initialize(dummy_input)
 		self.show_summary = True
@@ -189,23 +189,25 @@ class TrainLogger(object):
 		if self.enable_tensorboard:
 			self.tb_writer.add_scalars(scalar_type, scalar_values, iteration)
 
-	def log_confusion_matrices(self, c_matrices, figure_name, iteration):
+	def log_confusion_matrices(self, c_matrices, figure_name, iteration, name='99_overall'):
 		if c_matrices is not None and c_matrices != []:
 			fig_abs = plot_confusion_matrix(
 				c_matrices, self.dataset.class_labels, normalize=False)
-			plt.savefig(os.path.join(self.log_imgage_dir,
-						'abs_c_{}.png'.format(iteration)))
+
+			save_path = os.path.join(self.log_image_dir, 'confusion matrices', name)
+			create_dir_if_necessary(save_path)
+
+			plt.savefig(os.path.join(save_path, 'abs_c_{}.png'.format(iteration)))
 			if self.enable_tensorboard and self.tb_writer is not None:
 				self.tb_writer.add_figure(
-					'confusion_matrix/abs/{}'.format(figure_name), fig_abs, iteration)
+					'confusion_matrix/abs/{}/{}'.format(name, figure_name), fig_abs, iteration)
 
 			fig_norm = plot_confusion_matrix(c_matrices, self.dataset.class_labels)
-			plt.savefig(os.path.join(self.log_imgage_dir,
-						'norm_c_{}.png'.format(iteration)))
+			plt.savefig(os.path.join(save_path, 'norm_c_{}.png'.format(iteration)))
 
 			if self.enable_tensorboard and self.tb_writer is not None:
 				self.tb_writer.add_figure(
-					'confusion_matrix/norm/{}'.format(figure_name), fig_norm, iteration)
+					'confusion_matrix/norm/{}/{}'.format(name, figure_name), fig_norm, iteration)
 
 	def log_text(self, text: str, name: str):
 		if self.enable_tensorboard and self.tb_writer is not None:

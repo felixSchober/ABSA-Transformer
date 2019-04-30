@@ -120,7 +120,7 @@ class TrainEvaluator(object):
 	# 		losses.append(loss.item())
 	# 	return np.array(losses).mean()
 
-	def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False,
+	def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=True, show_progress: bool=False,
 				 progress_label: str="Evaluation", f1_strategy: str='micro', iterator_name: str = 'unknwn', iteration:int=-1) -> Tuple[float, float, float, np.array, float, Tuple[int, int, int]]:
 		self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(
 			iterator.epoch, len(iterator)))
@@ -165,35 +165,39 @@ class TrainEvaluator(object):
 				# [batch_size, num_words] in the collnl2003 task num labels
 				# will contain the
 				# predicted class for the label
-				# self.logger.debug(f'Predicting samples with size {x.size()}.')
 				prediction = self.model.predict(x, source_mask)
 
 				if predictions is None or targets is None:
-					predictions = prediction
+					if len(prediction.shape) == 1:
+						predictions = prediction.unsqueeze(0)
+					else:
+						predictions = prediction
 					targets = y
 				else:
-					predictions = torch.cat((predictions, prediction), 0)
+					if len(prediction.shape) == 1:
+						predictions = torch.cat((predictions, prediction.unsqueeze(0)), 0)
+					else:
+						predictions = torch.cat((predictions, prediction), 0)
 					targets = torch.cat((targets, y), 0)
 
 				# get true positives
-				# self.logger.debug('Prediction finished.  Calculating scores')
 				true_pos += ((y == prediction).sum()).item()
 				total += y.shape[0] * y.shape[1]
 
 				if show_c_matrix:
-					# self.logger.debug('Calculating c_matrices')
+
 					if len(y.shape) > 1 and len(prediction.shape) > 1 and y.shape != (1, 1) and prediction.shape != (1, 1):
 						y_single = y.squeeze().cpu()
 						y_hat_single = prediction.squeeze().cpu()
+					elif y.shape != prediction.shape:
+						y_single = y.squeeze().cpu()
+						y_hat_single = prediction.cpu()
 					else:
 						y_single = y.cpu()
 						y_hat_single = prediction.cpu()
 					c_matrices.append(confusion_matrix(
 						y_single, y_hat_single, labels=range(self.num_labels)))
 
-				# self.logger.debug(f'Evaluation iteration finished with f1 of
-				# {batch_f1}.')
-				# self.logger.debug('Clearing up memory')
 				del batch
 				del prediction
 				del x
@@ -208,7 +212,7 @@ class TrainEvaluator(object):
 
 			# calculate f1 score based on predictions and targets
 			f1_macro_scores, tp, fn, fp = self.calculate_multiheaded_scores(
-				iterator_name, predictions.data, targets, f1_strategy, iteration=iteration, epoch=self.train_iterator.epoch)
+				iterator_name, predictions.data, targets, f1_strategy, iteration=iteration, epoch=self.train_iterator.epoch, show_c_matrix=show_c_matrix)
 			if show_c_matrix:
 				self.logger.debug(f'Resetting batch size to {prev_batch_size}.')
 				iterator.batch_size = prev_batch_size
@@ -237,7 +241,7 @@ class TrainEvaluator(object):
 			avg_loss, np.mean(f1_macro_scores), f1_micro, c_matrices))
 		return (avg_loss, f1_macro_scores, accuracy, c_matrices, f1_micro, (tp, fn, fp))
 
-	def evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=False, f1_strategy='micro') -> Tuple[float, float, float, float]:
+	def evaluate_and_log_train(self, iteration: int, show_progress: bool=False, show_c_matrix=True, f1_strategy='micro') -> Tuple[float, float, float, float]:
 		mean_train_loss = self._get_mean_loss(self.train_loss_history, iteration)
 		self.train_logger.log_scalar(
 			None, mean_train_loss, 'loss', ITERATOR_TRAIN + '/mean', iteration)
@@ -289,7 +293,7 @@ class TrainEvaluator(object):
 
 		return (mean_train_loss, mean_valid_loss, mean_valid_f1, accuracy)
 
-	def calculate_multiheaded_scores(self, iterator_name: str, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro', iteration: int=0, epoch: int=0) -> Tuple[List[float], int, int, int]:
+	def calculate_multiheaded_scores(self, iterator_name: str, prediction: torch.Tensor, targets: torch.Tensor, f1_strategy: str='micro', iteration: int=0, epoch: int=0, show_c_matrix: bool=False) -> Tuple[List[float], int, int, int]:
 		predictions = torch.t(prediction)
 		targets = torch.t(targets)
 
@@ -319,9 +323,11 @@ class TrainEvaluator(object):
 				if y_true.is_cuda:
 					y_true = y_true.cpu()
 
-				# beta = 1.0 means f1 score
-				# precision, recall, f_beta, support = precision_recall_fscore_support(y_true, y_pred, beta=1.0,
-				#																	 average=f1_strategy)
+				if show_c_matrix:
+					a_name = self.dataset.target_names[i]
+					cm = confusion_matrix(y_true, y_pred, labels=range(self.num_labels))
+					self.train_logger.log_confusion_matrices(cm, iterator_name, iteration, a_name)
+				
 				f1_mean, cls_f1_scores, metrics = self.calculate_f1(y_true, y_pred)
 				self.train_logger.log_aspect_metrics(i, f1_mean, cls_f1_scores, metrics, iterator_name, iteration, epoch)
 				precision = 0
@@ -500,7 +506,7 @@ class TrainEvaluator(object):
 		if val_c_matrices is not None:
 			from misc.visualizer import plot_confusion_matrix
 			fig = plot_confusion_matrix(val_c_matrices, self.dataset.class_labels)
-			p = os.path.join(self.train_logger.log_imgage_dir, 'final_valid_c_matrix.png')
+			p = os.path.join(self.train_logger.log_image_dir, 'final_valid_c_matrix.png')
 			plt.savefig(p)
 
 		te_loss = -1
@@ -542,7 +548,7 @@ class TrainEvaluator(object):
 			if te_c_matrices is not None:
 				from misc.visualizer import plot_confusion_matrix
 				fig = plot_confusion_matrix(te_c_matrices, self.dataset.class_labels)
-				p = os.path.join(self.train_logger.log_imgage_dir, 'final_test_c_matrix.png')
+				p = os.path.join(self.train_logger.log_image_dir, 'final_test_c_matrix.png')
 				plt.savefig(p)				
 
 		self.train_logger.complete_iteration(-1, -1, -1, -1,  -1, -1, -1, -1, -1, -1, -1, True)
@@ -552,7 +558,7 @@ class TrainEvaluator(object):
 										total_time: float) -> bool:
 		epoch = self.epoch
 		self.logger.debug('Starting evaluation in epoch {}. Current Iteration {}'.format(epoch, iteration))
-		mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self.evaluate_and_log_train(iteration, show_c_matrix=False)
+		mean_train_loss, mean_valid_loss, mean_valid_f1, mean_valid_accuracy = self.evaluate_and_log_train(iteration, show_c_matrix=True)
 		self.logger.debug('Evaluation completed')
 		self.logger.info('Iteration {}'.format(iteration))
 		self.logger.info('Mean train loss: {}'.format(mean_train_loss))
