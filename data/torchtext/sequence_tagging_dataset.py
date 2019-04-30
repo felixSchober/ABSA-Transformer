@@ -41,6 +41,9 @@ class CustomSequenceTaggingDataSet(Dataset):
 					for i, column in enumerate(line.split(separator)):
 						if len(columns) < i + 1:
 							columns.append([])
+						column = column.replace('I-', '')
+						column = column.replace('B-', '')
+
 						columns[i].append(column)
 
 			if columns:
