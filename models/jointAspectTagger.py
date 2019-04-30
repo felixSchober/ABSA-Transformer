@@ -98,10 +98,10 @@ class JointAspectTagger(nn.Module):
 			_, tagging_result = torch.max(tagging_result, dim=-1) 
 			if output is None:
 				if len(tagging_result.shape) < 2:
-					output = tagging_result.unsqueeze(-1)
+					output = tagging_result.unsqueeze(1)
 				else:
 					output = tagging_result
 			else:
-				output = torch.cat((output, tagging_result.unsqueeze(-1)), -1)
+				output = torch.cat((output, tagging_result.unsqueeze(1)), 1)
 		return output 
 
