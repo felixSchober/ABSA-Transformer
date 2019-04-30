@@ -96,7 +96,7 @@ def germeval2017_dataset(
 							unk_token=None,
 							use_vocab=True)
 
-	aspect_sentiment_field = ReversibleField(
+	aspect_sentiment_field = data.Field(
 							batch_first=True,
 							is_target=True,
 							sequential=True,
