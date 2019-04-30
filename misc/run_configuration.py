@@ -87,6 +87,30 @@ hyperOpt_goodParams = {
 	'organic_text_cleaning': False
 }
 
+conll_params = {
+	'embedding_type': 'fasttext',
+	'learning_rate_scheduler': {
+		'noam_learning_rate_warmup': 3500,
+		'noam_learning_rate_factor': 0.5
+	},
+	'optimizer_type':  OptimizerType.Adam,
+	'optimizer':  {
+		'learning_rate': 7.2e-5,
+		'adam_beta1': 0.9,
+		'adam_beta2': 0.98,
+		'adam_eps': 1e-8,
+		'adam_weight_decay': 1e-6,
+	},
+	'num_encoder_blocks': 2,
+	'num_heads': 2,
+	'att_d_k': 150,
+	'att_d_v': 150,
+	'dropout_rate': 0.302424,
+	'pointwise_layer_size': 287,
+	'clip_comments_to': 200,
+	'model_size': 300,
+}
+
 elmo_params = {
 	'output_layer_type': OutputLayerType.LinearSum,
 	'embedding_type': 'elmo',

@@ -19,6 +19,7 @@ def run(args, parser):
 	if dataset_choice not in possible_dataset_values:
 		parser.error('The dataset argument was not in the allowed range of values: ' + str(possible_dataset_values))
 
+	# GermEval-2017
 	if dataset_choice == possible_dataset_values[0]:
 		from data.germeval2017 import germeval2017_dataset as dsl
 		PREFERENCES.defaults(
@@ -31,15 +32,17 @@ def run(args, parser):
 			file_format='csv',
 			language='de'
 		)
-		from misc.run_configuration import hyperOpt_goodParams
+		from misc.run_configuration import hyperOpt_goodParams,OutputLayerType
 
 		specific_hp = {**hyperOpt_goodParams, **{
 			'task': task,
 			'use_stop_words': True,
 			'language': 'de',
-			'embedding_type': 'fasttext'
+			'embedding_type': 'fasttext',
+			'output_layer_type': OutputLayerType.Convolutions
 		}}
 
+	# organic-2019
 	elif dataset_choice == possible_dataset_values[1]:
 			from data.organic2019 import organic_dataset as dsl
 			from data.organic2019 import ORGANIC_TASK_ALL, ORGANIC_TASK_ENTITIES, ORGANIC_TASK_ATTRIBUTES, ORGANIC_TASK_ENTITIES_COMBINE, ORGANIC_TASK_COARSE
@@ -62,6 +65,7 @@ def run(args, parser):
 			specific_hp = good_organic_hp_params
 			specific_hp['task'] = task			
 
+	# coNLL-2003
 	elif dataset_choice == possible_dataset_values[2]:
 		PREFERENCES.defaults(
 
@@ -75,14 +79,14 @@ def run(args, parser):
 			language='en'
 		)
 		from data.conll import conll2003_dataset as dsl
-		from misc.run_configuration import hyperOpt_goodParams
+		from misc.run_configuration import conll_params
 
-		specific_hp = {**hyperOpt_goodParams, **{
+		specific_hp = {**conll_params, **{
 			'task': 'ner',
-			'language': 'en',
-			'embedding_type': 'fasttext'
+			'language': 'en'
 		}}
 	
+	# amazon reviews
 	else:
 		PREFERENCES.defaults(
 			data_root='./data/data/amazon/splits',
