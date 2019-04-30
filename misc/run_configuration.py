@@ -235,6 +235,10 @@ class RunConfiguration(object):
 			assert early_stopping == -1 or early_stopping > 0
 			assert kwargs['task'] != None and kwargs['task'] != ''
 
+
+			# switch for a random classifier
+			self.use_random_classifier = self._get_default('use_random_classifier', default=False)
+
 			self.model_size = model_size
 			self.early_stopping = early_stopping
 			self.use_cuda = use_cuda
