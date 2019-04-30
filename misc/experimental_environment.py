@@ -294,7 +294,7 @@ class Experiment(object):
 
 		print('TEST F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
 		logger.info('\n' + str(self.data_frame.test_f1.describe()))
-		return self.data_frame
+		return (self.data_frame, e_path)
 
 
 	def _print_result(self, result, i):
