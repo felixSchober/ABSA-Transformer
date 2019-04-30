@@ -44,8 +44,13 @@ class RandomModel(nn.Module):
 
 
 	def forward(self, x: torch.Tensor, *args) -> torch.Tensor:
+		if self.hyperparameters.task == 'ner':
+			return torch.rand((x.shape[0], x.shape[1], self.target_size), requires_grad=True)
 		return torch.rand((x.shape[0], self.num_taggers, self.target_size), requires_grad=True)
 
 	def predict(self, x: torch.Tensor, *args) -> torch.Tensor:
+		if self.hyperparameters.task == 'ner':
+			return torch.randint(0, self.target_size, (x.shape[0], x.shape[1]))
+
 		return torch.randint(0, self.target_size, (x.shape[0], self.num_taggers))
 
