@@ -464,6 +464,9 @@ class Trainer(object):
 			return self.evaluator.best_f1
 		return 0.0
 
+	def get_final_macro_f1(self):
+		return self.evaluator.final_macro_f1
+
 	def get_num_iterations(self) -> int:
 		return self.iterations_per_epoch_train * self.evaluator.epoch
 
@@ -473,8 +476,8 @@ class Trainer(object):
 	def get_df(self):
 		return self.train_logger.data_frame
 
-	def perform_final_evaluation(self, use_test_set: bool=True, verbose: bool=True):
-		return self.evaluator.perform_final_evaluation(use_test_set, verbose)
+	def perform_final_evaluation(self, use_test_set: bool=True, verbose: bool=True, c_matrix: bool=False):
+		return self.evaluator.perform_final_evaluation(use_test_set, verbose, c_matrix=c_matrix)
 	
 	def classify_sentence(self, sentence: str) -> str:
 		x = self.manual_process(sentence, self.dataset.source_reverser)

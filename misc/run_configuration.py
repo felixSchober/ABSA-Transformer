@@ -109,7 +109,7 @@ conll_params = {
 	'dropout_rate': 0.302424,
 	'pointwise_layer_size': 287,
 	'clip_comments_to': 200,
-	'model_size': 300,
+	'model_size': 300
 }
 
 elmo_params = {
@@ -176,6 +176,44 @@ good_organic_hp_params = {
 	'embedding_dim': 300,
 	'embedding_name': '6B',
 	'task': 'entities'
+}
+
+good_germeval_params = {
+	'output_layer_type': OutputLayerType.LinearSum,
+	'embedding_type': 'fasttext',
+	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
+	'learning_rate_scheduler': {
+		'noam_learning_rate_warmup': 6706,
+		'noam_learning_rate_factor': 1.120962889284992
+	},
+	'optimizer_type':  OptimizerType.Adam,
+	'optimizer':  {
+		'learning_rate': 0.09624249687454951,
+		'adam_beta1': 0.8278419040185792,
+		'adam_beta2': 0.7523040247084006,
+		'adam_eps': 0.001028230097476593,		
+		'adam_weight_decay': 0.0001,
+	},
+	'use_bias': True,
+	'num_encoder_blocks': 6,
+	'num_heads': 5,
+	'att_d_k': 60,
+	'att_d_v': 60,
+	'dropout_rate': 0.3116352148277839,
+	'pointwise_layer_size': 199,
+	'output_dropout_rate': 0.1410769136750667,
+	'clip_comments_to': 230,
+	'model_size': 300,
+	'use_spell_checkers': False,
+	'use_stop_words': True,
+	'batch_size': 26,
+	'language': 'de',
+	'early_stopping': 10,
+	'num_epochs': 35,
+	'log_every_xth_iteration': -1,
+	'embedding_dim': 300,
+	'embedding_name': '6B',
+	'task': 'germeval'
 }
 
 class RunConfiguration(object):

@@ -194,7 +194,7 @@ class Experiment(object):
 		# perform evaluation and log results
 		result = None
 		try:
-			result = trainer.perform_final_evaluation(use_test_set=True, verbose=False)
+			result = trainer.perform_final_evaluation(use_test_set=True, verbose=False, c_matrix=True)
 		except Exception as err:
 			logger.exception("Could not complete iteration evaluation.")
 			print('Could not complete iteration evaluation: ' + repr(err))
@@ -206,6 +206,8 @@ class Experiment(object):
 				'best_f1': trainer.get_best_f1()
 			}
 		print(f'VAL f1\t{trainer.get_best_f1()} - ({result[1][1]})')
+		print(f'(macro) f1\t{trainer.get_final_macro_f1()}')
+
 		print(f'VAL loss\t{trainer.get_best_loss()}')
 		return {
 				'loss': result[1][0],
@@ -223,11 +225,13 @@ class Experiment(object):
 					},
 					'validation': {
 						'loss': result[1][0],
-						'f1': result[1][1]
+						'f1': result[1][1],
+						'f1_macro': trainer.get_final_macro_f1()['valid']
 					},
 					'test': {
 						'loss': result[2][0],
-						'f1': result[2][1]
+						'f1': result[2][1],
+						'f1_macro': trainer.get_final_macro_f1()['test']
 					}
 				}
 			}
@@ -263,8 +267,12 @@ class Experiment(object):
 				df_row['train_f1'] = r_tr['f1']
 				df_row['val_loss'] = r_va['loss']
 				df_row['val_f1'] = r_va['f1']
+				df_row['val_f1_macro'] = r_va['f1_macro']
+
 				df_row['test_loss'] = r_te['loss']
 				df_row['test_f1'] = r_te['f1']
+				df_row['test_f1_macro'] = r_te['f1_macro']
+
 			self.data_frame = self.data_frame.append(df_row, ignore_index=True)
 			logger.info('#################################################################################')
 			logger.info('############################## EVALUATION COMPLETE ##############################')
@@ -292,8 +300,12 @@ class Experiment(object):
 			logger.exception('Could not pickle dataframe ' + repr(err))
 			print(traceback.print_tb(err.__traceback__))
 
-		print('TEST F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
-		logger.info('\n' + str(self.data_frame.test_f1.describe()))
+		print('TEST MICRO F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
+		print('TEST MACRO F1 Statistics\n' + str(self.data_frame.test_f1_macro.describe()))
+
+		logger.info('\n\nMICRO\n' + str(self.data_frame.test_f1.describe()))
+		logger.info('\n\nMACRO\n' + str(self.data_frame.test_f1_macro.describe()))
+
 		return (self.data_frame, e_path)
 
 

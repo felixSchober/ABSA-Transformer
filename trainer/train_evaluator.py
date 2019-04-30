@@ -9,6 +9,7 @@ from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
+import os
 
 from data.data_loader import Dataset
 from trainer.utils import *
@@ -70,6 +71,7 @@ class TrainEvaluator(object):
 	def _reset(self) -> None:
 		self.epoch = 0
 		self.best_f1 = 0.0
+		self.final_macro_f1 = {'valid': 0.0, 'test': 0.0}
 		self.best_loss = 1000.0
 		self._reset_histories()
 
@@ -412,7 +414,7 @@ class TrainEvaluator(object):
 	def calculate_binary_aspect_f1(self, metrics):
 		return (2*metrics['tp']) / (2*metrics['tp']+metrics['fn']+metrics['fp'])
 
-	def perform_final_evaluation(self, use_test_set: bool=True, verbose: bool=True) -> Tuple[EvaluationResult, EvaluationResult, EvaluationResult]:
+	def perform_final_evaluation(self, use_test_set: bool=True, verbose: bool=True, c_matrix: bool=False) -> Tuple[EvaluationResult, EvaluationResult, EvaluationResult]:
 
 		if verbose:
 			self.pre_training.info('Perform final model evaluation')
@@ -422,13 +424,14 @@ class TrainEvaluator(object):
 
 		try:
 			tr_loss, tr_macro_f1, tr_accuracy, tr_c_matrices, tr_f1_micro, (tp, fn, fp) = self.evaluate(self.train_iterator, show_progress=verbose,
-																   progress_label="Evaluating TRAIN", iterator_name=ITERATOR_TRAIN)
+																   progress_label="Evaluating TRAIN", iterator_name=ITERATOR_TRAIN, show_c_matrix=c_matrix)
 		finally:
 			self.change_train_mode(True)
 
 		if verbose:
 			self.pre_training.info('TRAIN loss:\t{}'.format(tr_loss))
 			self.pre_training.info('TRAIN MACRO f1-s:\t{}'.format(tr_macro_f1))
+			self.pre_training.info(f'TRAIN MACRO mean f1: {sum(tr_macro_f1)/len(tr_macro_f1)}')
 			self.pre_training.info('TRAIN MICRO f1-s:\t{}'.format(tr_f1_micro))
 
 			self.pre_training.info('TRAIN TP:\t{}'.format(tp))
@@ -439,6 +442,8 @@ class TrainEvaluator(object):
 		else:
 			self.logger.info('TRAIN loss:\t{}'.format(tr_loss))
 			self.logger.info('TRAIN MACRO f1-s:\t{}'.format(tr_macro_f1))
+			self.logger.info(f'TRAIN MACRO mean f1: {sum(tr_macro_f1)/len(tr_macro_f1)}')
+
 			self.logger.info('TRAIN MICRO f1-s:\t{}'.format(tr_f1_micro))
 
 			self.logger.info('TRAIN TP:\t{}'.format(tp))
@@ -448,7 +453,7 @@ class TrainEvaluator(object):
 
 		self.train_logger.log_scalar(None, tr_loss, 'final', ITERATOR_TRAIN + '/loss', 0)
 		self.train_logger.log_scalar(None, tr_f1_micro, 'final', ITERATOR_TRAIN + '/f1/micro', 0)
-		self.train_logger.log_scalar(None, tr_macro_f1, 'final', ITERATOR_TRAIN + '/f1/macro', 0)
+		self.train_logger.log_scalar(None, sum(tr_macro_f1)/len(tr_macro_f1), 'final', ITERATOR_TRAIN + '/f1/macro', 0)
 
 
 		if tr_c_matrices is not None:
@@ -461,13 +466,15 @@ class TrainEvaluator(object):
 		try:
 			val_loss, val_macro_f1, val_accuracy, val_c_matrices, val_f1_micro, (tp, fn, fp) = self.evaluate(self.valid_iterator, show_progress=verbose,
 																	   progress_label="Evaluating VALIDATION",
-																	   show_c_matrix=verbose, iterator_name=ITERATOR_VALIDATION)
+																	   show_c_matrix=c_matrix, iterator_name=ITERATOR_VALIDATION)
 		finally:
 			self.change_train_mode(True)
 
 		if verbose:
 			self.pre_training.info('VALID loss:\t{}'.format(val_loss))
 			self.pre_training.info('VALID MACRO f1-s:\t{}'.format(val_macro_f1))
+			self.pre_training.info(f'VALID MACRO mean f1: {sum(val_macro_f1)/len(val_macro_f1)}')
+
 			self.pre_training.info('VALID MICRO f1-s:\t{}'.format(val_f1_micro))
 
 			self.pre_training.info('VALID TP:\t{}'.format(tp))
@@ -477,6 +484,7 @@ class TrainEvaluator(object):
 		else:
 			self.logger.info('VALID loss:\t{}'.format(val_loss))
 			self.logger.info('VALID MACRO f1-s:\t{}'.format(val_macro_f1))
+			self.logger.info(f'VALID MACRO mean f1: {sum(val_macro_f1)/len(val_macro_f1)}')
 			self.logger.info('VALID MICRO f1-s:\t{}'.format(val_f1_micro))
 
 			self.logger.info('VALID TP:\t{}'.format(tp))
@@ -486,12 +494,14 @@ class TrainEvaluator(object):
 
 		self.train_logger.log_scalar(None, val_loss, 'final', ITERATOR_VALIDATION + '/loss', 0)
 		self.train_logger.log_scalar(None, val_f1_micro, 'final', ITERATOR_VALIDATION + '/f1/micro', 0)
-		self.train_logger.log_scalar(None, val_macro_f1, 'final', ITERATOR_VALIDATION + '/f1/macro', 0)
+		self.train_logger.log_scalar(None, sum(val_macro_f1)/len(val_macro_f1), 'final', ITERATOR_VALIDATION + '/f1/macro', 0)
+		self.final_macro_f1['valid'] = sum(val_macro_f1)/len(val_macro_f1)
 
 		if val_c_matrices is not None:
 			from misc.visualizer import plot_confusion_matrix
 			fig = plot_confusion_matrix(val_c_matrices, self.dataset.class_labels)
-			plt.show()
+			p = os.path.join(self.train_logger.log_imgage_dir, 'final_valid_c_matrix.png')
+			plt.savefig(p)
 
 		te_loss = -1
 		te_f1 = -1
@@ -501,10 +511,11 @@ class TrainEvaluator(object):
 
 			te_loss, te_macro_f1, te_accuracy, te_c_matrices, te_f1_micro, (tp, fn, fp) = self.evaluate(self.test_iterator, show_progress=verbose,
 																	   progress_label="Evaluating TEST",
-																	   show_c_matrix=verbose, iterator_name=ITERATOR_TEST)
+																	   show_c_matrix=c_matrix, iterator_name=ITERATOR_TEST)
 			if verbose:
 				self.pre_training.info('TEST loss:\t{}'.format(te_loss))
 				self.pre_training.info('TEST MACRO f1-s:\t{}'.format(te_macro_f1))
+				self.pre_training.info(f'TEST MACRO mean f1: {sum(te_macro_f1)/len(te_macro_f1)}')
 				self.pre_training.info('TEST MICRO f1-s:\t{}'.format(te_f1_micro))
 
 				self.pre_training.info('TEST TP:\t{}'.format(tp))
@@ -514,6 +525,7 @@ class TrainEvaluator(object):
 			else:
 				self.logger.info('TEST loss:\t{}'.format(te_loss))
 				self.logger.info('TEST MACRO f1-s:\t{}'.format(te_macro_f1))
+				self.pre_training.info(f'TEST MACRO mean f1: {sum(te_macro_f1)/len(te_macro_f1)}')
 				self.logger.info('TEST MICRO f1-s:\t{}'.format(te_f1_micro))
 
 				self.logger.info('TEST TP:\t{}'.format(tp))
@@ -523,12 +535,15 @@ class TrainEvaluator(object):
 
 			self.train_logger.log_scalar(None, te_loss, 'final', ITERATOR_TEST + '/loss', 0)
 			self.train_logger.log_scalar(None, te_f1_micro, 'final', ITERATOR_TEST + '/f1/micro', 0)			
-			self.train_logger.log_scalar(None, te_macro_f1, 'final', ITERATOR_TEST + '/f1/macro', 0)
+			self.train_logger.log_scalar(None, (sum(te_macro_f1)/len(te_macro_f1)), 'final', ITERATOR_TEST + '/f1/macro', 0)
+			self.final_macro_f1['test'] = sum(te_macro_f1)/len(te_macro_f1)
+
 
 			if te_c_matrices is not None:
 				from misc.visualizer import plot_confusion_matrix
 				fig = plot_confusion_matrix(te_c_matrices, self.dataset.class_labels)
-				plt.show()
+				p = os.path.join(self.train_logger.log_imgage_dir, 'final_test_c_matrix.png')
+				plt.savefig(p)				
 
 		self.train_logger.complete_iteration(-1, -1, -1, -1,  -1, -1, -1, -1, -1, -1, -1, True)
 		return ((tr_loss, tr_f1_micro, tr_c_matrices), (val_loss, val_f1_micro, val_c_matrices), (te_loss, te_f1_micro, te_c_matrices))

@@ -28,7 +28,7 @@ class TrainEvaluatorCoNLL(TrainEvaluator):
 		super(TrainEvaluatorCoNLL, self).__init__(*args)
 
 
-	def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=False, show_progress: bool=False,
+	def evaluate(self, iterator: torchtext.data.Iterator, show_c_matrix: bool=True, show_progress: bool=False,
 				 progress_label: str="Evaluation", f1_strategy: str='micro', iterator_name: str = 'unknwn', iteration:int=-1) -> Tuple[float, float, float, np.array, float, Tuple[int, int, int]]:
 		self.logger.debug('Start evaluation at evaluation epoch of {}. Evaluate {} samples'.format(
 			iterator.epoch, len(iterator)))
