@@ -181,9 +181,44 @@ The following section contains the final results for the \acrfull{ner} task of t
 Since this task was an auxiliary training task to assess the performance of the transformer part, no hyperparameter tuning was performed.
 \medskip
 
-For this dataset the architecture is slightly different since CoNLL-2003 has annotations for each word. Since the transformer makes predictions per word there is no need for separate aspect heads.
+For this dataset the architecture is slightly different, because CoNLL-2003 has annotations for each word. Since the transformer makes predictions per word there is no need for separate aspect heads.
 
-Therefore this architecture follows the original transformer and just consists of a single linear layer to project the 300-dimensional per-word prediction down to the amount of classes to predict. Finally, a log-softmax is used to provide the log probabilities for the class labels.
+Therefore, this architecture follows the original transformer and consists of a single linear layer to project the 300-dimensional per-word prediction down to the amount of classes to predict. Finally, a log-softmax is used to provide the log probabilities for the class labels.
+\medskip
+
+For the final evaluations we use transformer model with two encoder blocks, each consisting of two attention heads. We employ a model dropout rate of 0.3 and a pointwise layer size of 300. Furthermore, we use FastText embeddings a batch size of 12 and a weight decay of $1e^-6$.
+
+\begin{table}[]
+	\centering
+	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}cccc@{}}
+	\toprule
+	Variant          & \multicolumn{2}{c}{\textbf{Macro F1}}     & \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
+	\midrule
+					 & \textit{dev}      	& \textit{test} 		& \textit{dev}      		& \textit{test} 		\\
+	\midrule
+	Random Classifier          &  0.147   	& 0.187 	&  0.210  		&   0.214  \\
+	CoNLL-2003 Baseline         &  -        	&  -    	& -        		&   0.596 		\\
+	CoNLL-2003 Best Result & - & - & - & 0.888 \\
+	Baevski et. al 2019 {(\gls{sota})} 		 & -        	& -    		& 0.969     	&   \textbf{0.935} 		\\
+	Transformer {(our)}      & 0.822         	& 0.766	&  0.939        		&   0.918   			\\ \bottomrule
+	\end{tabular*}
+	\caption{Results of models on the shared CoNLL-2003 task for \gls{ner}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The CoNLL-2003 baseline \cite{Erik2003} was provided for the CoNLL-2003 NER competition. The best result at the competition achieved an F1-score of 0.8876 \cite{Florian2003}. At the time of writing {(April 2019)}, the best result on CoNLL-2003 NER is achieved by Baevski et. al. \cite{Baevski2019}}.
+	\label{tab:06_resultsConLL}
+	\end{table}
+
+\bigskip
+Table \ref{tab:06_resultsConLL} lists the result of our and other submissions for this tasks in order to assess the fitness of this model. The vanilla transformer model already achieves a very competitive performance. It outperforms every original submission for CoNLL-2013 by a wide margin and is only slightly behind current state of the art \cite{Baevski2019} even though it was not exclusively created for this purpose.
+\medskip
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.49\textwidth]{figures/06_results/06_ner_final_test_c_matrix}
+	\includegraphics[width=0.49\textwidth]{figures/06_results/06_ner_final_valid_c_matrix}
+	\caption{Normalized confusion matrices for the \gls{ner} task of the CoNLL-2003 dataset. The matrix on the left shows the performance of the model on the test set while the right confusion matrix visualizes the performance on the validation / development set.}
+	\label{fig:06_NER_cmatrices}
+\end{figure}
+
+The normalized confusion matrices in figure \ref{fig:06_NER_cmatrices} show the performance of the transformer on the dataset for the individual classes. The class 'LOC' is the most frequent class in the dataset {(see table \ref{tab:05_conll2003DatasetStats})} aside from class 'O' which is the 'Other' class. Despite this fact, the class performed poorly considering the 'MISC' class which achieved a similar result only has half the training samples.
 
 
 
@@ -199,6 +234,31 @@ Finally, section \ref{sec:06_ResultsMultitask} and \ref{sec:06_ResultsTransfer} 
 
 \subsection{GermEval-2017}
 \label{sec:06_ResultsGermEval}
+
+\begin{table}[]
+	\centering
+	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}cccc@{}}
+	\toprule
+	Variant          & \multicolumn{2}{c}{\textbf{Macro F1}}     & \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
+	\midrule
+					 & \textit{synchronic test}      	& \textit{diachronic test} 		& \textit{synchronic test}      		& \textit{diachronic test} 		\\
+	\midrule
+	Random Classifier          		&  0.014   		& 0.014 	&  0.018  		&   0.018  \\
+	Majority Baseline        	&  -        	&  -    	& 0.315        		&   0.384 		\\
+	GermEval Baseline        	&  -        	&  -    	& 0.322        		&   0.389 		\\
+	GermEval Best Result 		&  - 			&  - 		& 0.354 			& 0.401 \\
+	Schmitt 2018 {(\gls{sota})} 		 & -        	& -    		& \textbf{0.423}     	&   \textbf{0.465} 		\\
+	\midrule
+	\gls{absat} + \gls{lmh}      & 0.131         	& -	&  0.390        		&   -   			\\ 
+	\gls{absat} + \gls{cnnh}      & 0.822         	& -	&  0.939        		&   -   			\\ 
+
+	
+	\bottomrule
+	\end{tabular*}
+	\caption{Results of models on the shared CoNLL-2003 task for \gls{ner}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The CoNLL-2003 baseline \cite{Erik2003} was provided for the CoNLL-2003 NER competition. The best result at the competition achieved an F1-score of 0.8876 \cite{Florian2003}. At the time of writing {(April 2019)}, the best result on CoNLL-2003 NER is achieved by Baevski et. al. \cite{Baevski2019}}.
+	\label{tab:06_resultsGermEval}
+	\end{table}
+
 
 \subsection{Organic-2019}
 \label{sec:06_ResultsOrganic}
