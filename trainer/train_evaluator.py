@@ -134,6 +134,7 @@ class TrainEvaluator(object):
 
 			# use batch size of 1 for evaluation
 			if show_c_matrix:
+				self.logger.debug('log confusion matrices')
 				prev_batch_size = iterator.batch_size
 				iterator.batch_size = 1
 				bs = 1
