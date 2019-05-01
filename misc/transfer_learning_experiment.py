@@ -155,7 +155,7 @@ class TransferLearningExperiment(object):
 			logger.debug(f'Load model [{i}/{len(self.dsls)}]')
 			print(f'Load model [{i+1}/{len(self.dsls)}]')
 
-			if self.produce_baseline:
+			if self.produce_baseline and i == 0:
 				logger.info('################################')
 				logger.info('####  SKIP SOURCE TRAINING  ####')
 				logger.info('################################')
