@@ -72,13 +72,18 @@ def transfer_learning(
 				'examples': [],
 				'iters': []
 			}
+	comment_vocab = None
 	for r in loader_results:
 		train, val, test = r['splits']
-		r['fields']['comment'].build_vocab(
-			*all_comments,
-			vectors=[pretrained_vectors],
-			min_freq=3,
-			max_size=40000)
+		if comment_vocab is None:
+			r['fields']['comment'].build_vocab(
+				*all_comments,
+				vectors=[pretrained_vectors],
+				min_freq=3,
+				max_size=40000)
+			comment_vocab = r['fields']['comment'].vocab
+		else:
+			r['fields']['comment'].vocab = comment_vocab
 		r['fields']['padding'].build_vocab(*all_paddings)
 		r['fields']['aspect_sentiment'].build_vocab(train.aspect_sentiments, val.aspect_sentiments, test.aspect_sentiments)
 

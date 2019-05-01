@@ -66,7 +66,10 @@ class TransferLearningExperiment(object):
 		if iteration == 0:
 			self.current_transformer = TransformerEncoder(dataset.source_embedding,
 											hyperparameters=rc)
-		model = JointAspectTagger(self.current_transformer, rc, 4, 20, dataset.target_names)
+			model = JointAspectTagger(self.current_transformer, rc, 4, 20, dataset.target_names, initialize_params=True)
+		else:
+			model = JointAspectTagger(self.current_transformer, rc, 4, 20, dataset.target_names, initialize_params=False)
+
 		optimizer = get_optimizer(model, rc)
 		trainer = Trainer(
 							model,
