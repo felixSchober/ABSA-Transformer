@@ -14,6 +14,7 @@ def run(args, parser):
 	name = args.name
 	description = args.description
 	task = args.task
+	use_random = args.random
 
 	possible_dataset_values = ['germeval', 'organic', 'coNLL-2003', 'amazon']
 	if dataset_choice not in possible_dataset_values:
@@ -32,14 +33,12 @@ def run(args, parser):
 			file_format='csv',
 			language='de'
 		)
-		from misc.run_configuration import hyperOpt_goodParams,OutputLayerType
+		from misc.run_configuration import good_germeval_params,OutputLayerType
 
-		specific_hp = {**hyperOpt_goodParams, **{
+		specific_hp = {**good_germeval_params, **{
 			'task': task,
-			'use_stop_words': True,
 			'language': 'de',
-			'embedding_type': 'fasttext',
-			'output_layer_type': OutputLayerType.Convolutions
+			'embedding_type': 'fasttext'
 		}}
 
 	# organic-2019
@@ -83,8 +82,7 @@ def run(args, parser):
 
 		specific_hp = {**conll_params, **{
 			'task': 'ner',
-			'language': 'en',
-			'embedding_type': 'glove'
+			'language': 'en'
 		}}
 	
 	# amazon reviews
@@ -107,8 +105,7 @@ def run(args, parser):
 			'use_spell_checkers': True,
 			'use_stop_words': True,
 			'language': 'en',
-			'clip_comments_to': 100,
-			'embedding_type': 'fasttext'
+			'clip_comments_to': 100
 		}}
 
 	main_experiment_name = name
@@ -119,6 +116,7 @@ def run(args, parser):
 	logger.info('Run hyper parameter random grid search for experiment with name ' + main_experiment_name)
 	logger.info('num_optim_iterations: ' + str(runs))
 	specific_hp['epochs'] = epochs
+	specific_hp['use_random_classifier'] = use_random
 
 	try:
 		logger.info('Current commit: ' + utils.get_current_git_commit())
@@ -149,6 +147,8 @@ if __name__ == "__main__":
 						help='Specify a name of the optimization run')
 	parser.add_argument('--task', type=str,
 						help='Specify the task to execute. Only applicable when using the organic dataset')
+	parser.add_argument('--random', type=bool,
+						help='If random is true, use a random classifier for predictions on the dataset')
 	args = parser.parse_args()
 
 	run(args, parser)
