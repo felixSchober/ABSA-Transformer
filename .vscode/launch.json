@@ -14,6 +14,14 @@
 			"args": ["organic", "--runs", "1", "--task", "coarse"]
 		},
 		{
+            "name": "Coarse Organic - TL (AMAZON - C-ORGANIC)",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["transfer-amazon-organic", "--runs", "1", "--task", "coarse"]
+		},
+		{
             "name": "Amazon Reviews",
             "type": "python",
             "request": "launch",

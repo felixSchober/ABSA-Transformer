@@ -107,14 +107,14 @@ class TransferLearningExperiment(object):
 		logger = logging.getLogger(__name__)
 		dataset_logger = logging.getLogger('data_loader')
 		
-		logger.info(f'Experiment: [{run}/{self.runs}]')
+		logger.info(f'Experiment: [{run+1}/{self.runs}]')
 		logger.info('Name: ' + self.experiment_name)
 		logger.info('Actual Path Name: ' + experiment_name)
 		logger.info('Description: ' + self.experiment_description)
 		
 		print('\n\n#########################################################################')
-		print('Name: ' + self.experiment_name)
-		print('Description: ' + self.experiment_description)
+		print('######## Name: ' + self.experiment_name)
+		print('######## Description: ' + self.experiment_description)
 		print('#########################################################################\n\n')
 		print(rc)
 
@@ -129,7 +129,8 @@ class TransferLearningExperiment(object):
 				'status': STATUS_FAIL,
 				'eval_time': time.time() - run_time
 			}
-		logger.debug('dataset loaded')
+		logger.debug('dataset loader is initialized')
+		logger.debug('loading first dataset')
 
 		for i in dataset_generator:
 			logger.debug(f'Load model [{i}/{len(self.dsls)}]')
@@ -184,31 +185,35 @@ class TransferLearningExperiment(object):
 					'best_f1': trainer.get_best_f1()
 				}
 			print(f'VAL f1\t{trainer.get_best_f1()} - ({result[1][1]})')
+			print(f'(macro) f1\t{trainer.get_final_macro_f1()}')
+
 			print(f'VAL loss\t{trainer.get_best_loss()}')
 			results.append({
-					'loss': result[1][0],
-					'status': STATUS_OK,
-					'eval_time': time.time() - run_time,
-					'best_loss': trainer.get_best_loss(),
-					'best_f1': trainer.get_best_f1(),
-					'sample_iterations': trainer.get_num_samples_seen(),
-					'iterations': trainer.get_num_iterations(),
-					'rc': rc,
-					'results': {
-						'train': {
-							'loss': result[0][0],
-							'f1': result[0][1]
-						},
-						'validation': {
-							'loss': result[1][0],
-							'f1': result[1][1]
-						},
-						'test': {
-							'loss': result[2][0],
-							'f1': result[2][1]
-						}
+				'loss': result[1][0],
+				'status': STATUS_OK,
+				'eval_time': time.time() - run_time,
+				'best_loss': trainer.get_best_loss(),
+				'best_f1': trainer.get_best_f1(),
+				'sample_iterations': trainer.get_num_samples_seen(),
+				'iterations': trainer.get_num_iterations(),
+				'rc': rc,
+				'results': {
+					'train': {
+						'loss': result[0][0],
+						'f1': result[0][1]
+					},
+					'validation': {
+						'loss': result[1][0],
+						'f1': result[1][1],
+						'f1_macro': trainer.get_final_macro_f1()['valid']
+					},
+					'test': {
+						'loss': result[2][0],
+						'f1': result[2][1],
+						'f1_macro': trainer.get_final_macro_f1()['test']
 					}
-				})
+				}
+			})
 		return results
 
 	def run(self):
@@ -242,15 +247,19 @@ class TransferLearningExperiment(object):
 				df_row['train_f1'] = r_tr['f1']
 				df_row['val_loss'] = r_va['loss']
 				df_row['val_f1'] = r_va['f1']
+				df_row['val_f1_macro'] = r_va['f1_macro']
+
 				df_row['test_loss'] = r_te['loss']
 				df_row['test_f1'] = r_te['f1']
+				df_row['test_f1_macro'] = r_te['f1_macro']
+
 			self.data_frame = self.data_frame.append(df_row, ignore_index=True)
 			logger.info('#################################################################################')
 			logger.info('############################## EVALUATION COMPLETE ##############################')
 			logger.info('#################################################################################')
 
 		print('#################################################################################')
-		print('############################## EXPERIMENT COMPLETE ##############################\n\n')
+		print('############################## EXPERIMENT COMPLETE ##############################\n#################################################################################\n')
 
 		f1 = 0.0
 		for i, r in enumerate(results):
@@ -269,31 +278,34 @@ class TransferLearningExperiment(object):
 		except Exception as err:
 			logger.exception('Could not pickle dataframe')
 
-		print('TEST F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
-		logger.info('\n' + str(self.data_frame.test_f1.describe()))
-		return self.data_frame
+		print('TEST MICRO F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
+		print('TEST MACRO F1 Statistics\n' + str(self.data_frame.test_f1_macro.describe()))
+
+		logger.info('\n\nMICRO\n' + str(self.data_frame.test_f1.describe()))
+		logger.info('\n\nMACRO\n' + str(self.data_frame.test_f1_macro.describe()))
+
+		return (self.data_frame, e_path)
 
 
 	def _print_result(self, result, i):
 		if result['status'] == STATUS_OK:
-			print(f"       .---.\n \
-	/     \\\n\
-	\\.@-@./\t\tExperiment: [{i}/{self.runs}]\n\
-	/`\\_/`\\\t\tStatus: {result['status']}\n\
-	//  _  \\\\\tLoss: {result['best_loss']}\n\
-	| \\     )|_\tf1: {result['best_f1']}\n\
-	/`\\_`>  <_/ \\\n\
-	\\__/'---'\\__/\n")
+			print(f".---.\n \
+/     \\\n\
+ \\.@-@./\t\tExperiment: [{i+1}/{self.runs}]\n\
+ /`\\_/`\\\t\tStatus: {result['status']}\n\
+ //  _  \\\\\tLoss: {result['best_loss']}\n\
+ | \\     )|_\tf1: {result['best_f1']}\n\
+ /`\\_`>  <_/ \\\n\
+ \\__/'---'\\__/\n")
 		else:
-			print(f"       .---.\n \
-	/     \\\n\
-	\\.@-@./\tExperiment: [{i}/{self.runs}] (FAIL)\n\
-	/`\\_/`\\\n\
-	//  _  \\\\\\n\
-	| \\     )|_\n\
-	/`\\_`>  <_/ \\\n\
-	\\__/'---'\\__/\n")
-
+			print(f"  .---.\n \
+/     \\\n\
+ \\.@-@./\tExperiment: [{i+1}/{self.runs}] (FAIL)\n\
+ /`\\_/`\\\n\
+ //  _  \\\\\n\
+| \\     )|_\n\
+ /`\\_`>  <_/ \\\n\
+ \\__/'---'\\__/\n")
 
 
 

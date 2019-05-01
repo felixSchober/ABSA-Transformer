@@ -16,9 +16,9 @@ def run(args, parser):
 	task = args.task
 	use_random = args.random
 
-	possible_dataset_values = ['germeval', 'organic', 'coNLL-2003', 'amazon']
+	possible_dataset_values = ['germeval', 'organic', 'coNLL-2003', 'amazon', 'transfer-amazon-organic']
 	if dataset_choice not in possible_dataset_values:
-		parser.error('The dataset argument was not in the allowed range of values: ' + str(possible_dataset_values))
+		parser.error(f'The dataset argument {dataset_choice} was not in the allowed range of values: ' + str(possible_dataset_values))
 
 	# GermEval-2017
 	if dataset_choice == possible_dataset_values[0]:
@@ -84,6 +84,40 @@ def run(args, parser):
 			'task': 'ner',
 			'language': 'en'
 		}}
+
+	# Transfer Learning - Amazon > Organic
+	elif dataset_choice == possible_dataset_values[4]:
+		# PREFERENCES.defaults(
+		# 	data_root=['./data/data/amazon/splits', './data/data/organic2019'],
+		# 	data_train=['train.pkl', 'train.csv'],    
+		# 	data_validation=['val.pkl', 'validation.csv'],
+		# 	data_test=['test.pkl', 'test.csv'],
+		# 	source_index=[0, 0],
+		# 	target_vocab_index=[1, 1],
+		# 	file_format=['pkl', 'csv'],
+		# 	language='en'
+		# )
+		PREFERENCES.defaults(
+			data_root=['./data/data/organic2019', './data/data/organic2019'],
+			data_train=['train.csv', 'train.csv'],    
+			data_validation=['validation.csv', 'validation.csv'],
+			data_test=['test.csv', 'test.csv'],
+			source_index=[0, 0],
+			target_vocab_index=[1, 1],
+			file_format=['csv', 'csv'],
+			language='en'
+		)
+
+		from data.organic2019 import ORGANIC_TASK_COARSE
+		from misc.run_configuration import good_organic_hp_params_2
+
+		specific_hp = {**good_organic_hp_params_2, **{
+			'task': task,
+			'language': 'en',
+			'num_epochs': 1,
+			'embedding_type': 'glove',
+			'use_spell_checkers': True
+		}}
 	
 	# amazon reviews
 	else:
@@ -125,7 +159,12 @@ def run(args, parser):
 		logger.exception('Could not print current commit')
 
 	try:
-		e = Experiment(name, description, default_params, specific_hp, dsl, runs=runs)
+		if dataset_choice == possible_dataset_values[-1]:
+			#from data.amazon import load_splits as source_dsl
+			from data.organic2019 import load_splits as targer_dsl
+			e = TransferLearningExperiment(task, name, description, default_params, specific_hp, [targer_dsl, targer_dsl], PREFERENCES.__dict__['prefs'], runs=runs)
+		else:
+			e = Experiment(name,  description, default_params, specific_hp, dsl, runs=runs)
 		e.run()
 	except Exception as err:
 		logger.exception('Could not complete run')

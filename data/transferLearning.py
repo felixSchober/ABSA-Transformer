@@ -39,7 +39,14 @@ def transfer_learning(
 		validation_file = validation_files[i]
 		test_file = test_files[i]
 		logger.info(f'[{i}/{len(loaders)}] Loading dataset with root {root}')
-		result = l(task, hyperparameters, root, train_file, validation_file, test_file, verbose)
+		result = l(
+			task,
+			hyperparameters,
+			root,
+			train_file,
+			validation_file,
+			test_file,
+			verbose)
 		logger.debug(f'Dataset {i} is loaded')
 		loader_results.append(result)
 		fields.extend(result['splits'][0].fields)
@@ -67,14 +74,18 @@ def transfer_learning(
 			}
 	for r in loader_results:
 		train, val, test = r['splits']
-		r['fields']['comment'].build_vocab(*all_comments, vectors=[pretrained_vectors])
+		r['fields']['comment'].build_vocab(
+			*all_comments,
+			vectors=[pretrained_vectors],
+			min_freq=3,
+			max_size=40000)
 		r['fields']['padding'].build_vocab(*all_paddings)
 		r['fields']['aspect_sentiment'].build_vocab(train.aspect_sentiments, val.aspect_sentiments, test.aspect_sentiments)
 
 		examples = train.examples[0:3] + val.examples[0:3] + test.examples[0:3]
 
 		iters = data.BucketIterator.splits(
-		(train, val, test), batch_size=batch_size, device=train_device)
+		(train, val, test), batch_size=batch_size, device=train_device, shuffle=True)
 
 		datasets['stats'].append((train.stats, val.stats, test.stats))
 		datasets['split_length'].append((len(train), len(val), len(test)))
