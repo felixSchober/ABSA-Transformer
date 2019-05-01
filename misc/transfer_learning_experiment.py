@@ -46,6 +46,7 @@ class TransferLearningExperiment(object):
 		self.hp = None
 		self.data_frame = pd.DataFrame()
 		self.load_model_path = load_model_path
+		self.skip_source_training = False # skip training if source model loaded
 
 		print(f'Transfer Learning Experiment {self.experiment_name} initialized. Source: {dataset_infos["data_root"][0]} -> Target {dataset_infos["data_root"][1]}')
 		if self.load_model_path is not None:
@@ -89,6 +90,7 @@ class TransferLearningExperiment(object):
 		# see if we might be able to restore the source model
 		if iteration == 0:
 			model, optimizer, epoch = trainer.load_model(custom_path=self.load_model_path)
+			self.skip_source_training = True
 
 		return trainer
 
@@ -160,6 +162,43 @@ class TransferLearningExperiment(object):
 				}
 
 			logger.debug(f'model {i} loaded')
+
+			# can we skip source training? 
+			if i == 0 and self.skip_source_training:
+				logger.info('################################')
+				logger.info('####  SKIP SOURCE TRAINING  ####')
+				logger.info('################################')
+				print('################################')
+				print('####  SKIP SOURCE TRAINING  ####')
+				print('################################')
+				results.append({
+					'loss': 0,
+					'status': STATUS_OK,
+					'eval_time': time.time() - run_time,
+					'best_loss': 0,
+					'best_f1': 0,
+					'sample_iterations': 0,
+					'iterations': 0,
+					'rc': rc,
+					'results': {
+						'train': {
+							'loss': 0,
+							'f1': 0
+						},
+						'validation': {
+							'loss': 0,
+							'f1': 0,
+							'f1_macro': 0
+						},
+						'test': {
+							'loss': 0,
+							'f1': 0,
+							'f1_macro': 0
+						}
+					}
+				})
+				continue
+
 			logger.debug('Begin training')
 			model = None
 			try:
