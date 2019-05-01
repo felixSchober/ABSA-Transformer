@@ -15,6 +15,7 @@ def run(args, parser):
 	description = args.description
 	task = args.task
 	use_random = args.random
+	load_model_path = args.restoreModel
 
 	possible_dataset_values = ['germeval', 'organic', 'coNLL-2003', 'amazon', 'transfer-amazon-organic']
 	if dataset_choice not in possible_dataset_values:
@@ -27,7 +28,7 @@ def run(args, parser):
 			data_root='./data/data/germeval2017',
 			data_train='train_v1.4.tsv',    
 			data_validation='dev_v1.4.tsv',
-			data_test='test_TIMESTAMP1.tsv',
+			data_test='test_TIMESTAMP2.tsv',
 			source_index=0,
 			target_vocab_index=2,
 			file_format='csv',
@@ -137,7 +138,8 @@ def run(args, parser):
 			'use_spell_checkers': True,
 			'use_stop_words': True,
 			'language': 'en',
-			'clip_comments_to': 100
+			'clip_comments_to': 100,
+			'embedding_type': 'glove'
 		}}
 
 	main_experiment_name = name
@@ -147,7 +149,7 @@ def run(args, parser):
 	dataset_logger = logging.getLogger('data_loader')
 	logger.info('Run hyper parameter random grid search for experiment with name ' + main_experiment_name)
 	logger.info('num_optim_iterations: ' + str(runs))
-	specific_hp['epochs'] = epochs
+	specific_hp['num_epochs'] = epochs
 	specific_hp['use_random_classifier'] = use_random
 
 	try:
@@ -160,7 +162,7 @@ def run(args, parser):
 		if dataset_choice == possible_dataset_values[-1]:
 			from data.amazon import load_splits as source_dsl
 			from data.organic2019 import load_splits as targer_dsl
-			e = TransferLearningExperiment(task, name, description, default_params, specific_hp, [source_dsl, targer_dsl], PREFERENCES.__dict__['prefs'], runs=runs)
+			e = TransferLearningExperiment(task, name, description, default_params, specific_hp, [source_dsl, targer_dsl], PREFERENCES.__dict__['prefs'], runs=runs, load_model_path=load_model_path)
 		else:
 			e = Experiment(name,  description, default_params, specific_hp, dsl, runs=runs)
 		e.run()
@@ -186,6 +188,10 @@ if __name__ == "__main__":
 						help='Specify the task to execute. Only applicable when using the organic dataset')
 	parser.add_argument('--random', type=bool,
 						help='If random is true, use a random classifier for predictions on the dataset')
+
+	parser.add_argument('--restoreModel', type=str, default=None,
+						help='Provide a path to a checkpoint-folder which contains checkpoints. The application will search for the checkpoint with the highest score.')
+
 	args = parser.parse_args()
 
 	run(args, parser)

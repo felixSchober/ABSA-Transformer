@@ -27,7 +27,7 @@ STATUS_OK = 'ok'
 
 class TransferLearningExperiment(object):
 
-	def __init__(self, task, experiment_name, experiment_description, default_hp, overwrite_hp, data_loaders, dataset_infos, runs=5):
+	def __init__(self, task, experiment_name, experiment_description, default_hp, overwrite_hp, data_loaders, dataset_infos, runs=5, load_model_path=None):
 
 		# make sure preferences are set
 		assert data_loaders is not None
@@ -45,9 +45,14 @@ class TransferLearningExperiment(object):
 		self.runs = runs
 		self.hp = None
 		self.data_frame = pd.DataFrame()
+		self.load_model_path = load_model_path
 
 		print(f'Transfer Learning Experiment {self.experiment_name} initialized. Source: {dataset_infos["data_root"][0]} -> Target {dataset_infos["data_root"][1]}')
-		
+		if self.load_model_path is not None:
+			print(f'Try to restore model at ' + self.load_model_path)
+
+			if not check_if_file_exists(self.load_model_path):
+				print(f'Could not find model path. Please make sure the directory exists.')
 
 	def _initialize(self):
 		# make sure the seed is not set if more than one run
@@ -80,6 +85,11 @@ class TransferLearningExperiment(object):
 							experiment_name,
 							enable_tensorboard=True,
 							verbose=True)
+
+		# see if we might be able to restore the source model
+		if iteration == 0:
+			model, optimizer, epoch = trainer.load_model(custom_path=self.load_model_path)
+
 		return trainer
 
 	def load_dataset(self, rc, logger, task):
