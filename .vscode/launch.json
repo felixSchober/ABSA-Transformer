@@ -22,12 +22,28 @@
 			"args": ["transfer-amazon-organic", "--runs", "1", "--task", "coarse"]
 		},
 		{
+            "name": "Coarse Organic - RANDOM",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["organic", "--runs", "1", "--task", "coarse", "--random", "true"]
+		},
+		{
             "name": "Amazon Reviews",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
 			"console": "integratedTerminal",
 			"args": ["amazon", "--runs", "1", "--task", "amazon"]
+		},
+		{
+            "name": "Amazon Reviews - RANDOM",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["amazon", "--runs", "1", "--task", "amazon", "--random", "true"]
 		},
 		{
             "name": "GermEval-2017",

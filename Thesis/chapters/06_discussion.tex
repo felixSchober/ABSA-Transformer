@@ -200,7 +200,9 @@ For the final evaluations we use transformer model with two encoder blocks, each
 	CoNLL-2003 Baseline         &  -        	&  -    	& -        		&   0.596 		\\
 	CoNLL-2003 Best Result & - & - & - & 0.888 \\
 	Baevski et. al 2019 {(\gls{sota})} 		 & -        	& -    		& 0.969     	&   \textbf{0.935} 		\\
-	Transformer {(our)}      & 0.822         	& 0.766	&  0.939        		&   0.918   			\\ \bottomrule
+	Transformer {(our)}      & 0.822         	& 0.766	&  0.939        		&   0.918   			\\ 
+	\bottomrule
+	\multicolumn{5}{c}{\textbf{CoNLL-2003 - NER}} \\
 	\end{tabular*}
 	\caption{Results of models on the shared CoNLL-2003 task for \gls{ner}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The CoNLL-2003 baseline \cite{Erik2003} was provided for the CoNLL-2003 NER competition. The best result at the competition achieved an F1-score of 0.8876 \cite{Florian2003}. At the time of writing {(April 2019)}, the best result on CoNLL-2003 NER is achieved by Baevski et. al. \cite{Baevski2019}}.
 	\label{tab:06_resultsConLL}
@@ -232,10 +234,10 @@ Section \ref{sec:06_ResultsOrganic} reports results on the Organic-2019 dataset 
 
 Finally, section \ref{sec:06_ResultsMultitask} and \ref{sec:06_ResultsTransfer} review the results of multitask learning and transfer learning.
 
-\subsection{GermEval-2017}
+\subsection{Results for GermEval-2017}
 \label{sec:06_ResultsGermEval}
 
-\begin{table}[]
+\begin{table}[htp]
 	\centering
 	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}cccc@{}}
 	\toprule
@@ -243,34 +245,156 @@ Finally, section \ref{sec:06_ResultsMultitask} and \ref{sec:06_ResultsTransfer} 
 	\midrule
 					 & \textit{synchronic test}      	& \textit{diachronic test} 		& \textit{synchronic test}      		& \textit{diachronic test} 		\\
 	\midrule
-	Random Classifier          		&  0.014   		& 0.014 	&  0.018  		&   0.018  \\
-	Majority Baseline        	&  -        	&  -    	& 0.315        		&   0.384 		\\
-	GermEval Baseline        	&  -        	&  -    	& 0.322        		&   0.389 		\\
-	GermEval Best Result 		&  - 			&  - 		& 0.354 			& 0.401 \\
-	Schmitt 2018 {(\gls{sota})} 		 & -        	& -    		& \textbf{0.423}     	&   \textbf{0.465} 		\\
+								 \multicolumn{5}{c}{GermEval-2017 competition \cite{Wojatzki2017}} 					\\
+	Majority Baseline        		 &  -        	&  -    	& 0.315        	&   0.384 							\\
+	\gls{svm} Baseline        		 &  -        	&  -    	& 0.322        	&   0.389 							\\
+	Best Submission 				 &  - 			&  - 		& 0.354 		& 0.401 							\\
 	\midrule
-	\gls{absat} + \gls{lmh}      & 0.131         	& -	&  0.390        		&   -   			\\ 
-	\gls{absat} + \gls{cnnh}      & 0.822         	& -	&  0.939        		&   -   			\\ 
+								 \multicolumn{5}{c}{Schmitt et. al. 2018 {(\gls{sota})} \cite{Schmitt2018}} 		\\
+	Pipeline \gls{lstm} + FT 		 & -        	& -    		& 0.297     	&   0.342							\\
+	End-to-end \gls{lstm} + FT 		 & -        	& -    		& 0.315     	&   0.384 							\\
+	Pipeline \gls{cnn} + FT 		 & -        	& -    		& 0.295     	&   0.342 							\\
+	End-to-end \gls{cnn} + FT 		 & -        	& -    		& \textbf{0.423}&   \textbf{0.465} 					\\
+	\midrule
+								 \multicolumn{5}{c}{Our Results} 													\\
 
-	
+	Random Classifier          		 &  0.014   	& 0.014 	&  0.018  		&   0.018  							\\
+	\gls{absat} + \gls{lmh} + FT     & 0.131        & -			&  0.390    	&   -   							\\ 
+	\gls{absat} + \gls{cnnh} + FT    & -         	& -			&  -        	&   -   							\\ 
 	\bottomrule
+	\multicolumn{5}{c}{\textbf{GermEval-2017 - Task C {(ABSA)}}} \\
+
 	\end{tabular*}
-	\caption{Results of models on the shared CoNLL-2003 task for \gls{ner}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The CoNLL-2003 baseline \cite{Erik2003} was provided for the CoNLL-2003 NER competition. The best result at the competition achieved an F1-score of 0.8876 \cite{Florian2003}. At the time of writing {(April 2019)}, the best result on CoNLL-2003 NER is achieved by Baevski et. al. \cite{Baevski2019}}.
+	\caption{Evaluation and comparison of models on the shared GermEval-2017 task for \gls{absa}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The organizers of GermEval-2017 provide two baselines \cite{Wojatzki2017}. The first, just predicts the majority class which is \textit{"Neutral-Allgemein"}. This baseline already achieves a score of 0.315 on the synchronic test test. The second baseline uses a \gls{svm} classifier and achieves strong results very strong results of 0.322 and 0.389. The best submission for the GermEval-2017 challenge was achieved by Lee et. al. \cite{Lee2017} with a score of 0.355 and 0.401. Schmitt et. al. achieved \gls{sota} in 2018 with an End-to-end \gls{cnn} model with custom FastText {(FT)} embeddings. Their best score is 0.423 on the synchronic- and 0.465 on the diachronic test set. Our \gls{absat} model with linear mean heads and FastText embeddings outperforms every submission of the GermEval-2017 competition and is competitive with the end-to-end \gls{cnn} model of Schmitt et. al.}.
 	\label{tab:06_resultsGermEval}
 	\end{table}
 
 
-\subsection{Organic-2019}
+\subsection{Results for Organic-2019}
 \label{sec:06_ResultsOrganic}
 
-\subsection{Amazon Product Reviews}
+\begin{table}[htb]
+	\centering
+	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}cccc@{}}
+	\toprule
+	Variant          & \multicolumn{2}{c}{\textbf{Macro F1}}     & \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
+	\midrule
+					 & \textit{dev}      	& \textit{test} 		& \textit{dev}      		& \textit{test} 		\\
+	\midrule
+
+	Entity-Attributes   & -         	& -	&  -        		&   -   			\\ 
+	Entities     		& -         	& 0.081	&  -        		&   0.187   			\\ 
+	Entities 2C    		& -         	& 0.081	&  -        		&   0.187   			\\ 
+	Attributes    		& -         	& 0.081	&  -        		&   0.187   			\\ 
+	Coarse    			& -         	& 0.081	&  -        		&   0.187   			\\ 
+	\bottomrule
+	\multicolumn{5}{c}{\textbf{Organic-2019 - Dataset Partitions}} \\
+	\end{tabular*}
+	\caption{Report of results on different data partitions on the Organic-2019 dataset. Entity-Attributes denotes the full fine-grained combinations of entities and attributes.}
+	\label{tab:06_resultsOrganic1}
+\end{table}
+
+\subsubsection*{Results for Organic-2019 Coarse}
+
+\begin{figure}[htb]
+	\centering
+	\subfloat[Coarse - TEST]{
+		\includegraphics[width=0.49\textwidth]{figures/06_results/06_org_coarse_final_test_c_matrix}
+	}
+	\subfloat[Coarse - DEV]{
+		\includegraphics[width=0.49\textwidth]{figures/06_results/06_org_coarse_final_valid_c_matrix}
+	}
+	
+	\caption{Normalized confusion matrices for the coarse partition on the Organic-2019 dataset. The matrix on the left {(a)} shows the performance of the model on the test set while the right {(b)} confusion matrix visualizes the performance on the validation / development set.}
+	\label{fig:06_ORG_coarse_cmatrices}
+\end{figure}
+
+\begin{table}[htb]
+	\centering
+	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}cccc@{}}
+	\toprule
+	Variant          & \multicolumn{2}{c}{\textbf{Macro F1}}     & \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
+	\midrule
+					 & \textit{dev}      	& \textit{test} 		& \textit{dev}      		& \textit{test} 		\\
+	\midrule
+
+	Random Classifier          		&  0.026 		& 0.033&  0.034 &   0.038  				\\
+	\gls{absat} + \gls{lmh} + FT    & 0.089     & 0.269	&  0.086 &   0.200   			\\ 
+	\gls{absat} + \gls{lmh} + GL    & 0.996     & 0.093	&  0.259 &   0.197   			\\ 
+
+	\gls{absat} + \gls{cnnh} + GL   & 0.113     & 0.084	& 0.341   &  \textbf{0.255} 				\\ 	
+	\gls{absat} + \gls{cnnh} + FT   & 0.104     & \textbf{0.098} & 0.314  &   0.233				\\ 
+	\bottomrule
+	\multicolumn{5}{c}{\textbf{Organic-2019 - Coarse}} \\
+	\end{tabular*}
+	\caption{Evaluation and comparison of \acrfull{lmh} against \acrfull{cnnh} and two embedding choices FastText {(FT)} against GloVe {(GL)} on the Organic-2019 coarse data partition.}
+	\label{tab:06_resultsOrganic2}
+\end{table}
+
+\subsection{Results for Amazon Product Reviews}
 \label{sec:06_ResultsAmazon}
 
-Due to the large size of the dataset no hyperparameter tuning was performed. Parameters from previous optimizations on the smaller organic dataset were chosen for the evaluation. The final model uses the \gls{mlsa} architecture with fasttext embeddings. Comments are clipped to a fixed length of 100 and spell checking as well as stop word removal is enabled to reduce the vocabulary size. The model consists of one attention head with $d_k$ and $d_v$ of 300 and two encoder blocks. The inner \gls{pwfc}-layer acts as a bottleneck with a size of 128. Finally, a reduced batch size of 12 was chosen to be able to fit the model into \gls{gpu} memory which would not have been otherwise possible.
+\begin{table}[htb]
+	\centering
+	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}ccccc@{}}
+	\toprule
+	Variant          & \multicolumn{2}{c}{\textbf{Macro F1}}     & \multicolumn{2}{c}{\textbf{Micro F1}} &       \\ 
+	\midrule
+					 & \textit{dev}      	& \textit{test} 		& \textit{dev}      		& \textit{test} & Train Duration		\\
+	\midrule
+	Random Classifier          			&  0.031		& 0.031  	&  0.031		&   0.031	& -		\\
+	\gls{absat} + \gls{lmh} + FT + SP   & 0.461         & 0.513		&  0.461        &   0.513   & 49h			\\ 
+	\bottomrule
+	\multicolumn{6}{c}{\textbf{Amazon Reviews Dataset}} \\
+	\end{tabular*}
+	\caption{Results of the \gls{absat} model with mean linear aspect heads {(LMH)} and FastText {(FT)} embeddings on the custom amazon reviews dataset. Spell checking {(SP)} is enabled. The model reported in this table uses the full amazon reviews vocabulary. The Train Duration column reports the duration of the training and evaluation process on a Tesla K80 GPU. Training was performed once with a seed of 42.}
+	\label{tab:06_resultsAmazonFull}
+\end{table}
+
+Due to the large size of the dataset no hyperparameter tuning was performed. Parameters from previous optimizations on the smaller organic dataset were chosen for the evaluation. The final model uses the \gls{lmh} architecture with FastText embeddings. Comments are clipped to a fixed length of 100 and spell checking as well as stop word removal is enabled to reduce the vocabulary size. The model consists of one attention head with $d_k$ and $d_v$ of 300 and two encoder blocks. The inner \gls{pwfc}-layer acts as a bottleneck with a size of 128. Finally, a reduced batch size of 12 was chosen to be able to fit the model into \gls{gpu} memory which would not have been otherwise possible.
 \medskip
 
 The vocabulary size of the amazon dataset after all reductions consists of $389,371$ unique tokens. This creates an embedding layer which maps the vocabulary size of $389,371$ to a 300-dimensional vector. Unfortunately, a lot of those tokens are not part of the pretrained embedding so the parameters of the embedding layer can not be locked during training. Therefore, the embedding layer has a size of $116,811,300$ trainable parameters. As a result, the first embedding layer makes up over 99\% of the overall number of model parameters which is $117,710,780$.
+\medskip
 
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=\textwidth]{figures/06_results/06_am_final_val_f1Sent}
+	\caption{Individual aspect head micro F1 scores achieved on the validation set of the custom amazon reviews dataset. For each aspect head this figure reports the F1 score split by the sentiment class as well as the n/a label. Aspects which have more positive reviews to keep the aspects balanced are annotated with a white star. Those include Digital Music, Grocery and Gourmet Food, Office Products, Sports and Outdoors as well as Tools and Home Improvement}
+	\label{fig:06_am_val_f1sent}
+\end{figure}
+
+Despite the fact that no hyperparameter tuning was used the model achieved a final micro F1-score of 0.513 which is reported in table \ref{tab:06_resultsAmazonFull}. Since this is a custom dataset it is not possible to compare results with other architectures. However, there are two elements of the result which are interesting:
+\medskip
+
+\subsubsection*{Data Imbalance}
+Even though the dataset is fairly balanced the results for the individual aspects are very different. Figure \ref{fig:08_am_val_f1} in the appendix presents the F1 score for the individual aspects. Aspects, which are not balanced across the sentiment dimension {(they do not have an equal number of negative, neutral, positive reviews)} are marked as red. It is immediately obvious that the top-3 aspects with the highest overall score are red. Furthermore, the only aspect which does not have 60,000 reviews is also the aspect with the highest mean micro f1 score. 
+\smallskip
+
+The reason for this is the way, the aspects are balanced. If there are not enough reviews for the different sentiment categories the missing reviews are taken from sentiment categories which have enough data. Table \ref{tab:05_amazonDatasetStats} reports that the "Office Products" category contains more than 15 times more samples than the negative sentiment category. Therefore, the model is able to achieve a good F1 score by predicting a positive sentiment most of the time.
+\smallskip
+
+This behavior seems to point to the fact that the \gls{absat} architecture is very sensible to data imbalance
+
+
+It does not come as a surprise that the "n/a" label achieves the highest scores since this label naturally makes up a vast majority of the samples but it is interesting, that the sentiment scores are that different.
+
+\subsubsection*{Difficulty Classifying Different Sentiment Classes}
+
+Figure \ref{fig:06_am_val_f1sent} reports the micro F1 score for the individual sentiment classes. It should be noted that even classes which contain exactly the same number of positive, negative and neutral reviews like "Books" for example achieve different results for the sentiment classes. Usually, the positive class achieves the highest score, negative comes second and neutral is generally last. There are two possible explanations for this phenomenon.
+\smallskip
+
+It may be possible to explain this behavior by looking at the overall model instead of just individual aspect heads. In total, there are more positive aspects than negative or neutral reviews. Even though the transformer base should focus on general sentence understanding, the model will be skewed towards more positive reviews. In other words, the transformer gives positive reviews more attention than negative reviews. Therefore, it is easier for the aspect heads to predict a positive sentiment than a negative sentiment, even though the balanced heads do not have any advantage by predicting more positive sentiment.
+\bigskip
+
+Another possible explanation might be that it is just easier to predict positive and negative reviews than a neutral sentiment polarity. Customers usually, review a product if they are either very happy or very unhappy. When they like or dislike a product they use phrases which are easier to assign a positive or negative sentiment. However, the reason for giving a product a neutral review are more nuanced than a strong positive or negative emotion. In fact, neutral reviews often contain reasons which are both positive and negative. This differentiation is very challenging for a classifier. 
+\smallskip
+
+The nature of neutral product reviews are also very different than a neutral sentiment polarity in the GermEval-2017 and the Organic-2019 datasets. In those instances, a neutral sentiment usually means that the aspect was mentioned but neither in a positive or negative way. This is different compared to a review where a customer weights the advantages and disadvantages of product or service.
+
+\subsubsection*{Hyperparameter Tuning}
+
+As already mentioned, we did not perform any hyperparamter tuning on this dataset. This is very noticeable when looking at the reported F1 score for the test and dev splits. Usually, the result for the dev portion of the data is much higher because this part is typically used for hyperparameter optimization. Therefore, researches pick the model with the highest score on the dev split, indirectly picking a model which is overfitted on the validation split to an extent. This demonstrates that it is important to never perform optimization on the test split. However, if no optimization is performed at all, the validation split can be used as additional data for the training.  
 
 
 \section{Impact of Multitask Learning}
