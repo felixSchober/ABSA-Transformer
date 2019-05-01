@@ -92,7 +92,7 @@ class Experiment(object):
 							dataset,
 							experiment_name,
 							enable_tensorboard=False,
-							verbose=True)
+							verbose=False)
 		return trainer
 
 	def load_dataset(self, rc, logger, task):

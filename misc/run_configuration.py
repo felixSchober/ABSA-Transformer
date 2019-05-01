@@ -178,6 +178,48 @@ good_organic_hp_params = {
 	'task': 'entities'
 }
 
+good_organic_hp_params_2 = {
+	'output_layer_type': OutputLayerType.Convolutions,
+	'embedding_type': 'glove',
+	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
+	'learning_rate_scheduler': {
+		'noam_learning_rate_warmup': 3836,
+		'noam_learning_rate_factor': 1.5733172576455363
+	},
+	'optimizer_type':  OptimizerType.Adam,
+	'optimizer':  {
+		'learning_rate': 0.02899251,
+		'adam_beta1': 0.8947907481175669,
+		'adam_beta2': 0.7737347560683068,
+		'adam_eps': 0.040046922931353646,		
+		'adam_weight_decay': 0.001,
+	},
+	'transformer_use_bias': True,
+	'num_encoder_blocks': 2,
+	'num_heads': 1,
+	'att_d_k': 300,
+	'att_d_v': 300,
+	'dropout_rate': 0.16555331951810104,
+	'pointwise_layer_size': 178,
+	'output_dropout_rate': 0.15041815027056968,
+	'clip_comments_to': 66,
+	'model_size': 300,
+	'use_spell_checkers': False,
+	'batch_size': 62,
+	'language': 'en',
+	'early_stopping': 5,
+	'output_conv_num_filters': 104,
+	'output_conv_kernel_size': 7,
+	'output_conv_stride': 91,
+	'output_conv_padding': 0,
+	'num_epochs': 35,
+	'log_every_xth_iteration': -1,
+	'embedding_dim': 300,
+	'embedding_name': '6B',
+	'task': 'entities',
+	'use_stop_words': True
+}
+
 good_germeval_params = {
 	'output_layer_type': OutputLayerType.LinearSum,
 	'embedding_type': 'fasttext',
