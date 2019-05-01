@@ -87,26 +87,26 @@ def run(args, parser):
 
 	# Transfer Learning - Amazon > Organic
 	elif dataset_choice == possible_dataset_values[4]:
-		# PREFERENCES.defaults(
-		# 	data_root=['./data/data/amazon/splits', './data/data/organic2019'],
-		# 	data_train=['train.pkl', 'train.csv'],    
-		# 	data_validation=['val.pkl', 'validation.csv'],
-		# 	data_test=['test.pkl', 'test.csv'],
-		# 	source_index=[0, 0],
-		# 	target_vocab_index=[1, 1],
-		# 	file_format=['pkl', 'csv'],
-		# 	language='en'
-		# )
 		PREFERENCES.defaults(
-			data_root=['./data/data/organic2019', './data/data/organic2019'],
-			data_train=['train.csv', 'train.csv'],    
-			data_validation=['validation.csv', 'validation.csv'],
-			data_test=['test.csv', 'test.csv'],
+			data_root=['./data/data/amazon/splits', './data/data/organic2019'],
+			data_train=['train.pkl', 'train.csv'],    
+			data_validation=['val.pkl', 'validation.csv'],
+			data_test=['test.pkl', 'test.csv'],
 			source_index=[0, 0],
 			target_vocab_index=[1, 1],
-			file_format=['csv', 'csv'],
+			file_format=['pkl', 'csv'],
 			language='en'
 		)
+		# PREFERENCES.defaults(
+		# 	data_root=['./data/data/organic2019', './data/data/organic2019'],
+		# 	data_train=['train.csv', 'train.csv'],    
+		# 	data_validation=['validation.csv', 'validation.csv'],
+		# 	data_test=['test.csv', 'test.csv'],
+		# 	source_index=[0, 0],
+		# 	target_vocab_index=[1, 1],
+		# 	file_format=['csv', 'csv'],
+		# 	language='en'
+		# )
 
 		from data.organic2019 import ORGANIC_TASK_COARSE
 		from misc.run_configuration import good_organic_hp_params_2
@@ -114,8 +114,6 @@ def run(args, parser):
 		specific_hp = {**good_organic_hp_params_2, **{
 			'task': task,
 			'language': 'en',
-			'num_epochs': 1,
-			'embedding_type': 'glove',
 			'use_spell_checkers': True
 		}}
 	
@@ -160,9 +158,9 @@ def run(args, parser):
 
 	try:
 		if dataset_choice == possible_dataset_values[-1]:
-			#from data.amazon import load_splits as source_dsl
+			from data.amazon import load_splits as source_dsl
 			from data.organic2019 import load_splits as targer_dsl
-			e = TransferLearningExperiment(task, name, description, default_params, specific_hp, [targer_dsl, targer_dsl], PREFERENCES.__dict__['prefs'], runs=runs)
+			e = TransferLearningExperiment(task, name, description, default_params, specific_hp, [source_dsl, targer_dsl], PREFERENCES.__dict__['prefs'], runs=runs)
 		else:
 			e = Experiment(name,  description, default_params, specific_hp, dsl, runs=runs)
 		e.run()
