@@ -27,7 +27,7 @@ STATUS_OK = 'ok'
 
 class TransferLearningExperiment(object):
 
-	def __init__(self, task, experiment_name, experiment_description, default_hp, overwrite_hp, data_loaders, dataset_infos, runs=5, load_model_path=None):
+	def __init__(self, task, experiment_name, experiment_description, default_hp, overwrite_hp, data_loaders, dataset_infos, runs=5, load_model_path=None, produce_baseline=False):
 
 		# make sure preferences are set
 		assert data_loaders is not None
@@ -47,6 +47,7 @@ class TransferLearningExperiment(object):
 		self.data_frame = pd.DataFrame()
 		self.load_model_path = load_model_path
 		self.skip_source_training = False # skip training if source model loaded
+		self.produce_baseline = produce_baseline
 
 		print(f'Transfer Learning Experiment {self.experiment_name} initialized. Source: {dataset_infos["data_root"][0]} -> Target {dataset_infos["data_root"][1]}')
 		if self.load_model_path is not None:
@@ -69,6 +70,9 @@ class TransferLearningExperiment(object):
 	def load_model(self, dataset, rc, experiment_name, iteration):
 		loss = LossCombiner(4, dataset.class_weights, NllLoss)
 
+		if self.produce_baseline:
+			iteration = 0
+
 		if iteration == 0:
 			self.current_transformer = TransformerEncoder(dataset.source_embedding,
 											hyperparameters=rc)
@@ -88,7 +92,7 @@ class TransferLearningExperiment(object):
 							verbose=True)
 
 		# see if we might be able to restore the source model
-		if iteration == 0:
+		if iteration == 0 and self.load_model_path is not None:
 			model, optimizer, epoch = trainer.load_model(custom_path=self.load_model_path)
 			self.skip_source_training = True
 
@@ -150,6 +154,42 @@ class TransferLearningExperiment(object):
 		for i in dataset_generator:
 			logger.debug(f'Load model [{i}/{len(self.dsls)}]')
 			print(f'Load model [{i+1}/{len(self.dsls)}]')
+
+			if self.produce_baseline:
+				logger.info('################################')
+				logger.info('####  SKIP SOURCE TRAINING  ####')
+				logger.info('################################')
+				print('################################')
+				print('######  PRODUCE BASELINE  ######')
+				print('####  SKIP SOURCE TRAINING  ####')
+				print('################################')
+				results.append({
+					'loss': 0,
+					'status': STATUS_OK,
+					'eval_time': time.time() - run_time,
+					'best_loss': 0,
+					'best_f1': 0,
+					'sample_iterations': 0,
+					'iterations': 0,
+					'rc': rc,
+					'results': {
+						'train': {
+							'loss': 0,
+							'f1': 0
+						},
+						'validation': {
+							'loss': 0,
+							'f1': 0,
+							'f1_macro': 0
+						},
+						'test': {
+							'loss': 0,
+							'f1': 0,
+							'f1_macro': 0
+						}
+					}
+				})
+				continue
 
 			try:
 				trainer = self.load_model(self.current_dataset, rc, experiment_name, i)
