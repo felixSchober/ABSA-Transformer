@@ -110,7 +110,7 @@ class Experiment(object):
 			init_token=None,
 			eos_token=None
 		)
-		dataset.load_data(self.dsl, verbose=True)
+		dataset.load_data(self.dsl, verbose=False)
 		return dataset
 
 	def _objective(self, rc, run):
