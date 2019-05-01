@@ -451,7 +451,7 @@ class OrganicDataset(Dataset):
 		if hp.organic_text_cleaning:
 			comment = fix_organic_spelling(comment, organic_text_cleaning_dict)
 
-		if hp.use_spell_checkers:
+		if hp.use_spell_checkers and spell is not None:
 			comment = self.fix_spellings(comment, spell)
 
 		comment = ' '.join(comment)

@@ -320,7 +320,7 @@ class Experiment(object):
 		if result['status'] == STATUS_OK:
 			print(f".---.\n \
 /     \\\n\
- \\.@-@./\t\tExperiment: [{i}/{self.runs}]\n\
+ \\.@-@./\t\tExperiment: [{i+1}/{self.runs}]\n\
  /`\\_/`\\\t\tStatus: {result['status']}\n\
  //  _  \\\\\tLoss: {result['best_loss']}\n\
  | \\     )|_\tf1: {result['best_f1']}\n\
@@ -329,7 +329,7 @@ class Experiment(object):
 		else:
 			print(f"  .---.\n \
 /     \\\n\
- \\.@-@./\tExperiment: [{i}/{self.runs}] (FAIL)\n\
+ \\.@-@./\tExperiment: [{i+1}/{self.runs}] (FAIL)\n\
  /`\\_/`\\\n\
  //  _  \\\\\n\
 | \\     )|_\n\
