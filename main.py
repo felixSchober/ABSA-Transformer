@@ -16,6 +16,7 @@ def run(args, parser):
 	task = args.task
 	use_random = args.random
 	load_model_path = args.restoreModel
+	produceBaseline = args.produceBaseline
 
 	possible_dataset_values = ['germeval', 'organic', 'coNLL-2003', 'amazon', 'transfer-amazon-organic']
 	if dataset_choice not in possible_dataset_values:
@@ -162,7 +163,7 @@ def run(args, parser):
 		if dataset_choice == possible_dataset_values[-1]:
 			from data.amazon import load_splits as source_dsl
 			from data.organic2019 import load_splits as targer_dsl
-			e = TransferLearningExperiment(task, name, description, default_params, specific_hp, [source_dsl, targer_dsl], PREFERENCES.__dict__['prefs'], runs=runs, load_model_path=load_model_path)
+			e = TransferLearningExperiment(task, name, description, default_params, specific_hp, [source_dsl, targer_dsl], PREFERENCES.__dict__['prefs'], runs=runs, load_model_path=load_model_path, produce_baseline=produceBaseline)
 		else:
 			e = Experiment(name,  description, default_params, specific_hp, dsl, runs=runs)
 		e.run()
@@ -191,6 +192,9 @@ if __name__ == "__main__":
 
 	parser.add_argument('--restoreModel', type=str, default=None,
 						help='Provide a path to a checkpoint-folder which contains checkpoints. The application will search for the checkpoint with the highest score.')
+
+	parser.add_argument('--produceBaseline', type=bool, default=False,
+						help='Flag, wether or not a baseline for the transfer learning task should be trained.')
 
 	args = parser.parse_args()
 
