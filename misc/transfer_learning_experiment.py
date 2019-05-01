@@ -51,7 +51,7 @@ class TransferLearningExperiment(object):
 		if self.load_model_path is not None:
 			print(f'Try to restore model at ' + self.load_model_path)
 
-			if not check_if_file_exists(self.load_model_path):
+			if not utils.check_if_file_exists(self.load_model_path):
 				print(f'Could not find model path. Please make sure the directory exists.')
 
 	def _initialize(self):
