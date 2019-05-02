@@ -297,86 +297,6 @@ Several techniques can be applied to produce even better results for the task. S
 \smallskip
 In section \ref{sec:06_ResultsTransfer} we also demonstrate, that transfer learning positively impacts model performance. However, finding similar data in German might be challenging.
 
-\subsection{Results for Organic-2019}
-\label{sec:06_ResultsOrganic}
-
-Organic-2019 is a dataset on organic food which was labeled by the social computing group at \gls{tum} in the beginning of 2019. It contains 10,439 sentences which are annotated with "entities" and "aspects". Each sentence classified as "domain-relevant" receives an entity class. This entity class is further annotated with an attribute class. Sentiment is then annotated for this specific entity-attribute combination.
-\medskip
-
-There are 9 entities and 14 aspects which create 126 possible entity-attribute combinations. Samples exist for 114 out of the 125 possible combinations. This means, a classifier has to predict the probabilities for 456 class labels {($114*4$)} for each sentence. The appendix contains a list of all entity-attribute combinations at \ref{li:08_og_aspects}.
-\medskip
-
-Classifiers {(and humans)} struggle with the amount of fine-grained aspects. To provide a easier baseline we created a coarse grained version of the dataset which combines certain entities and attributes which are closely related to a total of 18 different aspects. A complete list of these aspects is located in the appendix at list \ref{li:08_og_aspectsCoarse}.
-\medskip
-
-\begin{table}[htb]
-	\centering
-	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}rccc@{}}
-	\toprule
-	Variant          & \multicolumn{1}{c}{\textbf{Num Aspects}}& \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
-	\midrule
-					   &  		&\textit{dev}		& \textit{test} 		\\
-	\midrule
-
-	Entity-Attributes   & 114	&  0.068    		&   0.060				\\ 
-	Entities     		& 9		&  0.204    		&   0.164   			\\ 
-	Entities 2C    		& 9		&  0.152    		&   0.147   			\\ 
-	Attributes    		& 14		&  0.189     		&   0.139   			\\ 
-	Coarse    			& 18 	&  0.314    		&   0.255   			\\ 
-	\bottomrule
-	\multicolumn{5}{c}{\textbf{Organic-2019 - Dataset Partitions}} \\
-	\end{tabular*}
-	\caption{Report of results on different data partitions on the Organic-2019 dataset. Entity-Attributes denotes the full fine-grained combinations of entities and attributes. Entities 2C corresponds to the sentence combination technique explained in section \ref{sec:05_sentenceCombination}}
-	\label{tab:06_resultsOrganic1}
-\end{table}
-
-Table \ref{tab:06_resultsOrganic1} reports the classifier result on the data partitions. The first result corresponds to a \gls{absa} on the full set of entity-attributes combinations. 
-
-The second row combines all attribute classes into their entity pair, so that a classifier only has to predict the entity - sentiment pair. The next row also uses entities as the classification target but in addition the sentence combination technique is applied. For every sentence sample this technique combines $n=2$ sentences together with the goal of providing context from previous sentences.
-
-Finally, the last two rows report the results on just attribute sentiment analysis and the result on the coarse grained data partition.
-
-
-
-
-\subsubsection*{Results for Organic-2019 Coarse}
-
-%TODO: Replace with data!
-\begin{figure}[htb]
-	\centering
-	\subfloat[Coarse - TEST]{
-		\includegraphics[width=0.49\textwidth]{figures/06_results/06_org_coarse_final_test_c_matrix}
-	}
-	\subfloat[Coarse - DEV]{
-		\includegraphics[width=0.49\textwidth]{figures/06_results/06_org_coarse_final_valid_c_matrix}
-	}
-	
-	\caption{Normalized confusion matrices for the coarse partition on the Organic-2019 dataset. The matrix on the left {(a)} shows the performance of the model on the test set while the right {(b)} confusion matrix visualizes the performance on the validation / development set.}
-	\label{fig:06_ORG_coarse_cmatrices}
-\end{figure}
-
-\begin{table}[htb]
-	\centering
-	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}cccc@{}}
-	\toprule
-	Variant          & \multicolumn{2}{c}{\textbf{Macro F1}}     & \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
-	\midrule
-					 & \textit{dev}      	& \textit{test} 		& \textit{dev}      		& \textit{test} 		\\
-	\midrule
-
-	Random Classifier          		&  0.026 		& 0.033&  0.034 &   0.038  				\\
-	\gls{absat} + \gls{lmh} + FT    & 0.089     & 0.269	&  0.086 &   0.200   			\\ 
-	\gls{absat} + \gls{lmh} + GL    & 0.996     & 0.093	&  0.259 &   0.197   			\\ 
-
-	\gls{absat} + \gls{cnnh} + GL   & 0.113     & 0.084	& 0.341   &  \textbf{0.255} 				\\ 	
-	\gls{absat} + \gls{cnnh} + FT   & 0.104     & \textbf{0.098} & 0.314  &   0.233				\\ 
-	\bottomrule
-	\multicolumn{5}{c}{\textbf{Organic-2019 - Coarse}} \\
-	\end{tabular*}
-	\caption{Evaluation and comparison of \acrfull{lmh} against \acrfull{cnnh} and two embedding choices FastText {(FT)} against GloVe {(GL)} on the Organic-2019 coarse data partition.}
-	\label{tab:06_resultsOrganic2}
-\end{table}
-
 \subsection{Results for Amazon Product Reviews}
 \label{sec:06_ResultsAmazon}
 
@@ -439,9 +359,130 @@ Another possible explanation might be that it is just easier to predict positive
 The nature of neutral product reviews are also very different than a neutral sentiment polarity in the GermEval-2017 and the Organic-2019 datasets. In those instances, a neutral sentiment usually means that the aspect was mentioned but neither in a positive or negative way. This is different compared to a review where a customer weights the advantages and disadvantages of product or service.
 
 \subsubsection*{Hyperparameter Tuning}
-
+\label{sec:06_hpTuningAmazon}
 As already mentioned, we did not perform any hyperparamter tuning on this dataset. This is very noticeable when looking at the reported F1 score for the test and dev splits. Usually, the result for the dev portion of the data is much higher because this part is typically used for hyperparameter optimization. Therefore, researches pick the model with the highest score on the dev split, indirectly picking a model which is overfitted on the validation split to an extent. This demonstrates that it is important to never perform optimization on the test split. However, if no optimization is performed at all, the validation split can be used as additional data for the training.  
 
+
+
+\subsection{Results for Organic-2019}
+\label{sec:06_ResultsOrganic}
+
+Organic-2019 is a dataset on organic food which was labeled by the social computing group at \gls{tum} in the beginning of 2019. It contains 10,439 sentences which are annotated with "entities" and "aspects". Each sentence classified as "domain-relevant" receives an entity class. This entity class is further annotated with an attribute class. Sentiment is then annotated for this specific entity-attribute combination.
+\medskip
+
+There are 9 entities and 14 aspects which create 126 possible entity-attribute combinations. Samples exist for 114 out of the 125 possible combinations. This means, a classifier has to predict the probabilities for 456 class labels {($114*4$)} for each sentence. The appendix contains a list of all entity-attribute combinations at \ref{li:08_og_aspects}.
+\medskip
+
+Classifiers {(and humans)} struggle with the amount of fine-grained aspects. To provide a easier baseline we created a coarse grained version of the dataset which combines certain entities and attributes which are closely related to a total of 18 different aspects. A complete list of these aspects is located in the appendix at list \ref{li:08_og_aspectsCoarse}.
+\medskip
+
+\begin{table}[htb]
+	\centering
+	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}rcc@{}}
+	\toprule
+	Variant          & \textbf{Num Aspects} & \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
+	\midrule
+					&  						&\textit{dev}		& \textit{test} 			\\
+	\midrule
+
+	Entity-Attributes + Sentiment   & 114	&  0.068    		&   0.060				\\ 
+	Entities + Sentiment     		& 9		&  0.204    		&   0.164   			\\ 
+	Entities 2C + Sentiment    		& 9		&  0.152    		&   0.147   			\\ 
+	Attributes + Sentiment    		& 14		&  0.189     		&   0.139   			\\ 
+	Coarse + Sentiment    			& 18 	&  0.314    		&   0.255   			\\ 
+	\bottomrule
+	\multicolumn{4}{c}{\textbf{Organic-2019 - Dataset Partitions}} \\
+	\end{tabular*}
+	\caption{Report of results on different data partitions on the Organic-2019 dataset. Entity-Attributes denotes the full fine-grained combinations of entities and attributes. Entities 2C corresponds to the sentence combination technique explained in section \ref{sec:05_sentenceCombination}}
+	\label{tab:06_resultsOrganic1}
+\end{table}
+
+Table \ref{tab:06_resultsOrganic1} reports the classifier result on the data partitions. The first result corresponds to a \gls{absa} on the full set of entity-attributes combinations. 
+
+The second row combines all attribute classes into their entity pair, so that a classifier only has to predict the entity - sentiment pair. The next row also uses entities as the classification target but in addition the sentence combination technique is applied. For every sentence sample this technique combines $n=2$ sentences together with the goal of providing context from previous sentences.
+
+Finally, the last two rows report the results on just attribute sentiment analysis and the result on the coarse grained data partition.
+\bigskip
+
+We used the same network architecture for each test run regardless of the data split. It consists of two encoder blocks and two aspect heads in each block. It uses a pointwise inner layer size 129 and GloVe embeddings. It is trained with a batch size of 64 and uses a linear mean head. We preprocess the data by removing stop words. The spell checker, however, is turned off.
+
+Furthermore, we apply a dropout of 0.28 for the dropout layers in the transformer and a 0.4 dropout for the output layers. This architecture was discovered by performing hyperparameter tuning on the dataset for the coarse partition.
+\bigskip
+
+This approach has one interesting consequence. When comparing the results of the dev and test splits it is noticeable that the performance on the dev split for the coarse organic partition is significantly better. This is the phenomenon mentioned in section \ref{sec:06_hpTuningAmazon}.
+\smallskip
+
+However, this is not the case for the other partitions even though the data is exactly the same and the task is very similar. This seems to confirm that by choosing an architecture for a task it is also possible to overfit the model architecture on this specific task.
+
+
+\subsubsection*{Results for Organic-2019 Coarse}
+The following section takes a deeper look into the dataset by utilizing the coarse data partition.
+
+
+%TODO: Replace with data!
+\begin{figure}[htb]
+	\centering
+	\subfloat[Coarse - TEST]{
+		\includegraphics[width=0.49\textwidth]{figures/06_results/06_org_coarse_final_test_c_matrix}
+	}
+	\subfloat[Coarse - DEV]{
+		\includegraphics[width=0.49\textwidth]{figures/06_results/06_org_coarse_final_valid_c_matrix}
+	}
+	
+	\caption{Normalized confusion matrices for the coarse partition on the Organic-2019 dataset. The matrix on the left {(a)} shows the performance of the model on the test set while the right {(b)} confusion matrix visualizes the performance on the validation / development set.}
+	\label{fig:06_ORG_coarse_cmatrices}
+\end{figure}
+
+\bigskip
+Table \ref{tab:06_resultsOrganic2} reports on the performance of different architectures on the coarse data partition of the organic dataset. We tested four versions of the model which are the two choices for the aspect head and the embeddings. In addition we used a random classifier as a baseline model.
+\medskip
+
+Contrary to the results on the GermEval dataset, the \acrfull{cnnh} performed significantly better than the \acrfull{lmh}. While the organic dataset contains sentence-wise annotations, GermEval provides document annotations. This main difference might point to the conclusion that the mean is more useful for long documents whereas capturing the exact sequence of words is more important for shorter sequences like single sentences for instance. 
+\bigskip
+
+\begin{table}[htb]
+	\centering
+	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}cccc@{}}
+	\toprule
+	Variant          & \multicolumn{2}{c}{\textbf{Macro F1}}     & \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
+	\midrule
+					 & \textit{dev}      	& \textit{test} 		& \textit{dev}      		& \textit{test} 		\\
+	\midrule
+
+	Random Classifier          		&  0.026 		& 0.033&  0.034 &   0.038  				\\
+	\gls{absat} + \gls{lmh} + FT    & 0.089     & 0.269	&  0.086 &   0.200   			\\ 
+	\gls{absat} + \gls{lmh} + GL    & 0.996     & 0.093	&  0.259 &   0.197   			\\ 
+
+	\gls{absat} + \gls{cnnh} + GL   & 0.113     & 0.084	& 0.341   &  \textbf{0.255} 				\\ 	
+	\gls{absat} + \gls{cnnh} + FT   & 0.104     & \textbf{0.098} & 0.314  &   0.233				\\ 
+	\bottomrule
+	\multicolumn{5}{c}{\textbf{Organic-2019 - Coarse}} \\
+	\end{tabular*}
+	\caption{Evaluation and comparison of \acrfull{lmh} against \acrfull{cnnh} and two embedding choices FastText {(FT)} against GloVe {(GL)} on the Organic-2019 coarse data partition.}
+	\label{tab:06_resultsOrganic2}
+\end{table}
+
+When comparing the results on the organic dataset and the GermEval dataset one might wonder why the performance on the coarse organic dataset is worse compared to the GermEval dataset even though both datasets use about the same number of aspects. One might argue that GermEval provides more data and therefore, training is more successful.
+
+However, the number of aspects for the entity and attributes data partition is lower than the number of aspects for GermEval and their performance is even worse.
+
+This points to issues regarding the dataset and a potentially more difficult task. 
+\medskip
+
+The total amount of samples in the organic dataset is about half of the GermEval dataset. However, in practice there are far more domain-irrelevant sentences in the organic dataset than in GermEval. Since these sentences do not contribute useful information for \gls{absa} models we can not take advantage of this data. This means the the organic dataset is even smaller than the GermEval dataset when discarding the domain irrelevant sentences.
+\medskip
+
+The version of the organic dataset we used for the evaluation contained a lot of samples with encoding issues. Since GermEval uses document annotations, it is not as problematic when some words cannot be encoded. However, when a sentence only contains a few words it is very important to get all words to be able to understand the sentence. 
+
+It is important to note, however, that future versions of the organic dataset do not contain encoding issues anymore.
+\medskip
+
+Another factor are the aspects themselves. GermEval uses aspects which can be differentiated easily. The aspect of buying a ticket {((Ticketkauf))} is very different to the train ride {(Zugfahrt)}. The organic dataset uses aspects which are hard to differentiate, even for human annotators. 
+
+
+\begin{itemize}
+	\item 
+\end{itemize}
 
 \section{Impact of Multitask Learning}
 \label{sec:06_ResultsMultitask}
