@@ -27,7 +27,7 @@ While this works for small vocabulary sizes, with larger vocabularies one will e
 \subsection{Vector Space}
 \label{sec:03_vectorSpace}
 
-In 1992 Schütze {(and to some extend Hinton in 1986 \cite{Hinton1986})} pioneered the idea of an universal word vector space \cite{Schutze1992}. The general idea is that instead of having sparse, high dimensional word encodings it would be better to have low-dimensional, dense word vectors where semantically similar words appear close together in the continuos word vector space. Unrelated words should be far away from each other. For example, the distance between the words "dog" and "cat" should be low while the distance between "bed" and "rocket" should be high. Figure \ref{fig:03_WordEmbeddings} shows a visualization of a word vector space which has been reduced by t-SNE to two dimensions.
+In 1992 Schütze {(and to some extend Hinton in 1986 \cite{Hinton1986})} pioneered the idea of an universal word vector space \cite{Schutze1992}. The general idea is that instead of having sparse, high dimensional word encodings it would be better to have low-dimensional, dense word vectors where semantically similar words appear close together in the continuos word vector space. Unrelated words should be far away from each other. For example, the distance between the words "dog" and "cat" should be low while the distance between "bed" and "rocket" should be high. Figure~\ref{fig:03_WordEmbeddings} shows a visualization of a word vector space which has been reduced by t-SNE to two dimensions.
 \medskip
 
 To achieve this, Schütze suggested to count co-occurrence of words and their neighbors and construct a co-occurrence matrix \cite{Schutze1992}. While this makes the word-matrix dense {(only 2\% of the entries are zero)} the resulting matrix is still extremely large. To get more useful vectors dimensionality reduction techniques like \gls{lsa} have to be applied.
@@ -43,7 +43,7 @@ Of course, this task can also be solved by neural networks. Imagine $W$ to be a 
 	\end{aligned}
 \end{equation*}
 
-Instead of improving $W$ directly, we use $W$ to train a network on an auxiliary task like predicting the next word in a sequence. Instead of training $W$ supervised we use an unsupervised task and train $W$ indirectly. This is the basic principle how many modern word embeddings are trained and interestingly, this produces fascinating results shown in figure \ref{fig:03_WordEmbeddings}.
+Instead of improving $W$ directly, we use $W$ to train a network on an auxiliary task like predicting the next word in a sequence. Instead of training $W$ supervised we use an unsupervised task and train $W$ indirectly. This is the basic principle how many modern word embeddings are trained and interestingly, this produces fascinating results shown in figure~\ref{fig:03_WordEmbeddings}.
 \medskip
 
 Word vectors even allow for basic vector arithmetic. $W(\text{"King"})-W(\text{"Man"})+W(\text{"Woman"})=W(\text{"Queen"})$ is a famous example for this demonstrated by Mikolov et. al. \cite{Mikolov2013d}.
@@ -86,7 +86,7 @@ Skip-gram works better for smaller datasets than \gls{cbow} since it is possible
 
 \subsection{\acrfull{glove}}
 
-There are two methods for create word vectors: word co-occurrence counting {(section \ref{sec:03_vectorSpace})} and the window based skip-gram / \gls{cbow} methods {(section \ref{sec:03_word2vec})}. Co-occurrence is relatively fast and efficient to collect and train unless the vocabulary is very big. A co-occurrence matrix also captures a lot of global statistical information whereas local window based models only capture the statistics for the window. However, most of the information a co-occurrence matrix provides is about the word similarity and not necessarily about the semantics. In addition, frequent words like "the" or "a" co-occur with a lot of other words. Therefore, they have huge co-occurrence counts with many words without providing any useful information \cite{Pennington2014a}.
+There are two methods for create word vectors: word co-occurrence counting {(section~\ref{sec:03_vectorSpace})} and the window based skip-gram / \gls{cbow} methods {(section~\ref{sec:03_word2vec})}. Co-occurrence is relatively fast and efficient to collect and train unless the vocabulary is very big. A co-occurrence matrix also captures a lot of global statistical information whereas local window based models only capture the statistics for the window. However, most of the information a co-occurrence matrix provides is about the word similarity and not necessarily about the semantics. In addition, frequent words like "the" or "a" co-occur with a lot of other words. Therefore, they have huge co-occurrence counts with many words without providing any useful information \cite{Pennington2014a}.
 
 Local window based models like word2vec have the disadvantage that training is not as efficient and a lot of statistical information is not captured \cite{Pennington2014a}. 
 \medskip
@@ -179,13 +179,13 @@ Instead it relies on attention and specifically multi-head attention. Attention 
 	\label{fig:03_transformer_HighlevelOverview}
 \end{figure}
 
-A high level architecture overview of the transformer is depicted in figure \ref{fig:03_transformer_HighlevelOverview}. As already mentioned the transformer resembles an encoder-decoder architecture. Yet, in contrast to traditional encoder-decoders, the transformer consists of $n$ encoder- and $n$ decoder blocks \cite{Vaswani2017d}. 
+A high level architecture overview of the transformer is depicted in figure~\ref{fig:03_transformer_HighlevelOverview}. As already mentioned the transformer resembles an encoder-decoder architecture. Yet, in contrast to traditional encoder-decoders, the transformer consists of $n$ encoder- and $n$ decoder blocks \cite{Vaswani2017d}. 
 \medskip
 
-The encoder blocks always get the whole input sequence encoded as word vectors. This sequence is then propagated until it reaches the top encoder. From there, the encoder output is passed to all decoder blocks. Furthermore, the decoder blocks also receive the output of the decoder blocks below them. In addition, the first decoder block {(in figure \ref{fig:03_transformer_HighlevelOverview} this block is named "Decoder 1")} receives the sequence of tokens the transformer already predicted \cite{Vaswani2017d}. 
+The encoder blocks always get the whole input sequence encoded as word vectors. This sequence is then propagated until it reaches the top encoder. From there, the encoder output is passed to all decoder blocks. Furthermore, the decoder blocks also receive the output of the decoder blocks below them. In addition, the first decoder block {(in figure~\ref{fig:03_transformer_HighlevelOverview} this block is named "Decoder 1")} receives the sequence of tokens the transformer already predicted \cite{Vaswani2017d}. 
 \medskip
 
-Following the example in figure \ref{fig:03_transformer_HighlevelOverview} the translation would start by passing the sentence "Ich mag Flugzeuge" through all encoder blocks until it reaches the top block. All 1 to $n$ decoder blocks receive the encoded sentence. The encoded sentence then flows up from the bottom to the top where it outputs the first token "I". 
+Following the example in figure~\ref{fig:03_transformer_HighlevelOverview} the translation would start by passing the sentence "Ich mag Flugzeuge" through all encoder blocks until it reaches the top block. All 1 to $n$ decoder blocks receive the encoded sentence. The encoded sentence then flows up from the bottom to the top where it outputs the first token "I". 
 
 Decoder 1 now gets two inputs: 
 
@@ -196,10 +196,10 @@ Decoder 1 now gets two inputs:
 
 Decoder 2 to $n$ now get the encoded input {(as before)} as well as the output of the decoders below. The top encoder will then output "like" as the next token in the sequence. 
 
-The step that would follow this one is shown in figure \ref{fig:03_transformer_HighlevelOverview} where "I like" is already predicted and only the last token is missing.
+The step that would follow this one is shown in figure~\ref{fig:03_transformer_HighlevelOverview} where "I like" is already predicted and only the last token is missing.
 \bigskip
 
-Figure \ref{fig:03_transformer_overview} shows a detailed overview of one encoder and one decoder block. This is useful to comprehend the information flow on the decoder side.
+Figure~\ref{fig:03_transformer_overview} shows a detailed overview of one encoder and one decoder block. This is useful to comprehend the information flow on the decoder side.
 
 \begin{figure}[t]
 	\centering
@@ -212,7 +212,7 @@ Figure \ref{fig:03_transformer_overview} shows a detailed overview of one encode
 
 The transformer uses attention to focus on the important and relevant information in a sequence. The question what is regarded as important is learned \cite{Vaswani2017d}.
 
-The specific attention mechanism, the transformer uses is called "Scaled Dot-Product Attention" {(Figure \ref{fig:03_transformer_scaledDotProduct} left)}. The input for the attention function are three matrices called "Queries" $Q'$, "Keys" $K'$ and "Values" $V'$. We get these matrices from the input embeddings. We just multiply the embeddings with $W^Q$, $W^K$ and $W^V$. These projection matrices are learned and project our input to a lower dimension so that we get $Q', K', V'$ \cite{Vaswani2017d}.
+The specific attention mechanism, the transformer uses is called "Scaled Dot-Product Attention" {(Figure~\ref{fig:03_transformer_scaledDotProduct} left)}. The input for the attention function are three matrices called "Queries" $Q'$, "Keys" $K'$ and "Values" $V'$. We get these matrices from the input embeddings. We just multiply the embeddings with $W^Q$, $W^K$ and $W^V$. These projection matrices are learned and project our input to a lower dimension so that we get $Q', K', V'$ \cite{Vaswani2017d}.
 \bigskip
 
 We then take the dot-product of $Q'$ and $K'$ and scale the result by dividing by the square root of $d_k$ where $d_k$ is the dimension of $Q'$ and $K'$. Next, we can finally apply the attention. From the softmax we get a vector of probabilities which are the attention values. When we apply the dot product on those attentions and the values we scale the values with the attentions \cite{Vaswani2017d}. 
@@ -226,7 +226,7 @@ One aspect which was not mentioned is the "mask"-step. After the scaling operati
 In the decoder part we need to mask specific parts of the sentence which the transformer has not predicted yet. This is done to prevent the model from cheating by just replaying the input sequence \cite{Vaswani2017d}.
 \medskip
 
-The transformer is constructed to use multiple "attention-heads" where each "head" performs its own dot-product attention {(Figure \ref{fig:03_transformer_scaledDotProduct} right)}. To get different values, each head $i$ has its own set of $W_i^Q$, $W_i^K$ and $W_i^V$ matrices. The main idea behind the concept of multi head dot-product attention is that each head specializes on some aspect. One head might pay attention to entities while another head looks out for actions \cite{Vaswani2017d}. This being said in practice this is not as clear and the distinction is more fuzzy.
+The transformer is constructed to use multiple "attention-heads" where each "head" performs its own dot-product attention {(Figure~\ref{fig:03_transformer_scaledDotProduct} right)}. To get different values, each head $i$ has its own set of $W_i^Q$, $W_i^K$ and $W_i^V$ matrices. The main idea behind the concept of multi head dot-product attention is that each head specializes on some aspect. One head might pay attention to entities while another head looks out for actions \cite{Vaswani2017d}. This being said in practice this is not as clear and the distinction is more fuzzy.
 
 The following equation summarizes the process which is described above:
 \begin{align}
@@ -310,7 +310,7 @@ Similarly, Plank et al. show that learning to predict word-frequencies along wit
 
 
 \subsection{Architecture}
-The most common architecture for multitask learning is shown in figure \ref{fig:03_mtl_architecture}. It is called hard parameter sharing and consists of at least one layer which is shared among all tasks. In addition, each task has at least one separate layer. This approach is also the one we used for our model which is described in chapter \ref{ch:method}. 
+The most common architecture for multitask learning is shown in figure~\ref{fig:03_mtl_architecture}. It is called hard parameter sharing and consists of at least one layer which is shared among all tasks. In addition, each task has at least one separate layer. This approach is also the one we used for our model which is described in chapter~\ref{ch:method}. 
 
 The easiest way to compute the loss for a hard parameter sharing \gls{mtl} architecture is to take the sum of all losses for the individual tasks which is shown in equation ...
 
@@ -335,7 +335,7 @@ Yosinski et al. provide a more modern definition: First, a base network is train
 
 Goodfellow et al. give a more general definition. They define \gls{tl} as the transfer of previously learned knowledge from one or multiple sources to a target domain with fewer examples \cite{Goodfellow2016}.
 
-Figure \ref{fig:03_transferLearning} communicates those definitions. 
+Figure~\ref{fig:03_transferLearning} communicates those definitions. 
 % TODO: redo figure 
 \begin{figure}[ht]
 	\centering
@@ -381,9 +381,9 @@ This approach is very easy to implement and is trivial to parallelize.
 
 Surprisingly, Bergstra and Bengio proofed that randomly choosing hyperparameters is more efficient than performing a grid search \cite{Bergstra2012a} for high dimensional search spaces. Instead of defining values in a grid, they randomly sample from the grid space.
 
-The problem with grid search is that by increasing the number of dimensions the number of trials has to increase exponentially to provide the same number of distinct trials for a single parameter \cite{Bergstra2012a}. When performing a grid search on a one-dimensional parameter space, three runs on the model have to be performed in order to test three distinct values of the parameter. Optimizing two parameters {(shown in figure \ref{fig:03_randomSearch})} increases the number of runs to $3^2$ and optimizing $n$ parameters $m$ times will lead to $m^n$ runs. 
+The problem with grid search is that by increasing the number of dimensions the number of trials has to increase exponentially to provide the same number of distinct trials for a single parameter \cite{Bergstra2012a}. When performing a grid search on a one-dimensional parameter space, three runs on the model have to be performed in order to test three distinct values of the parameter. Optimizing two parameters {(shown in figure~\ref{fig:03_randomSearch})} increases the number of runs to $3^2$ and optimizing $n$ parameters $m$ times will lead to $m^n$ runs. 
 
-Grid search is set up on the assumption that each parameter is equally important. However, it has been shown that not all parameters are equally significant for the model performance \cite{Bergstra2012a}. Figure \ref{fig:03_randomSearch} demonstrates why this is an advantage for random search over grid search. In this specific example one parameter constitutes more towards model performance than the other. However, grid search can only sample three values for the important parameter and is therefore not able to find the optimum value. According to Bergstra and Bengio this situation is the norm rather than the exception for grid search \cite{Bergstra2012a}.
+Grid search is set up on the assumption that each parameter is equally important. However, it has been shown that not all parameters are equally significant for the model performance \cite{Bergstra2012a}. Figure~\ref{fig:03_randomSearch} demonstrates why this is an advantage for random search over grid search. In this specific example one parameter constitutes more towards model performance than the other. However, grid search can only sample three values for the important parameter and is therefore not able to find the optimum value. According to Bergstra and Bengio this situation is the norm rather than the exception for grid search \cite{Bergstra2012a}.
 
 \subsection{HyperOpt}
 
@@ -479,7 +479,7 @@ L_i = - \sum_{j} t_{i,j}\log(p_{i,j})
 The loss values that are used for the discussion of results for neural networks are the average values of the categorical cross-entropy {(\gls{ace})}.
 
 \subsection{Cross Validation}
-Cross validation is one of the most essential techniques to evaluate real-world classification performance. Classifiers like \glspl{svm} or neural networks are always better on data they have already seen. This is called overfitting {(see section \ref{subsec:overfittingDropout})}. By training and testing on the same data the classification performance would be much better than the actual real world performance. To test if a classifier can actually work with samples it has not seen cross validation divides the dataset into different partitions. 
+Cross validation is one of the most essential techniques to evaluate real-world classification performance. Classifiers like \glspl{svm} or neural networks are always better on data they have already seen. This is called overfitting {(see section~\ref{subsec:overfittingDropout})}. By training and testing on the same data the classification performance would be much better than the actual real world performance. To test if a classifier can actually work with samples it has not seen cross validation divides the dataset into different partitions. 
 
 For most tasks it is sufficient to divide the dataset into a training and a test set. The data in the training set is used to train the classifier and the test data is used to evaluate it with data is has not seen before.
 

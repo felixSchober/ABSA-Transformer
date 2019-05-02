@@ -17,7 +17,7 @@ We propose the \acrfull{absat} which builds on the knowledge that the transforme
 However, sentiment analysis is one of the few tasks where \gls{gpt}-1 is not able to achieve \gls{sota} results. Moreover, \gls{gpt}-1 only classifies standard sentiment and not aspect-based sentiment.
 \medskip
 
-This will be the first architecture which uses a transformer to perform multi-task aspect-based sentiment analysis. The next section describes the architecture of the \gls{absat} model. Section \ref{sec:04_multitask} describes how \gls{absat} is used in combination with multi task learning and finally, section \ref{sec:04_transferLearning} explains how we used transfer learning to boost the training performance.
+This will be the first architecture which uses a transformer to perform multi-task aspect-based sentiment analysis. The next section describes the architecture of the \gls{absat} model. Section~\ref{sec:04_multitask} describes how \gls{absat} is used in combination with multi task learning and finally, section~\ref{sec:04_transferLearning} explains how we used transfer learning to boost the training performance.
 
 \section{General Model Architecture}
 
@@ -31,7 +31,7 @@ The following section describes the proposed \acrfull{absat} architecture. As th
 	\label{fig:04_t-absa}
 \end{figure}
 
-Figure \ref{fig:04_t-absa} visualizes a simplified \gls{absat} model. This specific instance consists one encoder block which contains 3 attention heads. To the right of the encoder block are four aspect heads. Each aspect head is trained to classify the sentiment for one aspect. In figure \ref{fig:04_t-absa} those aspects are \textit{GMOs}, \textit{Quality}, \textit{Price} and \textit{Taste}. Each aspect has four output classes {(visualized in the figure for the "Pesticides"-aspect)}:
+Figure~\ref{fig:04_t-absa} visualizes a simplified \gls{absat} model. This specific instance consists one encoder block which contains 3 attention heads. To the right of the encoder block are four aspect heads. Each aspect head is trained to classify the sentiment for one aspect. In figure~\ref{fig:04_t-absa} those aspects are \textit{GMOs}, \textit{Quality}, \textit{Price} and \textit{Taste}. Each aspect has four output classes {(visualized in the figure for the "Pesticides"-aspect)}:
 
 \begin{itemize}
 	\item negative
@@ -42,7 +42,7 @@ Figure \ref{fig:04_t-absa} visualizes a simplified \gls{absat} model. This speci
 
 Each aspect head is isolated from the rest which allows the transformer to perform multi-label \gls{absa}. When a document or sentence contains a specific aspect the corresponding aspect head outputs either \textit{negative}, \textit{neutral} or \textit{positive}. If this aspect is not part of the sentence, the output is \textit{not applicable}.
 
-We propose two different versions of aspect heads which are described in section \ref{sec:04_aspectHeads} in detail.
+We propose two different versions of aspect heads which are described in section~\ref{sec:04_aspectHeads} in detail.
 
 \section{Transformer}
 \label{sec:04_transformer}
@@ -103,7 +103,7 @@ As a consequence, large values for $y_{ij}$ result in very large negative values
 Using a mean operation before the log softmax solves both problems.
 
 \subsection{\acrfull{cnnh}}
-The \acrfull{cnnh} uses convolutions in combination with max pooling to perform the final prediction. Figure \ref{fig:04_ch1} visualizes the operations and how the tensor size changes during a forward pass through the head. 
+The \acrfull{cnnh} uses convolutions in combination with max pooling to perform the final prediction. Figure~\ref{fig:04_ch1} visualizes the operations and how the tensor size changes during a forward pass through the head. 
 \medskip
 \begin{figure}[htp]
 	\centering
@@ -128,7 +128,7 @@ where $F$ is the filter size, $S$ is the stride and $P$ is the padding amount. T
 	\label{fig:04_ch2}
 \end{figure}
 
-Figure \ref{fig:04_ch2} depicts the convolution and the pooling in more detail.
+Figure~\ref{fig:04_ch2} depicts the convolution and the pooling in more detail.
 
 \subsection{Weighted Loss}
 
@@ -152,22 +152,22 @@ The class weights are calculated during data loading. The equation for the calcu
 where $x_i$ is the sum of all of $i$-s occurrences for the aspect. $N$ is the total number of times an aspect occurred in the dataset.
 \medskip
 
-Equation \ref{eq:04_cls_weight} assigns a low numerical value to classes which occur more frequently. As a consequence, the \gls{nll}-loss will be lower for frequent classes with low class weights which reduces the influence of those frequent classes.  
+Equation~\ref{eq:04_cls_weight} assigns a low numerical value to classes which occur more frequently. As a consequence, the \gls{nll}-loss will be lower for frequent classes with low class weights which reduces the influence of those frequent classes.  
 
 \section{Multi-Task Learning}
 \label{sec:04_multitask}
-The way the \gls{absa}-Transformer is build, inevitably necessitates multi-task learning since for each aspect-head a separate \gls{nll}-loss is computed. For each of the $m$ aspect classes a loss value is calculated. In the end the mean of all losses is taken as shown in equation \ref{eq:04_multiheadLoss}:
+The way the \gls{absa}-Transformer is build, inevitably necessitates multi-task learning since for each aspect-head a separate \gls{nll}-loss is computed. For each of the $m$ aspect classes a loss value is calculated. In the end the mean of all losses is taken as shown in equation~\ref{eq:04_multiheadLoss}:
 
 \begin{equation}
 \mathcal{L}_\text{MultiTask} = \frac{1}{m}\sum_{j=1}^{m}\mathcal{L}(f(x), y_m)
 \label{eq:04_multiheadLoss}
 \end{equation}
 
-where $\mathcal{L}(f(x), y_m)$ is the \gls{nll}-loss of the model $f$ with input the $x$ defined in equation \ref{eq:04_nll}.
+where $\mathcal{L}(f(x), y_m)$ is the \gls{nll}-loss of the model $f$ with input the $x$ defined in equation~\ref{eq:04_nll}.
 
 \subsection{Multitask Task Data Augmentation}
 
-As described in section \ref{sec:03_mtlAdvantages} it is also possible to augment the data by using an auxiliary task in addition to the regular classification tasks.
+As described in section~\ref{sec:03_mtlAdvantages} it is also possible to augment the data by using an auxiliary task in addition to the regular classification tasks.
 
 There are three possible auxiliary tasks to consider:
 
@@ -185,7 +185,7 @@ Training with the auxiliary sentiment label is performed by adding an additional
 However, during evaluation this task is ignored when calculating the F1-score for the model.
 \medskip
 
-The results for this experiment is located in section \ref{sec:06_ResultsMultitask}.
+The results for this experiment is located in section~\ref{sec:06_ResultsMultitask}.
 
 %We also experiment with the weighting of the tasks in the loss
 
@@ -218,18 +218,18 @@ The results were in line with our theories that the transformer produces the maj
 
 \subsection{Knowledge Transfer from Amazon Reviews}
 
-In section \ref{sec:06_ResultsTransfer} we will perform experiments to asses the theory about the transferability of the transformer base. We will train a transformer model on the amazon reviews dataset {(section \ref{sec:05_amazonReviews})} which we collected just for this experiment. This dataset is very large and balanced along the aspects.
+In section~\ref{sec:06_ResultsTransfer} we will perform experiments to asses the theory about the transferability of the transformer base. We will train a transformer model on the amazon reviews dataset {(section~\ref{sec:05_amazonReviews})} which we collected just for this experiment. This dataset is very large and balanced along the aspects.
 \medskip
 
-After training is completed we take the models embedding and transformer base and exchange the aspect heads with new heads for the training on the target dataset. For the target dataset we use  the organic-2019 dataset {(section \ref{sec:05_organic2019})}.
+After training is completed we take the models embedding and transformer base and exchange the aspect heads with new heads for the training on the target dataset. For the target dataset we use  the organic-2019 dataset {(section~\ref{sec:05_organic2019})}.
 \bigskip
 
 \subsubsection*{Transfer of Knowledge from Word Embeddings}
 
-A lot of information is encoded in the word embeddings. In fact it makes up a vast majority of the trainable network parameters {(see section \ref{sec:06_ResultsAmazon})}. Furthermore, the transformer is conditioned on the word vectors the embedding produces as they shift from the pretrained embeddings to more domain specific embeddings. This can be observed when we freeze the embeddings during training so that they do not change. This significantly impacts the performance negatively.
+A lot of information is encoded in the word embeddings. In fact it makes up a vast majority of the trainable network parameters {(see section~\ref{sec:06_ResultsAmazon})}. Furthermore, the transformer is conditioned on the word vectors the embedding produces as they shift from the pretrained embeddings to more domain specific embeddings. This can be observed when we freeze the embeddings during training so that they do not change. This significantly impacts the performance negatively.
 \medskip
 
-Unfortunately, this is a threat for the transferability of the embedding layer. When the embeddings are first created, they are initialized with the vocabulary of the dataset. Especially, for the amazon dataset there is a huge number of infrequent words {(see section \ref{sec:05_amazonTokens})} that do not necessarily occur in the target dataset. Even when removing the most infrequent tokens a large percentage of the vocabulary from the amazon dataset is not used for the target dataset which makes a large portion of the embedding domain specific. 
+Unfortunately, this is a threat for the transferability of the embedding layer. When the embeddings are first created, they are initialized with the vocabulary of the dataset. Especially, for the amazon dataset there is a huge number of infrequent words {(see section~\ref{sec:05_amazonTokens})} that do not necessarily occur in the target dataset. Even when removing the most infrequent tokens a large percentage of the vocabulary from the amazon dataset is not used for the target dataset which makes a large portion of the embedding domain specific. 
 \medskip
 
 On the other hand, there are tokens in the target dataset which do not occur in the amazon reviews dataset. For the organic dataset these tokens are highly domain specific. Most of these tokens are chemical compounds and other words like "Glyphosate" which are very important for this dataset.

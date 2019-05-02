@@ -1,7 +1,7 @@
 \chapter{Related Work}
 \label{ch:relWork}
 
-This chapter will outline some of the past approaches to solve the task of Sentiment Analysis and Aspect Based Sentiment Analysis, as well as more recent approaches to give a general overview of the field. While the first section will deal with the traditional task of sentiment extraction, section \ref{sec:02_absa} will discuss linking sentiment to specific aspects.
+This chapter will outline some of the past approaches to solve the task of Sentiment Analysis and Aspect Based Sentiment Analysis, as well as more recent approaches to give a general overview of the field. While the first section will deal with the traditional task of sentiment extraction, section~\ref{sec:02_absa} will discuss linking sentiment to specific aspects.
 
 \section{Sentiment Analysis}
 
@@ -75,7 +75,7 @@ In 2018 Schmitt et. al. propose a novel approach to classify aspect and sentimen
 
 The architecture they use consists of two main components. The first layers are either bi-\gls{lstm} or \gls{cnn}. 
 
-Sentiment and aspect classification is then performed with aspect heads {(Figure \ref{fig:02_j-absa})}. For each aspect in the dataset one aspect head is constructed. Each aspect head consists of a final softmax layer which produces a four-dimensional vector where three dimensions are polarity labels {(negative, neutral, positive)} and the last label indicates whether or not the aspect is relevant for this specific sentence. 
+Sentiment and aspect classification is then performed with aspect heads {(Figure~\ref{fig:02_j-absa})}. For each aspect in the dataset one aspect head is constructed. Each aspect head consists of a final softmax layer which produces a four-dimensional vector where three dimensions are polarity labels {(negative, neutral, positive)} and the last label indicates whether or not the aspect is relevant for this specific sentence. 
 \medskip
 
 By using aspect heads this architecture is not only able to classifiy aspect and sentiment together but also cabalble of multilabel classification.
