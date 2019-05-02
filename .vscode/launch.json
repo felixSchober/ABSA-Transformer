@@ -14,6 +14,38 @@
 			"args": ["organic", "--runs", "1", "--task", "coarse"]
 		},
 		{
+            "name": "Coarse Organic - TL (AMAZON - C-ORGANIC)",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["transfer-amazon-organic", "--runs", "1", "--task", "coarse"]
+		},
+		{
+            "name": "Coarse Organic - RANDOM",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["organic", "--runs", "1", "--task", "coarse", "--random", "true"]
+		},
+		{
+            "name": "Amazon Reviews",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["amazon", "--runs", "1", "--task", "amazon"]
+		},
+		{
+            "name": "Amazon Reviews - RANDOM",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["amazon", "--runs", "1", "--task", "amazon", "--random", "true"]
+		},
+		{
             "name": "GermEval-2017",
             "type": "python",
             "request": "launch",
@@ -43,7 +75,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
 			"console": "integratedTerminal",
-			"args": ["coNLL-2003", "--runs", "1", "--task", "ner", "--random", "true"]
+			"args": ["coNLL-2003", "--runs", "5", "--task", "ner", "--random", "true"]
 		},
 		{
             "name": "GermEval-2017 - RANDOM",
@@ -51,7 +83,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
 			"console": "integratedTerminal",
-			"args": ["germeval", "--runs", "1", "--task", "germeval", "--random", "true"]
+			"args": ["germeval", "--runs", "5", "--task", "germeval", "--random", "true"]
 		},
 		{
             "name": "hyperOpt",

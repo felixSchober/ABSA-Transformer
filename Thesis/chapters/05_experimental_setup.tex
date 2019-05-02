@@ -67,7 +67,7 @@ Stemming were also briefly explored, however, they did not provide a significant
 The transformer works with different input sequence lengths within one batch. Therefore, it is possible to group similar sequence lengths together and have arbitrary sequence lengths. Unfortunately, in each dataset there is a small percentage of sequences which are longer than other sequences. Due to the limited computational resources a batch of those long sequences  does not fit into \gls{gpu} memory. Therefore, all sentences are either padded or clipped to a fixed length. This is also a requirement for the CNN-based transformer aspect head since CNN-layers need a fixed number of input channels.
 
 \subsection{Sentence Combination}
-
+\label{sec:05_sentenceCombination}
 Some datasets feature sentence annotations instead of comment annotations. In this case important information for the aspect and sentiment classification could be encoded in previous sentences. Refer to figure XX for an example.
 \medskip
 

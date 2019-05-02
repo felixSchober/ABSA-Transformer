@@ -69,7 +69,7 @@ def amazon_dataset(
 
 	train_device = torch.device('cuda:0' if torch.cuda.is_available() and use_cuda else 'cpu')
 	train_iter, val_iter, test_iter = data_t.BucketIterator.splits(
-		(train, val, test), batch_size=batch_size, device=train_device)
+		(train, val, test), batch_size=batch_size, device=train_device, shuffle=True)
 
 	# add embeddings
 	embedding_size = comment_field.vocab.vectors.shape[1]
