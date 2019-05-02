@@ -487,6 +487,28 @@ Another factor are the aspects themselves. GermEval uses aspects which can be di
 \section{Impact of Multitask Learning}
 \label{sec:06_ResultsMultitask}
 
+As explained in section \ref{sec:04_multitask} we test the effect of \acrfull{mtl} by predicting an additional sentiment label on the GermEval dataset.
+
+Table \ref{tab:06_resultsMultitask} shows the performance of the transformer with- and without an additional task.  
+
+\begin{table}[htb]
+	\centering
+	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}cccc@{}}
+	\toprule
+	Variant          & \multicolumn{2}{c}{\textbf{Macro F1}}     & \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
+	\midrule
+					 & \textit{dev}      	& \textit{test} 		& \textit{dev}      		& \textit{test}		\\
+	\midrule
+	\gls{absat} + \gls{lmh} + FT   				& -         & -		&  -        &   -			\\ 
+	\gls{absat} + \gls{lmh} + FT + \gls{mtl}   	& -         & -		&  -        &   -			\\ 
+
+	\bottomrule
+	\multicolumn{5}{c}{\textbf{GermEval-2017 Dataset - Multitask}} \\
+	\end{tabular*}
+	\caption{Re}
+	\label{tab:06_resultsMultitask}
+\end{table}
+
 Difference to Multitask learning
 
 % additional gradient flow. Otherwise often only one aspect head. Now, at least two
@@ -494,4 +516,20 @@ Difference to Multitask learning
 \section{Impact of Transfer Learning}
 \label{sec:06_ResultsTransfer}
 
+\begin{table}[htb]
+	\centering
+	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}cccc@{}}
+	\toprule
+	Variant          & \multicolumn{2}{c}{\textbf{Macro F1}}     & \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
+	\midrule
+					 & \textit{dev}      	& \textit{test} 		& \textit{dev}      		& \textit{test}		\\
+	\midrule
+	\gls{absat} + \gls{lmh} + FT   				& -         & -		&  -        &   -			\\ 
+	\gls{absat} + \gls{lmh} + FT + \gls{tl}   	& -         & -		&  -        &   -			\\ 
 
+	\bottomrule
+	\multicolumn{5}{c}{\textbf{Amazon reviews > Organic coarse - Transfer Learning}} \\
+	\end{tabular*}
+	\caption{Impact of \acrfull{tl} on the model performance. The transformer was first trained for five epochs on the amazon reviews dataset. After this, the aspect heads were exchanged for the new task on the organic-2019 coarse data partition. For this experiment we reduced the combined vocabulary size to the 40,000 most frequent words. Therefore, it is not possible to directly compare the performance of these results to the results reported in table \ref{tab:06_resultsOrganic2}. To proof wether or not \gls{tl} can boost performance we also trained a non-\gls{tl} baseline which uses the same vocabulary as the \gls{tl} version.}
+	\label{tab:06_resultsTransferLearning}
+\end{table}

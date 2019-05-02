@@ -331,9 +331,9 @@ The easiest way to compute the loss for a hard parameter sharing \gls{mtl} archi
 
 In 1991, Pratt et al. suggested to transfer information encoded in a neural network by reusing the network weights in a new network \cite{Pratt1991}. They show that even accounting for the training time of the source network they achieved significant speedups when training a target network compared to random weight initialization.
 
-Yosinski et al. provide a more modern definition: First, a base network is trained on a base dataset. Then, the learned features {(the knowledge)} of the base network is transfered to a second target network which is then trained on the target dataset and task \cite{Yosinski2014}. This process works well if the base and target dataset and tasks are similar.
+Yosinski et al. provide a more modern definition: First, a base network is trained on a base dataset. Then, the learned features {(the knowledge)} of the base network is transferred to a second target network which is then trained on the target dataset and task \cite{Yosinski2014}. This process works well if the base and target dataset and tasks are similar.
 
-Goodfellow et al. give a more general definition. They define transfer learning as the transfer of previously learned knowledge from one or multiple sources to a target domain with fewer examples \cite{Goodfellow2016}.
+Goodfellow et al. give a more general definition. They define \gls{tl} as the transfer of previously learned knowledge from one or multiple sources to a target domain with fewer examples \cite{Goodfellow2016}.
 
 Figure \ref{fig:03_transferLearning} communicates those definitions. 
 % TODO: redo figure 
