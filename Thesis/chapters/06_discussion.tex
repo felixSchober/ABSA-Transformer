@@ -256,10 +256,14 @@ Finally, section \ref{sec:06_ResultsMultitask} and \ref{sec:06_ResultsTransfer} 
 	Pipeline \gls{cnn} + FT 		 & -        	& -    		& 0.295     	&   0.342 							\\
 	End-to-end \gls{cnn} + FT 		 & -        	& -    		& \textbf{0.423}&   \textbf{0.465} 					\\
 	\midrule
+	\multicolumn{5}{c}{Dugar 2019 \cite{Dugar2019}} 													\\
+	End-to-end \gls{lstm} + FT 		 & 0.56        	& -    		&  0.384 &   - 					\\
+	\midrule
+
 								 \multicolumn{5}{c}{Our Results} 													\\
 
 	Random Classifier          		 &  0.014   	& 0.014 	&  0.018  		&   0.018  							\\
-	\gls{absat} + \gls{lmh} + FT     & 0.131        & -			&  0.390    	&   -   							\\ 
+	\gls{absat} + \gls{lmh} + FT     & 0.131        & 0.111		&  0.390    	&   0.413   							\\ 
 	\gls{absat} + \gls{cnnh} + FT    & -         	& -			&  -        	&   -   							\\ 
 	\bottomrule
 	\multicolumn{5}{c}{\textbf{GermEval-2017 - Task C {(ABSA)}}} \\
@@ -267,35 +271,77 @@ Finally, section \ref{sec:06_ResultsMultitask} and \ref{sec:06_ResultsTransfer} 
 	\end{tabular*}
 	\caption{Evaluation and comparison of models on the shared GermEval-2017 task for \gls{absa}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The organizers of GermEval-2017 provide two baselines \cite{Wojatzki2017}. The first, just predicts the majority class which is \textit{"Neutral-Allgemein"}. This baseline already achieves a score of 0.315 on the synchronic test test. The second baseline uses a \gls{svm} classifier and achieves strong results very strong results of 0.322 and 0.389. The best submission for the GermEval-2017 challenge was achieved by Lee et. al. \cite{Lee2017} with a score of 0.355 and 0.401. Schmitt et. al. achieved \gls{sota} in 2018 with an End-to-end \gls{cnn} model with custom FastText {(FT)} embeddings. Their best score is 0.423 on the synchronic- and 0.465 on the diachronic test set. Our \gls{absat} model with linear mean heads and FastText embeddings outperforms every submission of the GermEval-2017 competition and is competitive with the end-to-end \gls{cnn} model of Schmitt et. al.}.
 	\label{tab:06_resultsGermEval}
-	\end{table}
+\end{table}
 
+The GermEval-2017 dataset for \acrfull{absa} is a large dataset for multi label aspect sentiment detection. In addition it is reasonably closely related to the Organic-2019 dataset which is the reason why this dataset was used to evaluate the model. Both datasets use posts form social media. Therefore, the task of detecting aspect-based sentiment is similar. This dataset is also much larger than Sem-Eval-14, -15 or -16.
+\medskip
+
+%TODO: Write about dataset
+
+Furthermore, Schmitt et. al. - one of the inspirations for this thesis - use GermEval to evaluate their model. To compare the base transformer model we used the CoNLL-2003 NER task. To compare the whole architecture against other approaches it makes sense to use GermEval since there are other results which we can use to compare the performance of the \acrfull{absat} model.
+\bigskip
+
+Table \ref{tab:06_resultsGermEval} reports on the result of the evaluation of our \gls{absat} against other GermEval models. The first three results are models created for the GermEval-2017 competition. Wojatzki et. al. provide two baseline systems for the \gls{absa} task \cite{Wojatzki2017}. The first one is a majority class baseline which just predicts the class which contains most samples. For this dataset this is the class "Allgemein - Neutral". 
+\medskip
+
+Since GermEval is very skewed towards this majority class the baseline is very strong. Refer to figure \ref{fig:08_germEvalStatistics} for an overview of the aspects and their distributions. The second baseline system is a \gls{svm} classifier. At the time of the competition this baseline was very competitive and achieved the second place. Finally, the best submission for GermEval-2017 by Lee et. al. achieves a micro F1 score of 0.354 on the first test set {(synchronic test)} and 0.401 on the second test set {(diachronic test)}.
+\medskip
+
+The current \acrfull{sota} is an end-to-end \gls{cnn} architecture by Schmitt et. al. \cite{Schmitt2018} with custom FastText Embeddings. This architecture achieved a micro F1 score of 0.423 on the synchronic test set and 0.465 on the diachronic test set. 
+\medskip
+
+In comparison, our \gls{absat} model achieves a micro F1 score of 0.390 and 0.413 on the first and second test sets. This means that our model outperforms even the best submission for the GermEval-2017 competition. In addition, the \gls{absat} model with \glspl{lmh} is competitive with the end-to-end \gls{cnn} created by Schmitt et. al.
+\medskip
+
+Several techniques can be applied to produce even better results for the task. Schmitt et. al. show that pretraining custom FastText embeddings on the target domain improves the model. Dugar also demonstrated that data augmentation can positively impact the model performance \cite{Dugar2019}. 
+\smallskip
+In section \ref{sec:06_ResultsTransfer} we also demonstrate, that transfer learning positively impacts model performance. However, finding similar data in German might be challenging.
 
 \subsection{Results for Organic-2019}
 \label{sec:06_ResultsOrganic}
 
+Organic-2019 is a dataset on organic food which was labeled by the social computing group at \gls{tum} in the beginning of 2019. It contains 10,439 sentences which are annotated with "entities" and "aspects". Each sentence classified as "domain-relevant" receives an entity class. This entity class is further annotated with an attribute class. Sentiment is then annotated for this specific entity-attribute combination.
+\medskip
+
+There are 9 entities and 14 aspects which create 126 possible entity-attribute combinations. Samples exist for 114 out of the 125 possible combinations. This means, a classifier has to predict the probabilities for 456 class labels {($114*4$)} for each sentence. The appendix contains a list of all entity-attribute combinations at \ref{li:08_og_aspects}.
+\medskip
+
+Classifiers {(and humans)} struggle with the amount of fine-grained aspects. To provide a easier baseline we created a coarse grained version of the dataset which combines certain entities and attributes which are closely related to a total of 18 different aspects. A complete list of these aspects is located in the appendix at list \ref{li:08_og_aspectsCoarse}.
+\medskip
+
 \begin{table}[htb]
 	\centering
-	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}cccc@{}}
+	\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}rccc@{}}
 	\toprule
-	Variant          & \multicolumn{2}{c}{\textbf{Macro F1}}     & \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
+	Variant          & \multicolumn{1}{c}{\textbf{Num Aspects}}& \multicolumn{2}{c}{\textbf{Micro F1}}       \\ 
 	\midrule
-					 & \textit{dev}      	& \textit{test} 		& \textit{dev}      		& \textit{test} 		\\
+					   &  		&\textit{dev}		& \textit{test} 		\\
 	\midrule
 
-	Entity-Attributes   & -         	& -	&  -        		&   -   			\\ 
-	Entities     		& -         	& 0.081	&  -        		&   0.187   			\\ 
-	Entities 2C    		& -         	& 0.081	&  -        		&   0.187   			\\ 
-	Attributes    		& -         	& 0.081	&  -        		&   0.187   			\\ 
-	Coarse    			& -         	& 0.081	&  -        		&   0.187   			\\ 
+	Entity-Attributes   & 114	&  0.068    		&   0.060				\\ 
+	Entities     		& 9		&  0.204    		&   0.164   			\\ 
+	Entities 2C    		& 9		&  0.152    		&   0.147   			\\ 
+	Attributes    		& 14		&  0.189     		&   0.139   			\\ 
+	Coarse    			& 18 	&  0.314    		&   0.255   			\\ 
 	\bottomrule
 	\multicolumn{5}{c}{\textbf{Organic-2019 - Dataset Partitions}} \\
 	\end{tabular*}
-	\caption{Report of results on different data partitions on the Organic-2019 dataset. Entity-Attributes denotes the full fine-grained combinations of entities and attributes.}
+	\caption{Report of results on different data partitions on the Organic-2019 dataset. Entity-Attributes denotes the full fine-grained combinations of entities and attributes. Entities 2C corresponds to the sentence combination technique explained in section \ref{sec:05_sentenceCombination}}
 	\label{tab:06_resultsOrganic1}
 \end{table}
 
+Table \ref{tab:06_resultsOrganic1} reports the classifier result on the data partitions. The first result corresponds to a \gls{absa} on the full set of entity-attributes combinations. 
+
+The second row combines all attribute classes into their entity pair, so that a classifier only has to predict the entity - sentiment pair. The next row also uses entities as the classification target but in addition the sentence combination technique is applied. For every sentence sample this technique combines $n=2$ sentences together with the goal of providing context from previous sentences.
+
+Finally, the last two rows report the results on just attribute sentiment analysis and the result on the coarse grained data partition.
+
+
+
+
 \subsubsection*{Results for Organic-2019 Coarse}
 
+%TODO: Replace with data!
 \begin{figure}[htb]
 	\centering
 	\subfloat[Coarse - TEST]{
