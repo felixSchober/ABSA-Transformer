@@ -541,8 +541,8 @@ In order to still compare the performance we also trained the same architecture 
 	\midrule
 					 							& \textit{dev}      	& \textit{test} 		& \textit{dev}      		& \textit{test}		\\
 	\midrule
-	\gls{absat} + \gls{lmh} + FT   				& 0.083     & \textbf{0.084}	&  0.240    &  0.197		\\ 
-	\gls{absat} + \gls{lmh} + FT + \gls{tl}   	& 0.076     & 0.066	&  0.271    & \textbf{0.201}		\\ 
+	\gls{absat} + \gls{lmh} + FT   				& 0.083     & 0.084	&  0.240    &  0.197		\\ 
+	\gls{absat} + \gls{lmh} + FT + \gls{tl}   	& 0.084     & \textbf{0.116}	&  0.298    & \textbf{0.269}		\\ 
 
 	\bottomrule
 	\multicolumn{5}{c}{\textbf{Amazon reviews > Organic coarse - Transfer Learning}} \\
@@ -562,7 +562,7 @@ In order to still compare the performance we also trained the same architecture 
 Table~\ref{tab:06_resultsTransferLearning} reports the results for the transfer learning experiment. The baseline is reported in the first row while the second row shows the result of the transfer learning experiment. 
 \medskip
 
-As reported, the model which was pre-trained on the amazon reviews dataset performed slightly better than the baseline. The baseline achieved a micro F1 score of 0.197 while the \gls{tl} achieved a 2\% increase in performance. 
+As reported, the model which was pre-trained on the amazon reviews dataset performed significantly better than the baseline. The baseline achieved a micro F1 score of 0.197 while the \gls{tl} achieved a 35.5\% increase in performance. 
 \medskip
 
 Figure~\ref{fig:06_org_coarse_transfer} visualizes the training process by plotting the F1 score during target training of the baseline and the \gls{tl}-model. The baseline model started fairly strong up until the fourth epoch where it is overtaken by the transfer learning approach. It seems as if the \gls{tl}-model is too domain-specific at first and is not able to produce any meaningful data for the transformer heads.

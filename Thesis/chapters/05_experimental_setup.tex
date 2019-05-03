@@ -411,13 +411,13 @@ Training and evaluation of the models was done on four different machines. One o
 	\label{fig:05_dockerExecution}
 \end{figure}
 
-Docker\footnote{Docker: \url{https://www.docker.com}} is a framework for container virtualisation. Docker containers use the same kernel as the host system but an isolated file system with own system libraries. 
+Docker\footnote{Docker: \url{https://www.docker.com}} is a framework for container virtualization. Docker containers use the same kernel as the host system but an isolated file system with own system libraries. 
 \medskip
 
 Since training was performed on four different environments a Docker image was created which automates the installation of all required frameworks, environments, drivers and versions. An automated build pipeline builds a new image as soon as a new code version is pushed to the repository. Users can install or update an image directly from Docker Hub without rebuilding it every time locally.
 \medskip
 
-The main concern of using docker for resource intensive task is the loss of performance due to the virtualization overhead. To evaluate this, epoch training time was measured with and without docker. The experiment was performed on machine-1 displayed in table~\ref{tab:05_usedHardware}. For both experiments a complete model was trained for 5 epochs on the Organic2019 dataset. Figure~\ref{fig:05_dockerExecution} visualizes the time each part of the training took. For both environments the mean execution time was around 195 seconds. This means that there is no difference between running a model inside a docker container or just locally. However, this is only the case when the host is running on a linux environment. On Windows and macOS, Docker has to virtualize part of the linux kernel. Therefore, there is no advantage of running on the exact same kernel as the host system. In addition, At the time of writing, the NVIDIA-runtime\footnote{NVIDIA Docker Runtime: \url{https://github.com/NVIDIA/nvidia-docker}} is only supported for linux environments.
+The main concern of using Docker for resource intensive task is the loss of performance due to the virtualization overhead. To evaluate this, epoch training time was measured with and without Docker in a \gls{cuda} environment. The experiment was performed on Social 5 displayed in table~\ref{tab:05_usedHardware}. For both experiments a complete model was trained for 5 epochs on the Organic2019 dataset. Figure~\ref{fig:05_dockerExecution} visualizes the time each part of the training took. For both environments the mean execution time was around 195 seconds. This means that there is no difference between running a model inside a Docker container or just locally. However, this is only the case when the host is running on a linux environment. On Windows and macOS, Docker has to virtualize part of the linux kernel. Therefore, there is no advantage of running on the exact same kernel as the host system. In addition, At the time of writing, the NVIDIA-runtime\footnote{NVIDIA Docker Runtime: \url{https://github.com/NVIDIA/nvidia-Docker}} is only supported for linux environments.
 
 
 
