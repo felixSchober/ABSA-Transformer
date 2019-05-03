@@ -264,12 +264,12 @@ Finally, section~\ref{sec:06_ResultsMultitask} and~\ref{sec:06_ResultsTransfer} 
 
 	Random Classifier          		 &  0.014   	& 0.014 	&  0.018  		&   0.018  							\\
 	\gls{absat} + \gls{lmh} + FT     & 0.131        & 0.111		&  0.390    	&   0.413   							\\ 
-	\gls{absat} + \gls{cnnh} + FT    & -         	& -			&  -        	&   -   							\\ 
+	\gls{absat} + \gls{cnnh} + FT    & 0.102    	& -			&  0.352      	&   -   							\\ 
 	\bottomrule
 	\multicolumn{5}{c}{\textbf{GermEval-2017 - Task C {(ABSA)}}} \\
 
 	\end{tabular*}
-	\caption{Evaluation and comparison of models on the shared GermEval-2017 task for \gls{absa}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The organizers of GermEval-2017 provide two baselines \cite{Wojatzki2017}. The first, just predicts the majority class which is \textit{"Neutral-Allgemein"}. This baseline already achieves a score of 0.315 on the synchronic test test. The second baseline uses a \gls{svm} classifier and achieves strong results very strong results of 0.322 and 0.389. The best submission for the GermEval-2017 challenge was achieved by Lee et. al. \cite{Lee2017} with a score of 0.355 and 0.401. Schmitt et. al. achieved \gls{sota} in 2018 with an End-to-end \gls{cnn} model with custom FastText {(FT)} embeddings. Their best score is 0.423 on the synchronic- and 0.465 on the diachronic test set. Our \gls{absat} model with linear mean heads and FastText embeddings outperforms every submission of the GermEval-2017 competition and is competitive with the end-to-end \gls{cnn} model of Schmitt et. al.}.
+	\caption{Evaluation and comparison of models on the shared GermEval-2017 task for \gls{absa}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The organizers of GermEval-2017 provide two baselines \cite{Wojatzki2017}. The first, just predicts the majority class which is \textit{"Neutral-Allgemein"}. This baseline already achieves a score of 0.315 on the synchronic test test. The second baseline uses a \gls{svm} classifier and achieves strong results very strong results of 0.322 and 0.389. The best submission for the GermEval-2017 challenge was achieved by Lee et. al. \cite{Lee2017} with a score of 0.355 and 0.401. Schmitt et. al. achieved \gls{sota} in 2018 with an End-to-end \gls{cnn} model with custom FastText {(FT)} embeddings. Their best score is 0.423 on the synchronic- and 0.465 on the diachronic test set. Our \gls{absat} model with linear mean heads and FastText embeddings outperforms every submission of the GermEval-2017 competition and is competitive with the end-to-end \gls{cnn} model of Schmitt et. al.}
 	\label{tab:06_resultsGermEval}
 \end{table}
 
