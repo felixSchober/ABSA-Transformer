@@ -3,8 +3,6 @@
 
 This chapter attends to the theoretical background for the technologies used in this thesis.
 
-\section{Convolutional Neural Networks}
-
 \section{Word Representations}
 
 While it is trivial to use images as input for machine learning techniques the same can not be said for language. Images already come in matrix form while words appear as discrete objects. Before language can be used for machine learning, words have to be transformed into a matrix first. A function $W(\text{word}) \rightarrow \mathbb{R}^n \quad \text{word} \in V$  which encodes words from a vocabulary $V$ into a $n$-dimensional matrix is called a word embedding.
@@ -418,72 +416,57 @@ g(x) & \text{if } y \geq y^*
 
 where $l(x)$ {(first case)} is a density formed by an observation $\{x^i\}$ where the loss $y$ of $f(x^i)=y$ was less than a threshold $y^*$. $g(x)$ is the density by using all other remaining observations \cite{Bergstra2013a}. $y^*$ is higher than the best observation so that the density $l(x)$ is formed by more than just one observation. $l(x)$ and $g(x)$ model the hyperparameter search space which means that they have to be hierarchical when the search space contains conditional and discrete variables. $l(x)$ and $g(x)$ are then used to optimize the expected improvement and after each iteration the parameter set with the highest expected improvement is chosen for the next iteration which then becomes the next observation $x^{k+1}$ \cite{Bergstra2013a}. 
 
+\section{Performance Measurements}
+The following section describes the performance measurement which were used to evaluate the performance of a model.
 
 
+\subsection{Precession - Recall - F1 Score}
+The most commonly used measurement for \gls{nlp} tasks is the F1-score. This metric has one advantage over accuracy. Accuracy does not take data imbalance into account. Accuracy is just the number of correctly classified samples divided by the total amount of samples. This means a classifier which just predicts the majority class will get a high accuracy.
+\medskip
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Methodology}
-\subsection{Performance Measurements}
-
-\subsubsection*{Precession - Recall}
-The most used measure for the precision of food classifiers is the average accuracy which is calculated by dividing the number of correct matches and the total number of samples. Accuracy, however, gives no information about the underlying conditions. It is a measure of overall performance. To have a higher chance of suggesting the correct items, future systems may present a list of options that the user can chose from. Intuitively, the accuracy is much higher if a classifier can present a list of items with high confidences instead of only one item because the problem is much easier. Accuracy, however, does not measures how easy a problem is. If a classifier were able to suggest all classes as options the accuracy would always be 100\% although the results are not useful at all.
-
-The combination of precision and recall objectively measures the actual relevance and performance of a classifier for a class of images because it includes the amount of considered items and the correct predictions. In this case the amount of considered items changes based on how many items the classifier can suggest. Precision and recall is defined as:
+The combination of precision and recall on the other hand, objectively measures the actual relevance and performance of a classifier for a given class. Precision and recall are defined as:
 
 \begin{equation}
 Precision = \frac{T_p}{T_p+F_p} \quad Recall = \frac{T_p}{T_p+F_n}.
 \end{equation}
 
 \begin{itemize}
-	\item True positives $T_P$ is the number of correctly classified images of a class.
-	\item False positives $F_P$ are all images that the classifier predicted to be positive but are in reality negative. {(Type I Error)}
-	\item False negatives $F_N$ are all images that are positive {(belong to the class)} but are labeled as negative {(do not belong to class)} {(Type II Error)}
+	\item True positives $T_P$ is the number of correctly classified samples for a class.
+	\item False positives $F_P$ are all samples which the model predicted to be part of the class but are in reality not part of the class. {(Type I Error)}
+	\item False negatives $F_N$ are all samples that belong to the class but are labeled as not being part of the class {(Type II Error)}
 \end{itemize}
 
-A high recall means that many images were matched correctly and a high precision denotes a low number of incorrectly classified images. The bigger the area under the Precision-Recall curve the better the classifier.
+A high recall means that many samples were matched correctly and a high precision denotes a low number of incorrectly classified samples.
+\medskip
 
-\subsubsection*{Null Error Rate}
-The null error rate is a baseline for any classification task that calculates the accuracy if a classifier would just predict the class with the most images.
-
-\subsubsection*{Confusion Matrix}
-Confusion matrices are one of the most important metrics to understand why a classifier struggles with certain classes while getting a high precision with others. As the name suggests, a confusion matrix tells if the classifier "confuses" two classes.
-
-A confusion matrix for $n$ classes is always a $n \times n$ matrix where columns represent the actual images classes and rows represent the predicted image classes so if the diagonal of the matrix has high values this means that the classifier makes correct predictions.
-
-\subsubsection*{Categorical Cross-Entropy}
-The categorical cross-entropy $L_i$ is an error function that is used for the training of neural networks in classification tasks as the objective function. It is more versatile than the accuracy or the \gls{mse} because it takes the deviations of the predicted label $p_{i,j}$ and the actual label $t_{i,j}$ into account and weights the "closeness" of the prediction with the logarithm. For classification, cross entropy is more useful than \gls{mse} because \gls{mse} gives too much emphasis on incorrect predictions. The categorical cross entropy function is defined as:
+The F1 score is the harmonic mean between the precision and the recall and is given as
 
 \begin{equation}
-L_i = - \sum_{j} t_{i,j}\log(p_{i,j})
-\end{equation} 
+	F_1 = 2 * \frac{\text{precision}*\text{recall}}{\text{precision}+\text{recall}}
+\label{eq:03_f1}
+\end{equation}
 
-The loss values that are used for the discussion of results for neural networks are the average values of the categorical cross-entropy {(\gls{ace})}.
+The F1 score is scaled from $[0, 1]$ were 0 is a result with no true positive samples. A classifier which achieves a score of 1 classified all samples correctly meaning it has no false positives or false negatives.
 
-\subsection{Cross Validation}
-Cross validation is one of the most essential techniques to evaluate real-world classification performance. Classifiers like \glspl{svm} or neural networks are always better on data they have already seen. This is called overfitting {(see section~\ref{subsec:overfittingDropout})}. By training and testing on the same data the classification performance would be much better than the actual real world performance. To test if a classifier can actually work with samples it has not seen cross validation divides the dataset into different partitions. 
+\subsubsection*{Micro- and Macro F1 score}
 
-For most tasks it is sufficient to divide the dataset into a training and a test set. The data in the training set is used to train the classifier and the test data is used to evaluate it with data is has not seen before.
+There are two popular methods to aggregate the F1 score. Researches can use the micro- or the macro F1 score. Equation \ref{eq:03_f1} remains the same but the way it is aggregated changes. 
+\medskip
 
-\subsubsection*{k-fold Cross Validation}
-To make the classification evaluation even more robust, $k$-fold cross validation is used. By applying $k$-fold cross validation the dataset is randomly partitioned into $k$ different parts. $k-2$ parts are used for training and two parts are used for the evaluation. This process is repeated $k$-times and after each iteration the parts are exchanged so that at the end, each sample was used for training and for validation. Calculating the mean of the $k$ evaluations gives a much more robust measurement because the evaluation does not depend on the difficulty of the test partitions.
+The micro F1 score is calculated by taking the sum of all true positives, false positives and false negatives. This has the implication that the class with the biggest number of samples contributes most towards the total score. Therefore, descriptions of the micro F1 score often point out that this method takes label imbalance into account. 
 
-\subsection{Early Stopping}
+The side effect of this is, that classifiers that tend to predict the most frequent classes will achieve a high micro F1 score. Classes which only contain a few samples will not count much towards the overall score.
+\bigskip
+
+The macro F1 score is calculated by averaging F1 scores for the classes. First, micro F1 scores are calculated at the lowest level. Then, the average F1 score is taken over all classes. This has the effect that each class counts the same towards the overall F1 score. Classes with only a few samples are therefore as important as classes with the majority of samples. This method does therefore not take label imbalance into account.
+\medskip
+
+There is one small exension to the macro F1 score which is the weighted F1 score. This score does also average the micro f1 scores but it uses weights to change the influence a class has over the total score.
+\bigskip
+
+Both scores are very valuable to asses the performance of a model. The micro F1 score tells a researcher how well the model is able to replicate the overall data distribtion since models which predict majority classes more often will achieve a higher score. 
+\medskip
+
+The macro F1 score is useful to measure how the model treats minority classes. A high micro F1 score and a low macro F1 score imply that the model predicts classes with many samples very well but fails to predict classes with few samples.
+
+Therefore, it is always useful to provide both scores when presenting results.
