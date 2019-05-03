@@ -17,6 +17,8 @@ def run(args, parser):
 	use_random = args.random
 	load_model_path = args.restoreModel
 	produceBaseline = args.produceBaseline
+	use_cuda = args.cuda
+
 
 	possible_dataset_values = ['germeval', 'organic', 'coNLL-2003', 'amazon', 'transfer-amazon-organic']
 	if dataset_choice not in possible_dataset_values:
@@ -144,7 +146,6 @@ def run(args, parser):
 		}}
 
 	main_experiment_name = name
-	use_cuda = True
 	experiment_name = utils.create_loggers(experiment_name=main_experiment_name)
 	logger = logging.getLogger(__name__)
 	dataset_logger = logging.getLogger('data_loader')
@@ -177,6 +178,8 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='HyperOpt hp optimization tool')
 	parser.add_argument('dataset', type=str,
 						help='Specify which dataset to optimize')
+	parser.add_argument('--cuda', type=bool, default=True,
+						help='Flag, wether or not cuda should be enabled. Default: If cuda is available, use it, if not then do not use it')
 	parser.add_argument('--runs', type=int, default=1,
 						help='Number of runs evaluation runs to perform')
 	parser.add_argument('--epochs', type=int, default=35,
