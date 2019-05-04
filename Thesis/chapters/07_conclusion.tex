@@ -1,24 +1,24 @@
 \chapter{Conclusion}
 \label{ch:conclusion}
-During the course of this thesis a novel model architecture was proposed and implemented from scratch. We set out with the objective of testing whether or not a model without any convolutions or long term memory cells can detect and classify aspect based sentiment.
+During this thesis a novel model architecture was proposed and implemented from scratch. We set out with the objective of testing whether or not a model without any convolutions or long term memory cells can detect and classify aspect-based sentiment.
 \medskip
 
 Furthermore, we took a closer look at multitask- and transfer learning. We performed experiments to evaluate how these methods can be used to increase the model performance. Specifically, we used multitask learning to augment our dataset by performing classification on an auxiliary task. 
 \smallskip
 
-For the transfer learning experiments we created a new dataset out of existing amazon reviews which contains almost 1.2 million samples. We used this dataset as a source dataset and pre-trained the transformer base and the word embedding layer. We then used this pre-trained network for classification on the coarse organic data partition.
+For the transfer learning experiments we created a new dataset out of existing Amazon reviews which contains almost 1.2 million samples. We used this dataset as a source dataset and pre-trained the transformer base and the word embedding layer. We then used this pre-trained network for classification on the coarse organic data partition.
 \medskip
 
-In addition we show that neural network models can be trained inside a virtualized Docker container including \gls{cuda} support without any performance decrease. 
+In addition, we show that neural network models can be trained inside a virtualized Docker container including \gls{cuda} support without any performance decrease. 
 \medskip
 
-Lastly, we explored and assessed the performance of an advanced hyperparameter optimization method. Unfortunately, we could not demonstrate a significant improvement of Hyperopts \gls{tpe} approach, compared to a random search. To make matters worse, we achieved a better hyperparamter configuration using a random search.
+Lastly, we explored and assessed the performance of an advanced hyperparameter optimization method. Unfortunately, we could not demonstrate a significant improvement of Hyperopts \gls{tpe} approach, compared to a random search. To make matters worse, we achieved a better hyperparameter configuration using a random search.
 \bigskip
 
-We evaluated and benchmarked the architecture and the methods on four datasets. CoNLL-2003 was used for the classic \gls{nlp} task of named entity recognition. The other three datasets were datasets for \gls{absa}.
+We evaluated and benchmarked the architecture and the methods on four datasets. We use CoNLL-2003 for the classic \gls{nlp} task of named entity recognition. The other three datasets were datasets for \gls{absa}.
 \medskip
 
-The transformer base achieved a very respectable micro F1 score of 0.918 which is within reach of the top-performing results on this dataset. GermEval-2017 Task C was the first \gls{absa} benchmark foor the \gls{absat} model. While we did not outperform the current state of the art on this dataset we demonstrated that the \gls{absat} is able to outperform previous results on this dataset putting it currently at the second position with a base F1 score of 0.390. 
+The transformer base achieved a very respectable micro F1 score of 0.918 which is within reach of the top-performing results on this dataset. GermEval-2017 Task C was the first \gls{absa} benchmark for the \gls{absat} model. While we did not outperform the current state of the art on this dataset, we demonstrated that the \gls{absat} can outperform previous results on this dataset putting it currently at the second position with a base F1 score of 0.390. 
 \medskip
 
 Using multitask learning we were able to improve upon this score and boost it to 0.398. While not a significant improvement this still shows the underused potential of multitask learning.
@@ -29,16 +29,16 @@ We did, however, notice a significant improvement using transfer learning. We co
 
 \section{Future Work}
 
-Unfortunately, six months is a very short time period where it is not possible to explore every aspect. We could show that the transformer is not only suited as a pure decoder -- encoder but is also useful for classification tasks. There is already a more advanced version which incorporates the transformer called BERT~\cite{Devlin2018a}. It would be very interesting to directly compare the transformer against the BERT model on the same tasks.
+Unfortunately, six months is a short period where it is not possible to explore every aspect. We could show that the transformer is not only suited as a pure decoder-encoder but is also useful for classification tasks. There is already a more advanced version which incorporates the transformer called BERT~\cite{Devlin2018a}. It would be very interesting to directly compare the transformer against the BERT model on the same tasks.
 \medskip
 
-Furthermore, it would be very interesting to further explore the potential of transfer- and multitask learning.
+Furthermore, it would be fascinating to explore the potential of transfer- and multitask learning further.
 \smallskip
 
-The method we used for multitask learning did slightly improve performance but the model was still constrained by the amount of data in the dataset. One idea would be to use an unsupervised task instead of a supervised task. Previous work used word frequency predictions. However, it is also conceivable to use a clustering task where aspects form clusters and the model has to maximize the distance between unrelated sentences and minimize the distance between related sentences.
+The method we used for multitask learning did slightly improve performance, but the model was still constrained by the amount of data in the dataset. One idea would be to use an unsupervised task instead of a supervised task. Previous work used word frequency predictions. However, it is also conceivable to use a clustering task where aspects form clusters, and the model has to maximize the distance between unrelated sentences and minimize the distance between related sentences.
 \medskip
 
-Another possible way to improve the performance is to handle data imbalance better. The balanced amazon review dataset shows that data balance is crucial for the model performance. We used a weighted loss function to fight data imbalance on the aspect head level.
+Another possible way to improve the performance is to handle data imbalance better. The balanced amazon review dataset shows that data balance is crucial for model performance. We used a weighted loss function to fight data imbalance on the aspect head level.
 \smallskip
 
 At the same time, we did not weight the multitask loss. Weighting this loss function should balance the gradient flows on a more global level so that aspects which occur very often contribute less gradient flow than infrequent aspects.

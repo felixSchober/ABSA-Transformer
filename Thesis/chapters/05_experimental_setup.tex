@@ -1,16 +1,16 @@
 \chapter{Experimental Setup}
 \label{ch:setup}
 
-The following chapter describes the experimental setup for the discussion of results in Chapter~\ref{ch:discussion}. The first section of the chapter deals with data preprocessing. Section~\ref{sec:05_Data} lists all datasets used for evaluations of the models and finally Section~\ref{sec:05_TrainingAndEvaluation} provides detail about the training and evaluation process used to generate the results.
+The following chapter describes the experimental setup for the discussion of results in Chapter~\ref{ch:discussion}. The first section of the chapter deals with data preprocessing. Section~\ref{sec:05_Data} lists all datasets used for evaluations of the models, and finally, Section~\ref{sec:05_TrainingAndEvaluation} provides detail about the training and evaluation process used to generate the results.
 
 \section{Data Preprocessing}
-The following section describes the general data preprocessing steps which were taken for all datasets described in Section~\ref{sec:05_Data}. Some of the preprocessing steps are specific to certain datasets and will be described there. All data preprocessing steps can be enabled or disabled to evaluate the impact on the performance of these preprocessing steps. Some of those results will be discussed in Section~\ref{subsec:06_dataPreprocessing} in Chapter~\ref{ch:discussion}.
+The following section describes the general data preprocessing steps which we performed for all datasets described in Section~\ref{sec:05_Data}. Some of the preprocessing steps are specific to certain datasets and are described there. All data preprocessing steps can be enabled or disabled to evaluate the impact on the performance of these preprocessing steps. Some of those results will be discussed in Section~\ref{subsec:06_dataPreprocessing} in Chapter~\ref{ch:discussion}.
 
 \subsection{Text Cleaning}
 The main goal of the text cleaning step is 
 \begin{enumerate}
-	\item Reduce the number of words which are out of vocabulary
-	\item Keep the vocabulary size as small as possible.
+    \item Reduce the number of words which are out of vocabulary
+    \item Keep the vocabulary size as small as possible.
 \end{enumerate}
 
 without changing the semantics of the text.
@@ -19,54 +19,57 @@ without changing the semantics of the text.
 The first step of the data preprocessing pipeline is the removal of all unknown characters which are not UTF-8 compatible. Those characters can occur because of encoding issues or words outside of the target language. 
 \subsubsection*{Contraction Expansion}
 
-Before we remove any special characters all contractions are expanded with the goal of reducing the vocabulary size and language normalization. Contractions are shortened versions of several words or syllables. In the English language, vowels are often replaced by an apostrophe.  Especially in social media and spoken language a lot of contractions are used. '\textit{I'll've}' and '\textit{I will have}' have the same meaning but if they are not expanded they produce a completely different embedding. '\textit{I'll've}' will produce a (300)-dimensional vector (for GloVe and fastText) whereas '\textit{I will have}' will be interpreted as 3 300-dimensional vectors.
+Before we remove any special characters, all contractions are expanded to reduce the vocabulary size and language normalization. Contractions are shortened versions of several words or syllables. In the English language, vowels are often replaced by an apostrophe.  Especially in social media and spoken language, many contractions are used. '\textit{I'll've}' and '\textit{I will have}' have the same meaning but if they are not expanded they produce a completely different embedding. '\textit{I'll've}' will produce a (300)-dimensional vector (for GloVe and fastText) whereas '\textit{I will have}' will be interpreted as 3 300-dimensional vectors.
 \medskip
 
 The contraction expansion is followed by the replacement of \glspl{url} with the token '<URL>' and e-mail addresses with the token '<MAIL>'. E-Mails and URLs are always out-of vocabulary and contain very little information that is worth encoding. 
 \medskip
 
-In addition any special characters are completely removed. Dashes ('-') are kept because there are compound-words which rely on dashes (e.g. non-organic).
+In addition, any special characters are completely removed. Dashes ('-') are kept because there are compound-words which rely on dashes (e.g. non-organic).
 
 \subsubsection*{Spell Checking}
 \label{sec:05_SpellChecking}
-When writing comments in social media people tend to make spelling mistakes. Unfortunately, each spelling mistake is an out-of vocabulary word which we want to reduce as much as possible.
+When writing comments in social media people tend to make spelling mistakes. Unfortunately, each spelling mistake is an out-of-vocabulary word which we want to reduce as much as possible.
 
-Therefore, a spell checker is used to prevent these mistakes. The first spell checker\footnote{PySpellchecker: \url{https://pyspellchecker.readthedocs.io/en/latest/}} which was evaluated relies on the Levenshtein Distance~\cite{Levenshtein1966} and a dictionary to determine if a word is spelled incorrectly and to make suggestions which word was meant originally. Although, word replacement suggestions are good, the spell checking is slow especially with large dictionaries.
+Therefore, a spell checker is used to prevent these mistakes. The first spell checker\footnote{PySpellchecker: \url{https://pyspellchecker.readthedocs.io/en/latest/}} which we evaluated relies on the Levenshtein Distance~\cite{Levenshtein1966} and a dictionary to determine if a word is misspelled and to make suggestions which word was meant originally. Although word replacement suggestions are generally good, the spell checking is slow, especially with large dictionaries.
 \medskip
 
-The second spell checker is called Hunspell developed by László Németh\footnote{Hunspell: \hyperlink{http://hunspell.github.io/}{http://hunspell.github.io/}}. Hunspell is used in a variety of open- and closed sourced projects such as OpenOffice, Google Chrome or macOS. Hunspell also utilizes the Levenshtein Distance in addition to several other measurements. Both spell checkers suffer from false positives {(word is incorrectly flagged as negative)} as well as incorrect suggestions. Below are examples of Hunspells suggestions for words it did not recognize:
+The second spell checker we evaluated is called Hunspell developed by László Németh\footnote{Hunspell: \hyperlink{http://hunspell.github.io/}{http://hunspell.github.io/}}. Hunspell is used in a variety of open- and closed sourced projects such as OpenOffice, Google Chrome or macOS. Hunspell also utilizes the Levenshtein Distance in addition to several other measurements. Both spell checkers suffer from false positives {(words which are incorrectly flagged as negative)} as well as incorrect suggestions. Below are examples of Hunspells suggestions for words it did not recognize:
 
 \begin{itemize}
-	\item taste/flavor -> flavorless
-	\item GMOs -> G Mos
-	\item Coca~Cola -> Chocolate
-	\item didn -> did
+    \item taste/flavor -> flavorless
+    \item GMOs -> G Mos
+    \item Coca~Cola -> Chocolate
+    \item didn -> did
 \end{itemize}
 
 All of the above replacements are very bad because they change the meaning of the entire sentence.
 
-Nevertheless, in terms of vocabulary size reduction they are clearly outperforming other techniques as table~\ref{tab:05_amazonVocabSize} demonstrates. Running Hunspell on the Amazon dataset reduces the original vocabulary size of 1.6 Million by over 80\% to about 311,000 unique words. In addition, as column \textit{SP + TR-1} shows there are no tokens which only appear once. The reason for this is, that Hunspell always suggests something. Even words like \textit{\^{}\_\^{}b4} are replaced by new words even if it would make more sense to delete those words altogether.
+Nevertheless, in terms of vocabulary size reduction, spell checkers are clearly outperforming other techniques as table~\ref{tab:05_amazonVocabSize} demonstrates. Running Hunspell on the Amazon dataset reduces the original vocabulary size of 1.6 Million by over 80\% to about 311,000 unique words. In addition, as column \textit{SP + TR-1} shows there are no tokens which only appear once. The reason for this is that Hunspell always suggests something. Even words like \textit{\^{}\_\^{}b4} are replaced by new words even if it would make more sense to delete those words altogether.
+\medskip
+
+Unfortunately, as we discuss in Section \ref{sec:06_spellChecking} we could improve our performance by using spell checked datasets.
 
 \subsubsection*{Stop word Removal}
 
-As another technique to reduce the amount of information the model has to process we explored stop word removal. Stop words are filtered out during the preprocessing step and are removed without replacement.
+As another technique to reduce the amount of information, the model has to process we explored stop word removal. Stop words are filtered out during the preprocessing step and are removed without replacement.
 
 \subsection{Comment Clipping}
 \label{subsec:06_CommentClipping}
 
-The transformer works with different input sequence lengths within one batch. Therefore, it is possible to group similar sequence lengths together and have arbitrary sequence lengths. Unfortunately, in each dataset there is a small percentage of sequences which are longer than other sequences. Due to the limited computational resources a batch of those long sequences  does not fit into \gls{gpu} memory. Therefore, all sentences are either padded or clipped to a fixed length. This is also a requirement for the CNN-based transformer aspect head since CNN-layers need a fixed number of input channels.
+The transformer works with different input sequence lengths within one batch. Therefore, it is possible to group similar sequence lengths and have arbitrary sequence lengths. Unfortunately, in each dataset, there is a small percentage of sequences which are longer than other sequences. Due to the limited computational resources, a batch of those long sequences does not fit into \gls{gpu} memory. Therefore, all sentences are either padded or clipped to a fixed length. Equal sequence lengths are also a requirement for the CNN-based transformer aspect head since CNN-layers need a fixed number of input channels.
 
 \subsection{Sentence Combination}
 \label{sec:05_sentenceCombination}
-Some datasets feature sentence annotations instead of comment annotations. In this case important information for the aspect and sentiment classification could be encoded in previous sentences. Refer to figure XX for an example.
+Some datasets feature sentence annotations instead of comment annotations. In this case, important information for the aspect and sentiment classification could be encoded in previous sentences. Refer to figure XX for an example.
 \medskip
 
-Therefore, $n$ previous sentences are prepended to the current sentence where $n$ is a hyper parameter which can be optimized. Similar to the clipping of comment wise annotations described in the previous section, these sentence combinations are also clipped and padded. 
+Therefore, $n$ previous sentences are prepended to the current sentence where $n$ is a hyperparameter which can be optimized. Similar to the clipping of comment wise annotations described in the previous section, these sentence combinations are also clipped and padded. 
 \medskip
 
 The process starts by repeatedly adding sentences to a stack. All $n-1$ sentences which are too long are cut at the front. The $n$-th sentence is cut in the back instead. This is done so that in the case of $n=2$ 
 
-% TODO: Show where sentiment is: analyise per word predictions and see if it makes sense to cut at the front or the back 
+% TODO: Show where sentiment is: analyze per word predictions and see if it makes sense to cut at the front or the back 
 
 See Section~\ref{subsec:06_CommentClipping} for the evaluation of this preprocessing step.
 
@@ -75,35 +78,35 @@ See Section~\ref{subsec:06_CommentClipping} for the evaluation of this preproces
 
 This section describes the four datasets which were used for the evaluation of the \acrfull{absat} architecture described previously.
 
-The first dataset -- CoNLL-2003 -- is used to evaluate just the transformer model without the use of aspect heads. The task of this dataset is word level \gls{ner} prediction. Since the original transformer model provides predictions on the word level this is good task to evaluate just the transformer part.
+The first dataset -- CoNLL-2003 -- is used to evaluate just the transformer model without the use of aspect heads. The task of this dataset is word level \gls{ner} prediction. Since the original transformer model provides predictions on the word level, this is an excellent task to evaluate just the transformer part.
 \medskip
 
 GermEval-2017 described in Section~\ref{sec:05_germeval} is a dataset for aspect-based sentiment analysis and contains over 25,000 review documents from social media.
 \medskip
 
-Organic-2019 is a very recent dataset, also providing an aspect-based sentiment analysis task in the domain of organic food. Whereas, GermEval-2017 contains document level annotations, Organic-2019 contains word level over 10,000 annotated sentences. Organic-2019 is described in Section~\ref{sec:05_organic2019}.
+Organic-2019 is a very recent dataset, also providing an aspect-based sentiment analysis task in the domain of organic food. Whereas GermEval-2017 contains document-level annotations, Organic-2019 contains word level over 10,000 annotated sentences. Organic-2019 is described in Section~\ref{sec:05_organic2019}.
 \medskip
 
-Finally, Section~\ref{sec:05_amazonReviews} describes a new dataset consisting of Amazon reviews which was created with the goal to provide a big dataset as the source for transfer learning. The dataset contains almost 1.2 million reviews with 20 domains spanning the Amazon product catalog.
+Finally, Section~\ref{sec:05_amazonReviews} describes a new dataset consisting of Amazon reviews. This dataset was created to provide a large dataset as the source for transfer learning. The dataset contains almost 1.2 million reviews with 20 domains spanning the Amazon product catalog.
 
 \subsection{CoNLL-2003 -- \acrfull{ner}}
 
 The CoNLL-2003 shared task contains datasets in English and German for \acrfull{ner}~\cite{Erik2003}. \gls{ner} describes the task of assigning labels to individual words. The four labels which are used for CoNLL-2003 are \textit{persons}, \textit{locations}, \textit{organizations} and \textit{names}~\cite{Erik2003}. For example the sentence "Gerry is a researcher at TUM in Munich" would be labeled as "[\textit{PER} Gerry] is a researcher at [\textit{ORG} TUM] in [\textit{LOC} Munich]".
 \medskip
 
-The English data which was used for this research consists of news stories which occurred between August 1996 and August 1997~\cite{Erik2003}. The English dataset contains a total of 22,137 sentences with 301,421 tokens and is reasonably balanced in comparison to the datasets described in the next sections. Table~\ref{tab:05_conll2003DatasetStats} shows the distribution of the labels and the number of samples for each data split.
+The English part of the data which is used for this research consists of news stories which occurred between August 1996 and August 1997~\cite{Erik2003}. The English dataset contains a total of 22,137 sentences with 301,421 tokens and is reasonably balanced in comparison to the datasets described in the next sections. Table~\ref{tab:05_conll2003DatasetStats} shows the distribution of the labels and the number of samples for each data split.
 
 \begin{table}
-	\centering
-	\begin{tabular}{crrrrrrr}
-		\toprule
-		& Articles & Sentences & Tokens & LOC & MISC & ORG & PER \\ 
-		\midrule
-		Train & 946 & 14,987 & 203,621 & 7140 & 3438 & 6321 & 6600 \\ 
-		Validation & 216 & 3,466 & 51,362 & 1837 & 922 & 1341 & 1842 \\ 
-		Test & 231 & 3,684 & 46,435 & 1668 & 702 & 1661 & 1617 \\ 
-		\bottomrule 
-	\end{tabular} 
+    \centering
+    \begin{tabular}{crrrrrrr}
+        \toprule
+        & Articles & Sentences & Tokens & LOC & MISC & ORG & PER \\ 
+        \midrule
+        Train & 946 & 14,987 & 203,621 & 7140 & 3438 & 6321 & 6600 \\ 
+        Validation & 216 & 3,466 & 51,362 & 1837 & 922 & 1341 & 1842 \\ 
+        Test & 231 & 3,684 & 46,435 & 1668 & 702 & 1661 & 1617 \\ 
+        \bottomrule 
+    \end{tabular} 
 \caption{\textbf{CoNLL dataset statistics} -- Number of samples and labels for each split in the CoNLL-2003 English \gls{ner} dataset}
 \label{tab:05_conll2003DatasetStats}
 \end{table}
@@ -111,165 +114,165 @@ The English data which was used for this research consists of news stories which
 
 \subsection{GermEval-2017 -- Customer Feedback on Deutsche Bahn}
 \label{sec:05_germeval}
-GermEval 2017 is a dataset for Aspect-Based Sentiment Analysis on customer feedback about \textit{"Deutsche Bahn"} in German~\cite{Wojatzki2017}. \textit{"Deutsche Bahn"} is the largest railway operator in Europe\footnote{Financial Earnings Presentation 2014: \url{https://ir.deutschebahn.com/fileadmin/Deutsch/2014/Anhaenge/2014_finanzpraesentation_asien_de.pdf}}. All data is collected from social media, blogs and Q\&A pages over the course of one year from May 2015 till June 2016. Each document is annotated with a relevance flag, a document-level sentiment polarity as well as up to 19 different aspect-sentiment combinations such as atmosphere {(\textit{Atmosphäre})} or the experience of buying a ticket {(\textit{Ticketkauf})}.
+GermEval 2017 is a dataset for Aspect-Based Sentiment Analysis on customer feedback about \textit{"Deutsche Bahn"} in the German language~\cite{Wojatzki2017}. \textit{"Deutsche Bahn"} is the largest railway operator in Europe\footnote{Financial Earnings Presentation 2014: \url{https://ir.deutschebahn.com/fileadmin/Deutsch/2014/Anhaenge/2014_finanzpraesentation_asien_de.pdf}}. All data is collected from social media, blogs, and Q\&A pages over the course of one year from May 2015 till June 2016. Each document is annotated with a relevance flag, a document-level sentiment polarity as well as up to 19 different aspect-sentiment combinations such as atmosphere {(\textit{Atmosphäre})} or the experience of buying a ticket {(\textit{Ticketkauf})}.
 \medskip
 
 GermEval-2017 is a shared dataset for four different tasks: 
 
 \begin{enumerate}
-	\item \textcolor{darkgray}{Task-A: Relevance Detection}
-	\item \textcolor{darkgray}{Task-B: General Document Sentiment Classification}
-	\item Task-C: Aspect-Based Sentiment Analysis
-	\item \textcolor{darkgray}{Task-C: Opinion Target Extraction}
+    \item \textcolor{darkgray}{Task-A: Relevance Detection}
+    \item \textcolor{darkgray}{Task-B: General Document Sentiment Classification}
+    \item Task-C: Aspect-Based Sentiment Analysis
+    \item \textcolor{darkgray}{Task-C: Opinion Target Extraction}
 \end{enumerate}
 
-This work focuses on Subtask C and results for the aspect-based sentiment analysis are reported in Section~\ref{sec:06_ResultsGermEval}.
+This work focuses on Subtask C, and results for the aspect-based sentiment analysis are reported in Section~\ref{sec:06_ResultsGermEval}.
 \medskip
 
-Beating the baseline systems of GermEval is not trivial since the dataset is extremely skewed towards the dominant category 'general' {(\textit{Allgemein})}. This category makes up 62.2\% of all the samples in the dataset. Some categories contain less than 50 samples which is only 2\% of the whole data. Almost half of the aspects have less than 1\% share of the total amount of samples. There is even one aspect \textit{QR-Code} which has a total of two samples and none in the training split. Table~\ref{tab:05_germevalDatasetStats} provides the detailed breakdown of the number of samples per aspect.
+Beating the baseline systems of GermEval is not trivial since the dataset is extremely skewed towards the dominant category "general" {(\textit{Allgemein})}. This category makes up 62.2\% of all the samples in the dataset. Some categories contain less than 50 samples which are only 2\% of the whole data. Almost half of the aspects have less than 1\% share of the total amount of samples. There is even one aspect \textit{QR-Code} which has a total of two samples and none in the training split. Table~\ref{tab:05_germevalDatasetStats} provides the detailed breakdown of the number of samples per aspect.
 
-This imbalance is the reason why the GermEval-2017 majority class baseline is extremely strong. In fact, during the GermEval-2017 challenge there was only one other model submission from Lee et al~\cite{Lee2017} that could outperform the baseline models~\cite{Wojatzki2017}.
+This imbalance is the reason why the GermEval-2017 majority class baseline is extremely strong. In fact, during the GermEval-2017 challenge, there was only one other model submission from Lee et al~\cite{Lee2017} that could outperform the baseline models~\cite{Wojatzki2017}.
 \medskip
 
 In addition, there are some issues with the evaluation metric that the organizers of GermEval-2017 provide. Section~\ref{sec:05_GermEvalEvaluation} deals with this issue in detail.
 \begin{table}
-	\centering
-	\begin{tabular}{lrrrrrr}
-		\toprule
-		Aspect                       & Test-1 & Test-2 & Train  & Val  & Total  & Ratio   \\ 
-		\midrule
-		Allgemein                    & 1398   & 1024   & 12138  & 1475 & 16035  & 62,16\% \\
-		Atmosphäre                   & 148    & 53     & 1046   & 139  & 1386   & 5,37\%  \\
-		Auslastung \& Platzangebot   & 35     & 20     & 251    & 33   & 339    & 1.31\%  \\
-		Barrierefreiheit             & 9      & 2      & 64     & 17   & 92     & 0.36\%  \\
-		Connectivity                 & 36     & 73     & 257    & 23   & 389    & 1.51\%  \\
-		DB App \& Website            & 28     & 18     & 185    & 23   & 254    & 0.98\%  \\
-		Design                       & 4      & 2      & 31     & 4    & 41     & 0.16\%  \\
-		Gastronomisches Angebot      & 3      & 3      & 44     & 4    & 54     & 0.21\%  \\
-		Gepäck                       & 2      & 6      & 18     & 3    & 29     & 0.11\%  \\
-		Image                        & 0      & 3      & 51     & 7    & 61     & 0.24\%  \\
-		Informationen                & 58     & 35     & 330    & 34   & 457    & 1.77\%  \\
-		Komfort \& Ausstattung       & 24     & 11     & 153    & 21   & 209    & 0.81\%  \\
-		QR-Code                      & 1      & 0      & 0      & 1    & 2      & 0.01\%  \\
-		Reisen mit Kindern           & 7      & 2      & 44     & 4    & 57     & 0.22\%  \\
-		Service \& Kundenbetreuung   & 63     & 27     & 486    & 49   & 625    & 2.24\%  \\
-		Sicherheit                   & 84     & 42     & 429    & 63   & 618    & 2.40\%  \\
-		Sonstige Unregelmässigkeiten & 224    & 164    & 1335   & 145  & 1868   & 7.24\%  \\
-		Ticketkauf                   & 95     & 48     & 593    & 70   & 806    & 3.12\%  \\
-		Toiletten                    & 7      & 4      & 44     & 5    & 60     & 0.23\%  \\
-		Zugfahrt                     & 241    & 184    & 1798   & 190  & 2413   & 9.35\%  \\ 
-		\midrule
-		Total                        & 2467   & 1721   & 19,297 & 2310 & 25,795 & 100\%   \\ 
-		\bottomrule
-	\end{tabular}
-	\caption{\textbf{GermEval-2017 -- Dataset statistics} -- Number of samples for each aspect per split in the GermEval-2017 shared task dataset.}
+    \centering
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        Aspect                       & Test-1 & Test-2 & Train  & Val  & Total  & Ratio   \\ 
+        \midrule
+        Allgemein                    & 1398   & 1024   & 12138  & 1475 & 16035  & 62,16\% \\
+        Atmosphäre                   & 148    & 53     & 1046   & 139  & 1386   & 5,37\%  \\
+        Auslastung \& Platzangebot   & 35     & 20     & 251    & 33   & 339    & 1.31\%  \\
+        Barrierefreiheit             & 9      & 2      & 64     & 17   & 92     & 0.36\%  \\
+        Connectivity                 & 36     & 73     & 257    & 23   & 389    & 1.51\%  \\
+        DB App \& Website            & 28     & 18     & 185    & 23   & 254    & 0.98\%  \\
+        Design                       & 4      & 2      & 31     & 4    & 41     & 0.16\%  \\
+        Gastronomisches Angebot      & 3      & 3      & 44     & 4    & 54     & 0.21\%  \\
+        Gepäck                       & 2      & 6      & 18     & 3    & 29     & 0.11\%  \\
+        Image                        & 0      & 3      & 51     & 7    & 61     & 0.24\%  \\
+        Informationen                & 58     & 35     & 330    & 34   & 457    & 1.77\%  \\
+        Komfort \& Ausstattung       & 24     & 11     & 153    & 21   & 209    & 0.81\%  \\
+        QR-Code                      & 1      & 0      & 0      & 1    & 2      & 0.01\%  \\
+        Reisen mit Kindern           & 7      & 2      & 44     & 4    & 57     & 0.22\%  \\
+        Service \& Kundenbetreuung   & 63     & 27     & 486    & 49   & 625    & 2.24\%  \\
+        Sicherheit                   & 84     & 42     & 429    & 63   & 618    & 2.40\%  \\
+        Sonstige Unregelmässigkeiten & 224    & 164    & 1335   & 145  & 1868   & 7.24\%  \\
+        Ticketkauf                   & 95     & 48     & 593    & 70   & 806    & 3.12\%  \\
+        Toiletten                    & 7      & 4      & 44     & 5    & 60     & 0.23\%  \\
+        Zugfahrt                     & 241    & 184    & 1798   & 190  & 2413   & 9.35\%  \\ 
+        \midrule
+        Total                        & 2467   & 1721   & 19,297 & 2310 & 25,795 & 100\%   \\ 
+        \bottomrule
+    \end{tabular}
+    \caption{\textbf{GermEval-2017 -- Dataset statistics} -- Number of samples for each aspect per split in the GermEval-2017 shared task dataset.}
 \label{tab:05_germevalDatasetStats}
 \end{table}
 
 \subsection{Organic-2019 -- Organic Comments}
 \label{sec:05_organic2019}
-This dataset was collected and annotated in the end of 2018 and the beginning of 2019. It contains 1,373 comments and 10,439 annotated sentences from Quora, a social question-and-answer website.
+This dataset was collected and annotated at the end of 2018 and the beginning of 2019. It contains 1,373 comments and 10,439 annotated sentences from Quora, a social question-and-answer website.
 \medskip
 
-Each sentence is annotated with a domain relevance flag, a sentiment and at least one entity-attribute-sentiment triplet. Out of the 10,439 sentences, 5560 sentences are marked as domain relevant. Out of the relevant sentences 668 contain two or more aspect triplets.
+Each sentence is annotated with a domain relevance flag, a sentiment, and at least one entity-attribute-sentiment triplet. Out of the 10,439 sentences, 5560 sentences are marked as domain relevant. Out of the relevant sentences, 668 contain two or more aspect triplets.
 \medskip
 
-There are 9 possible entities, each entity can have one of 14 attributes and the entity-attribute combination is annotated with a three-class sentiment polarity. In theory this combines to a total of 378 possible triplet combinations and 126 entity-attribute combinations. However, there are only 113 actual entity-attribute combinations and some of these combinations only have a few examples in total which makes this dataset even harder to train than GermEval-2017. The appendix contains two figures which show the distribution of the entities {(figure~\ref{fig:05_organic2019_Entities})} and the attributes {(figure\ref{fig:05_organic2019_Attributes})}.
+There are 9 possible entities, each entity can have one of 14 attributes, and the entity-attribute combination is annotated with a three-class sentiment polarity. In theory, this combines to a total of 378 possible triplet combinations and 126 entity-attribute combinations. However, there are only 113 actual entity-attribute combinations, and some of these combinations only have a few examples in total which makes this dataset even harder to train than GermEval-2017. The appendix contains two figures which show the distribution of the entities {(figure~\ref{fig:05_organic2019_Entities})} and the attributes {(figure\ref{fig:05_organic2019_Attributes})} as well as a full list of all entity attribute combinations.
 \medskip
 
 Since training on the full number of entities and attributes is very challenging the dataset also provides a coarse-grained version which combines both aspects and entities into a total of 18 bigger sets. The distribution for this dataset version is visualized in figure~\ref{fig:05_organic2019_coarse}.
 
 \begin{figure}[ht]
-	\centering
-	\includegraphics[width=\textwidth]{figures/05_setup/05_organicCoarseGrained}
-	\caption{Distribution of the \textit{coarse-grained} aspects in the Organic-2019 dataset}
-	\label{fig:05_organic2019_coarse}
+    \centering
+    \includegraphics[width=\textwidth]{figures/05_setup/05_organicCoarseGrained}
+    \caption{Distribution of the \textit{coarse-grained} aspects in the Organic-2019 dataset}
+    \label{fig:05_organic2019_coarse}
 \end{figure}
 
 \subsection{Amazon Reviews Dataset}
 \label{sec:05_amazonReviews}
-The Amazon Reviews Dataset consists of over 130 million Amazon product reviews from 1995 until 2015. Therefore, this dataset is one of the richest data sources for sentiment analysis or other related \gls{nlp} tasks. The raw data is available directly through amazon.\footnote{\url{https://s3.amazonaws.com/amazon-reviews-pds/readme.html}} The reviews are grouped into 45 product categories such as "Grocery", "Luggage" or "Video Games". 
+The Amazon Reviews Dataset consists of over 130 million Amazon product reviews from 1995 until 2015. Therefore, this dataset is one of the richest data sources for sentiment analysis or other related \gls{nlp} tasks. The raw data is available directly through Amazon.\footnote{\url{https://s3.amazonaws.com/amazon-reviews-pds/readme.html}} The reviews are grouped into 45 product categories such as "Grocery", "Luggage" or "Video Games". 
 \medskip
 
-In 2013 McAuley and Leskovec compiled a subset of Amazon reviews~\cite{McAuley2013}. This dataset contains 34,7 million reviews ranging from 1995 till 2013 grouped into 33 categories\footnote{Available through Stanford \url{https://snap.stanford.edu/data/web-Amazon.html}}. The authors also created a "Fine Food" Dataset from Amazon reviews~\cite{McAuley2013a} \footnote{Available through Kaggle \url{https://www.kaggle.com/snap/amazon-fine-food-reviews}}. This dataset consists of 568,454 Amazon reviews from 1995 till 2012. The domain of this specific dataset is related to the organic domain with 273 occurrences of the word 'organic'. Unfortunately, it does not contain predefined aspects so \gls{absa} is not possible without extensive pre-processing to generate aspects out of the reviews.
+In 2013 McAuley and Leskovec compiled a subset of Amazon reviews~\cite{McAuley2013}. This dataset contains 34,7 million reviews ranging from 1995 till 2013 grouped into 33 categories\footnote{Available through Stanford \url{https://snap.stanford.edu/data/web-Amazon.html}}. The authors also created a "Fine Food" Dataset from Amazon reviews~\cite{McAuley2013a} \footnote{Available through Kaggle \url{https://www.kaggle.com/snap/amazon-fine-food-reviews}}. This dataset consists of 568,454 Amazon reviews from 1995 till 2012. The domain of this specific dataset is related to the organic domain with 273 occurrences of the word 'organic'. Unfortunately, it does not contain predefined aspects so \gls{absa} is not possible without extensive preprocessing to generate aspects out of the reviews.
 \medskip
 
-The datasets created in 2013 contains duplicates so McAuley et al. generated an improved Amazon Reviews dataset in 2015 without duplicates~\cite{McAuley2015}\cite{He2016}. This iteration of the dataset contains 142.8 million reviews from 1996 till 2014\footnote{Available here: \url{http://jmcauley.ucsd.edu/data/amazon/}}. Due to the size of this dataset the authors provide a smaller dataset which only contains reviews from users who wrote exactly 5 reviews. This 5-core subset features 18 million reviews. The distribution of the domain categories is visualized in figure~\ref{fig:05_amazonDatasetDistributin}. As one can observe the dataset is substantially skewed towards the largest domain 'books' which makes up of 49\% of the data.
+The datasets created in 2013 contains duplicates, so McAuley et al. generated an improved Amazon Reviews dataset in 2015 without duplicates~\cite{McAuley2015}\cite{He2016}. This iteration of the dataset contains 142.8 million reviews from 1996 till 2014\footnote{Available here: \url{http://jmcauley.ucsd.edu/data/amazon/}}. Due to the size of this dataset, the authors provide a smaller subset which only contains reviews from users who wrote exactly 5 reviews. This 5-core subset features 18 million reviews. The distribution of the domain categories is visualized in figure~\ref{fig:05_amazonDatasetDistributin}. As one can observe the dataset is substantially skewed towards the largest domain 'books' which makes up of 49\% of the data.
 \medskip
 
 \begin{figure}
-	\centering
-	\includegraphics[width=\textwidth]{figures/05_setup/05_amazonReviewsCategories}
-	\caption{\textbf{Amazon Reviews Statistics} -- Number of reviews per domain category in the amazon review dataset by McAuley et al.~\cite{McAuley2015}}
-	\label{fig:05_amazonDatasetDistributin}
+    \centering
+    \includegraphics[width=\textwidth]{figures/05_setup/05_amazonReviewsCategories}
+    \caption{\textbf{Amazon Reviews Statistics} -- Number of reviews per domain category in the amazon review dataset by McAuley et al.~\cite{McAuley2015}}
+    \label{fig:05_amazonDatasetDistributin}
 \end{figure}
 
-To combat data imbalance and the sheer size of the dataset we propose a balanced subset of the 5-core dataset with 60000 reviews for each domain aside from \textit{Musical Instruments}, \textit{Amazon Instant Video}, \textit{Automotive} and \textit{Patio, Lawn and Garden}. These categories contain less than 50000 reviews so including them would skew the dataset again. In addition, we also transformed the star-rating to the common negative-neutral-positive rating schema. Similar to Blitzer et al. we interpret $1-2$ stars as negative, 3 stars as neutral and $4-5$ stars as positive sentiment~\cite{Blitzer2007}.
+To combat data imbalance and the sheer size of the dataset we propose a balanced subset of the 5-core dataset with 60,000 reviews for each domain aside from \textit{Musical Instruments}, \textit{Amazon Instant Video}, \textit{Automotive} and \textit{Patio, Lawn and Garden}. These categories contain less than 50,000 reviews so including them would skew the dataset again. Also, we also transformed the 5 star-rating system to the standard negative-neutral-positive rating schema. Similar to Blitzer et al. we interpret $1-2$ stars as negative, 3 stars as neutral and $4-5$ stars as positive sentiment~\cite{Blitzer2007}.
 \medskip
 
-To create a balanced dataset not only on domains but also on sentiment we sampled 20000 reviews for each sentiment for each domain. Overall, there are more positive reviews than neutral or negative reviews. Thus, some domains contain less than 20000 reviews per sentiment category. To prevent data imbalance, reviews from the remaining other sentiment categories are sampled so that each domain contains 60000 reviews in sum. This distribution and additional statistics about the dataset are documented in table~\ref{tab:05_amazonDatasetStats}.
-\begin{table}	
-	\begin{tabularx}{\textwidth}{lXrrrcrr}
-		
-		\toprule
-		{} & helpful & \multicolumn{1}{c}{Pos.} & \multicolumn{1}{c}{Neu.} & \multicolumn{1}{c}{Neg.} &\multicolumn{1}{c}{stars} & \multicolumn{2}{c}{\# words} \\
-		Domain Category &         					mean &   	Count & Count & Count &  mean 	&  mean  &     std \\
+To create a balanced dataset not only on domains but also on sentiment we sampled 20,000 reviews for each sentiment for each domain. Overall, there are more positive reviews than neutral or negative reviews. Thus, some domains contain less than 20000 reviews per sentiment category. To prevent data imbalance, reviews from the remaining other sentiment categories are sampled so that each domain contains 60,000 reviews in sum. This distribution and additional statistics about the dataset are documented in table~\ref{tab:05_amazonDatasetStats}.
+\begin{table}    
+    \begin{tabularx}{\textwidth}{lXrrrcrr}
+        
+        \toprule
+        {} & helpful & \multicolumn{1}{c}{Pos.} & \multicolumn{1}{c}{Neu.} & \multicolumn{1}{c}{Neg.} &\multicolumn{1}{c}{stars} & \multicolumn{2}{c}{\# words} \\
+        Domain Category &                             mean &       Count & Count & Count &  mean     &  mean  &     std \\
 
-		\midrule
-		Apps for Android            &   0.22 &   20000 &  	20000 & 20000 &    3.03 &     47 &   50 \\
-		Baby                        &   0.29 & 	17012 &  	17255 &  	17012 &    3.33 &    105 &  106 \\
-		Beauty                      &   0.32 &   20000 &  	20000 & 20000 &    3.10 &     90 &   94 \\
-		Books                       &   0.43 &   20000 &  	20000 & 20000 &    3.08 &    176 &  201 \\
-		CDs \& Vinyl                &   0.44 &   20000 &  	20000 & 20000 &    3.11 &    172 &  168 \\
-		Cell Phones \& Accessories  &   0.19 &   20000 &  	20000 & 20000 &    3.06 &     93 &  138 \\
-		Clothing Shoes \& Jewelry   &   0.26&   20000 &  	20000 & 20000 &    3.11 &     67 &   70 \\
-		Digital Music               &   0.53 &  47410 &  	6789 &  5801 &    4.19 &    202 &  190 \\
-		Electronics                 &   0.43 &   20000 &  	20000 & 20000 &    3.06 &    122 &  138 \\
-		Grocery \& Gourmet Food     &   0.33 &  28790 & 17514 & 13696 &    3.53 &    99  &   97 \\
-		Health \& Personal Care     &   0.35 &   20000 &  	20000 & 20000 &    3.09 &     95 &  126 \\
-		Home \& Kitchen             &   0.44 &   20000 &  	20000 & 20000 &    3.08 &    104 &  110 \\
-		Kindle Store                &   0.35 &   20000 &  	20000 & 20000 &    3.07 &    111 &  131 \\
-		Movies \& TV                &   0.39 &   20000 &  	20000 & 20000 &    3.07 &    184 &  198 \\
-		Office Products             &   0.29 &  45342 &  5060 & 2856 &    4.35 &    148 &  164 \\
-		Pet Supplies                &   0.27 &  26412 & 15933 & 17655 &    3.35 &     91 &   96 \\
-		Sports \& Outdoors          &   0.30 &  20751 & 20000 & 19249 &    3.14 &     94 &  111 \\
-		Tools \& Home Impr.  		&   0.40 &  39126 & 10769 & 10105 &    3.90 &    111 &  134 \\
-		Toys \& Games               &   0.32 &  11005 & 16357 & 11005 &    3.70 &    108 &  114 \\
-		Video Games                 &   0.41 &   20000 &  	20000 & 20000 &    3.07 &    226 &  267 \\
-		\midrule
-		Total						&	0.35 & 	   506202 &	349677& 337379&    3.31 &	 122 &  151 \\
-		\bottomrule
-	\end{tabularx}
-	\caption{\textbf{Dataset statistics for the generated Amazon review subset for the domain categories.} This table contains mean helpfulness rating; number of positive reviews; number of neutral reviews; number of negative reviews; mean star rating; mean number of words per review; standard deviation of the number of words per review }
-		\label{tab:05_amazonDatasetStats}
+        \midrule
+        Apps for Android            &   0.22 &   20000 &      20000 & 20000 &    3.03 &     47 &   50 \\
+        Baby                        &   0.29 &     17012 &      17255 &      17012 &    3.33 &    105 &  106 \\
+        Beauty                      &   0.32 &   20000 &      20000 & 20000 &    3.10 &     90 &   94 \\
+        Books                       &   0.43 &   20000 &      20000 & 20000 &    3.08 &    176 &  201 \\
+        CDs \& Vinyl                &   0.44 &   20000 &      20000 & 20000 &    3.11 &    172 &  168 \\
+        Cell Phones \& Accessories  &   0.19 &   20000 &      20000 & 20000 &    3.06 &     93 &  138 \\
+        Clothing Shoes \& Jewelry   &   0.26&   20000 &      20000 & 20000 &    3.11 &     67 &   70 \\
+        Digital Music               &   0.53 &  47410 &      6789 &  5801 &    4.19 &    202 &  190 \\
+        Electronics                 &   0.43 &   20000 &      20000 & 20000 &    3.06 &    122 &  138 \\
+        Grocery \& Gourmet Food     &   0.33 &  28790 & 17514 & 13696 &    3.53 &    99  &   97 \\
+        Health \& Personal Care     &   0.35 &   20000 &      20000 & 20000 &    3.09 &     95 &  126 \\
+        Home \& Kitchen             &   0.44 &   20000 &      20000 & 20000 &    3.08 &    104 &  110 \\
+        Kindle Store                &   0.35 &   20000 &      20000 & 20000 &    3.07 &    111 &  131 \\
+        Movies \& TV                &   0.39 &   20000 &      20000 & 20000 &    3.07 &    184 &  198 \\
+        Office Products             &   0.29 &  45342 &  5060 & 2856 &    4.35 &    148 &  164 \\
+        Pet Supplies                &   0.27 &  26412 & 15933 & 17655 &    3.35 &     91 &   96 \\
+        Sports \& Outdoors          &   0.30 &  20751 & 20000 & 19249 &    3.14 &     94 &  111 \\
+        Tools \& Home Impr.          &   0.40 &  39126 & 10769 & 10105 &    3.90 &    111 &  134 \\
+        Toys \& Games               &   0.32 &  11005 & 16357 & 11005 &    3.70 &    108 &  114 \\
+        Video Games                 &   0.41 &   20000 &      20000 & 20000 &    3.07 &    226 &  267 \\
+        \midrule
+        Total                        &    0.35 &        506202 &    349677& 337379&    3.31 &     122 &  151 \\
+        \bottomrule
+    \end{tabularx}
+    \caption{\textbf{Dataset statistics for the generated Amazon review subset for the domain categories.} This table contains mean helpfulness rating; number of positive reviews; number of neutral reviews; number of negative reviews; mean star rating; mean number of words per review; standard deviation of the number of words per review }
+        \label{tab:05_amazonDatasetStats}
 \end{table}
 
 \subsubsection*{Token Removal}
 \label{sec:05_amazonTokens}
-There are over 145 million words in the dataset. These words combine into a vocabulary size of 1.6 million unique tokens and consequently into a very large embedding layer. {(In comparison: the Organic2019 dataset has a vocabulary size of just 11,685.)} Two techniques were used to reduce the vocabulary size:
+There are over 145 million words in the dataset. These words combine into a vocabulary size of 1.6 million unique tokens and consequently into a huge embedding layer. {(In comparison: the Organic2019 dataset has a vocabulary size of just 11,685.)} Two techniques were used to reduce the vocabulary size:
 
 \begin{enumerate}
-	\item Spell checking words
-	\item Removing rare tokens
+    \item Spell checking words
+    \item Removing rare tokens
 \end{enumerate}
 
-The process for the first technique is described in Section~\ref{sec:05_SpellChecking}. Another way to reduce the vocabulary size is by removing tokens, that only occur once or twice. These tokens make up the majority of the vocabulary size but only a small percentage of the overall word count. Table~\ref{tab:05_amazonVocabSize} shows the proportion of tokens which only occur 1, 2, or 3 times. As demonstrated in the table, infrequent tokens are very rare {(all the tokens with one occurrence make up only 0.33\% of the whole dataset)}. Yet, infrequent tokens make up over 74\% of the total vocabulary size. Removing all tokens with one occurrence, therefore reduces the vocabulary size by 74\% but only 0.33\% of information is lost.
+The process for the first technique is described in Section~\ref{sec:05_SpellChecking}. Another way to reduce the vocabulary size is by removing tokens, that only occur once or twice. These tokens make up the majority of the vocabulary size but only a small percentage of the overall word count. Table~\ref{tab:05_amazonVocabSize} shows the proportion of tokens which only occur 1, 2, or 3 times. As demonstrated in the table, infrequent tokens are very rare {(all the tokens with one occurrence make up only 0.33\% of the whole dataset)}. Yet, infrequent tokens make up over 74\% of the total vocabulary size. Removing all tokens with one occurrence, therefore, reduces the vocabulary size by 74\% but only 0.33\% of information is lost.
 
 Most of these rare tokens are either incorrectly written {(\textit{nthis})}, are part of structural elements such as headings {(\textit{review=======pros})} or are other unidentifiable characters and digits ({\textit{\^{}\_\^{}b4}}).
 
 \begin{table}[]
-	\centering
-	\begin{tabular}{lrrrrrr}
-			\toprule
-							& Original  	& SP & SP + TR-1 & TR-1 & TR-2 & TR-3 \\
-			\midrule
-			Word Count      &148,129,490 	& -              & 0\%           & 0.329\%         & 0.389\%         & 0.414\%            \\
-			Vocabulary Size & 1,594,742   	& 80.51\%        & 80.51\% 		 & 62.97\%         & 74.41\%         & 79.32\%      \\  
-			\bottomrule 	
-	\end{tabular}
+    \centering
+    \begin{tabular}{lrrrrrr}
+            \toprule
+                            & Original      & SP & SP + TR-1 & TR-1 & TR-2 & TR-3 \\
+            \midrule
+            Word Count      &148,129,490     & -              & 0\%           & 0.329\%         & 0.389\%         & 0.414\%            \\
+            Vocabulary Size & 1,594,742       & 80.51\%        & 80.51\%          & 62.97\%         & 74.41\%         & 79.32\%      \\  
+            \bottomrule     
+    \end{tabular}
 
-	\caption{Different vocabulary size reduction techniques. This table shows the proportion of tokens that occur only 1, 2 or 3 times in relation to the total word count and the vocabulary size. \textit{SP} is the spell checked dataset; \textit{TR-}$n$ is the token removal technique were $n$ is the number times, tokens can occur in the dataset.}
-	\label{tab:05_amazonVocabSize}
+    \caption{Different vocabulary size reduction techniques. This table shows the proportion of tokens that occur only 1, 2 or 3 times relative to the total word count and the vocabulary size. \textit{SP} is the spell checked dataset; \textit{TR-}$n$ is the token removal technique where $n$ is the number times, tokens can occur in the dataset.}
+    \label{tab:05_amazonVocabSize}
 \end{table}
 
 \section{Training and Evaluation}
@@ -277,142 +280,136 @@ Most of these rare tokens are either incorrectly written {(\textit{nthis})}, are
 
 \subsection{Evaluation}
 
-The models that are used in this thesis are stochastic models since model parameters are randomly initialized. In addition, samples within the training batches are randomly shuffled. Therefore running the model multiple times leads to different results.
+The models that are used in this thesis are stochastic models since model parameters are randomly initialized. In addition, samples within the training batches are randomly shuffled. Therefore, running the model multiple times leads to different results.
 \medskip
 
-This means that it is necessary to collect model results multiple times. Unfortunately, k-fold cross validation is not possible for three out of the four datasets since the creators of the datasets provide a predefined split and changing the split during k-fold cross validation would prevent comparability with other results.
+This fact means that it is necessary to collect model results multiple times. Unfortunately, k-fold cross validation is not possible for three out of the four datasets since the creators of the datasets provide a predefined split and changing the split during k-fold cross validation would prevent comparability with other results.
 
-Therefore, for each dataset-result we repeat the experiment 5-times and report the mean and standard deviation. Iyer and Rhinehart suggest to run an experiment up to a 1000 times to get an optimal result~\cite{Iyer1999}. However, this is not possible for our models due to computational constraints.
+Therefore, for each dataset-result, we repeat the experiment 5-times and report the mean. Iyer and Rhinehart suggest running an experiment up to a 1000 times to get an optimal result~\cite{Iyer1999}. However, this is not possible for our models due to computational and time constraints\footnote{Running training and evaluation five times on the Amazon reviews dataset would result in a training time of over 10 days.}.
 \medskip
 
-All experiments on hyper parameters are performed once with a fixed seed of 42. This should make sure that all experiments on hyper parameters are reproducible. There are however some \gls{cudnn} functions which are non-deterministic which means that even though a random seed is set the results could differ when running the same model with the same parameters multiple times.
+All experiments on hyperparameters are performed once with a fixed seed of 42. This approach should make sure that all experiments on hyperparameters are reproducible. There are however some \gls{cudnn} functions which are non-deterministic which means that even though we set a random seed, the results could differ when running the same model with the same parameters multiple times.
 
 \subsubsection*{GermEval 2017 -- Evaluation}
 \label{sec:05_GermEvalEvaluation}
 
-Wojatzki et al.~\cite{Wojatzki} provide an evaluation script for their dataset GermEval-2017. All results from the GermEval 2017 challenge were evaluated using this dataset. Therefore, all results reported in this thesis also use the evaluation script to calculate the f1 score. This is done to be able to compare the results on this datasets to other approaches on this data.
+Wojatzki et al.~\cite{Wojatzki} provide an evaluation script for their dataset GermEval-2017. All results from the GermEval 2017 challenge were evaluated using this dataset. Therefore, all results reported in this thesis also use the evaluation script to calculate the f1 score. We do this to be able to compare the results on this datasets to other approaches on this data.
 
 \begin{table}
-	\centering
-	\caption{\textbf{Example for GermEval-2017 evaluation}. None sentiment is not shown. Document 1 is predicted correctly. Document 2 has a correct prediction for aspect A but an incorrect prediction for the sentiment of aspect B {(in bold)}.}
-	\begin{tabular}{@{}lcc}
-		\toprule 
-		& \textbf{Gold} & \textbf{Prediction} \\ 
-		\midrule 
-		Document 1 & A : negative & A : negative \\
-		\midrule 
-		\multirow{2}{*}{Document 2} & A : positive & A : positive \\
-		& B : \textbf{positive} & B : \textbf{negative} \\ 
-		\bottomrule 
-	\end{tabular}
-	\label{tab:05_germevalEvaluationExample}
+    \centering
+    \caption{\textbf{Example for GermEval-2017 evaluation}. None sentiment is not shown. Document 1 is predicted correctly. Document 2 has a correct prediction for aspect A but an incorrect prediction for the sentiment of aspect B {(in bold)}.}
+    \begin{tabular}{@{}lcc}
+        \toprule 
+        & \textbf{Gold} & \textbf{Prediction} \\ 
+        \midrule 
+        Document 1 & A : negative & A : negative \\
+        \midrule 
+        \multirow{2}{*}{Document 2} & A : positive & A : positive \\
+        & B : \textbf{positive} & B : \textbf{negative} \\ 
+        \bottomrule 
+    \end{tabular}
+    \label{tab:05_germevalEvaluationExample}
 
 \end{table}
 
 Unfortunately, there are irregularities in the calculation of the micro f1 score. The evaluation script first creates every possible permutation of the combination of aspect and sentiment. If there are just two aspects {(Aspect A and Aspect B)} and four sentiments {(n/a, negative, neutral, positive)} this will generate 8 combinations {(A-n/a, A-negative, ..., B-positive)}. This is used as the first input {(\textit{aspect\_sentiment\_combinations})} of the GermEval-2017 evaluation algorithm shown in~\ref{algo:05_germeval}.
 \medskip
 
-In the next step, all gold-labels and predictions are paired together for each document based on the specific aspect-sentiment combination. The example in table~\ref{tab:05_germevalEvaluationExample} will produce the following combinations where the left side represents the gold labels and the right side the predictions. This would be the second input parameter \textit{golds\_predictions} for algorithm~\ref{algo:05_germeval}: 
+In the next step, all gold-labels and predictions are paired together for each document based on the specific aspect-sentiment combination. The example in table~\ref{tab:05_germevalEvaluationExample} produces the following combinations where the left side represents the gold labels and the right side the predictions. This would be the second input parameter \textit{golds\_predictions} for algorithm~\ref{algo:05_germeval}: 
 
 \begin{enumerate}
-	\item A:neg -- A:neg (Document 1)
-	\item A:pos -- A:pos (Document 2)
-	\item B:pos -- B:n/a (Document 2)
-	\item B:n/a -- B:neg (Document 2)
+    \item A:neg -- A:neg (Document 1)
+    \item A:pos -- A:pos (Document 2)
+    \item B:pos -- B:n/a (Document 2)
+    \item B:n/a -- B:neg (Document 2)
 \end{enumerate}
 
-Using these inputs the algorithm will compute the following results:
+Using these inputs, the algorithm computes the following results:
 
 \begin{itemize}
-	\item True Positives: 2
-	\item False Positives: 2
-	\item False Negatives: 2
-	\item True Negatives: 26
+    \item True Positives: 2
+    \item False Positives: 2
+    \item False Negatives: 2
+    \item True Negatives: 26
 \end{itemize}
 
-which results in an f1-score of $0.5$. In this example there is one misclassification where instead of predicting a pos. sentiment for aspect B the classifier predicted a neg. sentiment. When looking at the combination B:pos as the \textit{'true class'} the model predicts a negative {(NOT pos. sentiment)} when in reality this is a positive {(pos. sentiment)} which is the definition of a \textit{'False Negative'}. When looking at the combination B:neg as the \textit{'true class'} the model predicts a positive {(neg. sentiment)} when in reality this is a negative {(NOT neg. sentiment)} which is the definition of a \textit{' False Positive'}.
+which results in an f1-score of $0.5$. In this example, there is one misclassification where instead of predicting a "pos." sentiment for aspect B the classifier predicted a "neg." sentiment. When looking at the combination B:pos as the \textit{'true class'} the model predicts a negative {(NOT pos. sentiment)} when in reality this is a positive {(pos. sentiment)} which is the definition of a \textit{'False Negative'}. When looking at the combination B:neg as the \textit{'true class'} the model predicts a positive {(neg. sentiment)} when in reality this is a negative {(NOT neg. sentiment)} which is the definition of a \textit{' False Positive'}.
 \medskip
 
-One could therefore argue that instead of producing two False Positives and two False Negatives the correct evaluation should be one False Positive and one False Negative.
+One could, therefore, argue that instead of producing two False Positives and two False Negatives the correct evaluation should be one False Positive and one False Negative.
 
 
 \begin{algorithm}
-	
-	\SetKwInOut{Input}{Input}
-	\SetKwInOut{Output}{Output}
-	
-	\Input{$aspect\_sentiment\_combinations$: List of all possible combinations between aspects and sentiments including n/a, $golds\_predictions$ List of all comment wise pairs between gold labels and prediction labels}
-	\Output{($tp$, $fp$, $tn$ $fn$)}
-	
-	$tp$ = 0
-	$fp$ = 0
-	$tn$ = 0	
-	$fn$ = 0
-	
-	\ForEach{($aspect$, $sentiment$) in $aspect\_sentiment\_combinations$}{
-		\ForEach{($gold$), ($pred$) in  $golds\_predictions$}{
-			
-			\uIf{$gold$ matches current $aspect$ and $sentiment$}{
-				\uIf{$gold$ matches $prediction$}{
-					$tp$++
-				} \Else {
-					$fn$++
-				}
-			} \Else{
-				\uIf{$prediction$ matches current $aspect$ and $sentiment$}{
-					$fp$++
-				} \Else{
-					$tn$++
-				}
-			}
-		}
-		
-	}
-	
-	\Return{(tp, fp, tn, fn)}
-	
-	\caption{GermEval-2017 Evaluation script.}
-	\label{algo:05_germeval}
+    
+    \SetKwInOut{Input}{Input}
+    \SetKwInOut{Output}{Output}
+    
+    \Input{$aspect\_sentiment\_combinations$: List of all possible combinations between aspects and sentiments including n/a, $golds\_predictions$ List of all comment wise pairs between gold labels and prediction labels}
+    \Output{($tp$, $fp$, $tn$ $fn$)}
+    
+    $tp$ = 0
+    $fp$ = 0
+    $tn$ = 0    
+    $fn$ = 0
+    
+    \ForEach{($aspect$, $sentiment$) in $aspect\_sentiment\_combinations$}{
+        \ForEach{($gold$), ($pred$) in  $golds\_predictions$}{
+            
+            \uIf{$gold$ matches current $aspect$ and $sentiment$}{
+                \uIf{$gold$ matches $prediction$}{
+                    $tp$++
+                } \Else {
+                    $fn$++
+                }
+            } \Else{
+                \uIf{$prediction$ matches current $aspect$ and $sentiment$}{
+                    $fp$++
+                } \Else{
+                    $tn$++
+                }
+            }
+        }
+        
+    }
+    
+    \Return{(tp, fp, tn, fn)}
+    
+    \caption{GermEval-2017 Evaluation script.}
+    \label{algo:05_germeval}
 \end{algorithm}
 
 \subsection{Hardware}
 
-Training and evaluation of the models was done on four different machines. One of the servers belongs to the faculty of applied informatics, one is a local desktop machine and the last two are cloud instances. One is an Azure virtual compute instance with 8 \gls{cpu} cores and 28 \gls{gb} of \gls{ram} and the other is a Google Cloud \gls{gpu} compute instance instance with an Intel Xeon E5-2670 processor, 15 \gls{gb} of \gls{ram} and a NVIDIA Grid K520 \gls{gpu}. See table~\ref{tab:05_usedHardware} for more details.
+Training and evaluation of the models were performed on four different machines. One of the servers belongs to the faculty of applied informatics, one is a local desktop machine, and the last two are cloud instances. One is an Azure virtual compute instance with 8 \gls{cpu} cores and 28 \gls{gb} of \gls{ram} and the other is a Google Cloud \gls{gpu} compute instance instance with an Intel Xeon E5-2670 processor, 15 \gls{gb} of \gls{ram} and a NVIDIA Grid K520 \gls{gpu}. See table~\ref{tab:05_usedHardware} for more details.
 \begin{table}
-	\centering
-	\caption{Hardware used for training and evaluation of model architectures.}
-	\begin{tabular}{@{}cclrl@{}}
-		\toprule
-		\multicolumn{1}{c}{\textbf{}}    & \multicolumn{1}{c}{\textbf{OS}} & \multicolumn{1}{c}{\textbf{CPU}}                    & \multicolumn{1}{c}{\textbf{RAM}} & \multicolumn{1}{c}{\textbf{GPU}}     \\ \midrule
-		Desktop      & Windows 10 (17134)        & Core i5-6500 @ 3.20GHz     & 16 GB        & GTX 1060 \\
-		Social 5     & Ubuntu 16.04.5            & Xeon E5-2643 v3 @ 3.40GHz  & 126 GB        & GTX 970 \\ 
-		Azure        & Ubuntu 16.04.5            & Xeon E5-2690 v3 @ 2.60GHz  & 55 GB        & Tesla K80 \\ 
-		Google        & Ubuntu 16.04.5            & Xeon E5-2670 v3 @ 2.60GHz  & 15 GB        & Grid K520 \\
-		
-		\bottomrule
-	\end{tabular}
-	\label{tab:05_usedHardware}
+    \centering
+    \caption{Hardware used for training and evaluation of model architectures.}
+    \begin{tabular}{@{}cclrl@{}}
+        \toprule
+        \multicolumn{1}{c}{\textbf{}}    & \multicolumn{1}{c}{\textbf{OS}} & \multicolumn{1}{c}{\textbf{CPU}}                    & \multicolumn{1}{c}{\textbf{RAM}} & \multicolumn{1}{c}{\textbf{GPU}}     \\ \midrule
+        Desktop      & Windows 10 (17134)        & Core i5-6500 @ 3.20GHz     & 16 GB        & GTX 1060 \\
+        Social 5     & Ubuntu 16.04.5            & Xeon E5-2643 v3 @ 3.40GHz  & 126 GB        & GTX 970 \\ 
+        Azure        & Ubuntu 16.04.5            & Xeon E5-2690 v3 @ 2.60GHz  & 55 GB        & Tesla K80 \\ 
+        Google        & Ubuntu 16.04.5            & Xeon E5-2670 v3 @ 2.60GHz  & 15 GB        & Grid K520 \\
+        
+        \bottomrule
+    \end{tabular}
+    \label{tab:05_usedHardware}
 \end{table}
 
 
 \subsection{Docker}
 \begin{figure}[ht]
-	\centering
-	\includegraphics[width=\textwidth]{figures/05_setup/05_dockerExecution}
-	\caption{\textbf{Docker vs. Local environment} -- Comparison of model training times.}
-	\label{fig:05_dockerExecution}
+    \centering
+    \includegraphics[width=\textwidth]{figures/05_setup/05_dockerExecution}
+    \caption{\textbf{Docker vs. Local environment} -- Comparison of model training times.}
+    \label{fig:05_dockerExecution}
 \end{figure}
 
-Docker\footnote{Docker: \url{https://www.docker.com}} is a framework for container virtualization. Docker containers use the same kernel as the host system but an isolated file system with own system libraries. 
+Docker\footnote{Docker: \url{https://www.docker.com}} is a framework for container virtualization. Docker containers use the same kernel as the host system but an isolated file system with its own system libraries. 
 \medskip
 
-Since training was performed on four different environments a Docker image was created which automates the installation of all required frameworks, environments, drivers and versions. An automated build pipeline builds a new image as soon as a new code version is pushed to the repository. Users can install or update an image directly from Docker Hub without rebuilding it every time locally.
+Since the training was performed on four different environments, a Docker image was created which automates the installation of all required frameworks, environments, drivers and versions. An automated build pipeline builds a new image as soon as a new code version is pushed to the repository. Users can install or update an image directly from Docker Hub without rebuilding it every time locally.
 \medskip
 
-The main concern of using Docker for resource intensive task is the loss of performance due to the virtualization overhead. To evaluate this, epoch training time was measured with and without Docker in a \gls{cuda} environment. The experiment was performed on Social 5 displayed in table~\ref{tab:05_usedHardware}. For both experiments a complete model was trained for 5 epochs on the Organic2019 dataset. Figure~\ref{fig:05_dockerExecution} visualizes the time each part of the training took. For both environments the mean execution time was around 195 seconds. This means that there is no difference between running a model inside a Docker container or just locally. However, this is only the case when the host is running on a linux environment. On Windows and macOS, Docker has to virtualize part of the linux kernel. Therefore, there is no advantage of running on the exact same kernel as the host system. In addition, At the time of writing, the NVIDIA-runtime\footnote{NVIDIA Docker Runtime: \url{https://github.com/NVIDIA/nvidia-Docker}} is only supported for linux environments.
-
-
-
-
-
-
+The main concern of using Docker for a resource-intensive task is the loss of performance due to the virtualization overhead. To evaluate this, epoch training time was measured with and without Docker in a \gls{cuda} environment. The experiment was performed on Social 5 displayed in table~\ref{tab:05_usedHardware}. For both experiments, a complete model was trained for 5 epochs on the Organic2019 dataset. Figure~\ref{fig:05_dockerExecution} visualizes the time each part of the training took. For both environments, the mean execution time was around 195 seconds. This result indicates that there is no difference between running a model inside a Docker container or just locally. However, this is only the case when the host is running on a Linux environment. On Windows and macOS, Docker has to virtualize part of the Linux kernel. Therefore, there is no advantage of running on the same kernel as the host system. In addition, At the time of writing, the NVIDIA-runtime\footnote{NVIDIA Docker Runtime: \url{https://github.com/NVIDIA/nvidia-Docker}} is only supported for Linux environments.

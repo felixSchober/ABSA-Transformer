@@ -4,24 +4,24 @@
 \section{Motivation}
 \label{sec:introduction_motivation}
 
-In the recent past researches were able to advance machine learning models for computer vision further and further. These models have reached a state where they outperform humans on certain tasks. Andrej Karpathy, director of AI at Tesla, conducted an experiment at Stanford where he trained himself to classify images from ImageNet~\cite{Karpathy2014}. After a lot of training he achieved an error score of 6.8\% which, at the time, was better than predictions from GoogleLeNet. However, deep neural networks have now reached a level which is significantly below the threshold of 6.8\% Karpathy achieved. The best submission for the ImageNet Large Scale Visual Recognition Competition achieve an error rate of only 2.25\%~\cite{Hu2018}.
+In the recent past researches were able to advance machine learning models for computer vision further and further. These models have reached a state where they outperform humans on many tasks. Andrej Karpathy, director of AI at Tesla, conducted an experiment at Stanford where he trained himself to classify images from ImageNet~\cite{Karpathy2014}. After much training, he achieved an error score of 6.8\% which, at the time, was better than predictions from GoogleLeNet. However, deep neural networks have now reached a level which is significantly below the threshold of 6.8\% Karpathy achieved. The best submission for the ImageNet Large Scale Visual Recognition Competition achieves an error rate of only 2.25\%~\cite{Hu2018}.
 \bigskip
 
-In the past years, researches have shifted their attention to the field of \acrfull{nlp}. This trend has been triggered by the development of efficient word embeddings~\cite{Mikolov2013c}. Word embeddings are powerful mechanisms which are able transform words into meaningful vector representations. This technique allows researches to use deeper and deeper neural networks on tasks like \gls{ner}, \gls{pos} or sentiment analysis. Contrary to computer vision, however, we still have a long way to go until models are able to outperform humans on \gls{nlp} tasks.
+In the past years, researches have shifted their attention to the field of \acrfull{nlp}. This trend has was triggered by the development of efficient word embeddings~\cite{Mikolov2013c}. Word embeddings are powerful mechanisms which are able to transform words into meaningful vector representations. This technique allows researches to use deeper and deeper neural networks on tasks like \gls{ner}, \gls{pos} or sentiment analysis. Contrary to computer vision, however, we still have a long way to go until models can outperform humans on \gls{nlp} tasks.
 \bigskip
 
-One of the most useful \gls{nlp} tasks is sentiment analysis. The goal of sentiment analysis is to predict whether a sequence of words carries a negative, neutral or positive emotion. Automated sentiment analysis can be applied to huge amounts of data to form an opinion landscape or even be used to create sales forecasts based on customer reviews~\cite{Shen2015}. 
+One of the most useful \gls{nlp} tasks is sentiment analysis. The goal of sentiment analysis is to predict whether a sequence of words carries a negative, neutral or positive emotion. Automated sentiment analysis can be applied to vast amounts of data to form an opinion landscape or even be used to create sales forecasts based on customer reviews~\cite{Shen2015}. 
 \medskip
 
 \subsection*{Aspect Based Sentiment Analysis}
 
-As more and more people buy products and services online the significance of online reviews increases. Platforms like amazon encourage customers to write reviews and rate products. However, popular products can receive hundreds or thousands of reviews. It is often not feasible to read all reviews. Yet, reading only several reviews may impose a bias depending on which reviews the customer reads.
+As more and more people buy products and services online the significance of online reviews increases. Platforms like Amazon encourage customers to write reviews and rate products. However, popular products can receive hundreds or thousands of reviews. It is often not feasible to read all reviews. Though, reading only several reviews may impose a bias depending on which reviews the customer reads.
 \medskip
 
-To make the decision easier platforms often provide a mean rating. The problem is, that certain aspects may be important for some people but not for others. Consider this review for console game on amazon\footnote{\url{https://www.amazon.com/Mario-Kart-8-Deluxe-Nintendo-Switch/dp/B01N1037CV}} for instance:
+To make the decision easier platforms often provide a mean rating. The problem is that certain aspects may be important for some people but not for others. Consider this review for console game on amazon\footnote{\url{https://www.amazon.com/Mario-Kart-8-Deluxe-Nintendo-Switch/dp/B01N1037CV}} for instance:
 
 \begin{center}
-	"Decent game, but basically the same exact thing as the normal Mario Kart 8."
+    "Decent game, but basically the same exact thing as the normal Mario Kart 8."
 \end{center}
 
 This review reduces the overall score for the game even though this aspect might not be relevant for customers who did not play the previous game before. 
@@ -29,41 +29,41 @@ This review reduces the overall score for the game even though this aspect might
 Another great example are hotel reviews. One guest might care if the room contains a minibar while for another potential guest this aspect does not matter.
 \bigskip
 
-\acrfull{absa} is an extension to sentiment analysis. It tries to automate the task of detecting sentiment for a given aspect. Applied on customer reviews this solves a lot of issues for consumers but it has even further implications.
+\acrfull{absa} is an extension to sentiment analysis. It tries to automate the task of detecting sentiment for a given aspect. Applied on customer reviews, this solves many issues for consumers, but it has even further implications.
 \medskip
 
 Capturing pure sentiment is often not enough to obtain an accurate sentiment classification. For instance, the sentence
 
 \begin{center}
-	"I like the taste of organic apples but I'm not sure they are worth the extra money for me."
+    "I like the taste of organic apples, but I'm not sure they are worth the extra money for me."
 \end{center}
 
-contains a positive sentiment for the aspect "\textit{taste}" and a negative sentiment for "\textit{price}". This is relatively easy {(at least for humans)}. At the same time it is challenging to categorize the overall sentiment of the sentence. As a matter of fact, researched demonstrated that "interleaving" aspect and sentiment leads to a better understanding of the underlying sentence~\cite{Lakkaraju2014}.
+contains a positive sentiment for the aspect "\textit{taste}" and a negative sentiment for "\textit{price}". Classifying this sentence is relatively easy {(at least for humans)}. At the same time, it is challenging to categorize the overall sentiment of the sentence even for humans. As a matter of fact, Lakkaraju demonstrated that "interleaving" aspect and sentiment leads to a better understanding of the underlying sentence for classifiers~\cite{Lakkaraju2014}.
 
 
 \section{Challenges}
 
-Sentiment classification or even \acrfull{absa} is one of the most challenging tasks in the field of natural language processing~\cite{Pang2012}. For once, understanding the subtle differences in language is a challenging task. A text can contain humor, negations or words which have different meanings depending on the context. The following review from amazon\footnote{\url{https://www.amazon.co.uk/gp/customer-reviews/REII5J393XCJW/ref=cm_cr_dp_d_rvw_ttl?ie=UTF8&ASIN=B007LJ4PPO}} demonstrates a positive review for a watertight pouch for a kindle eBook reader.
+Sentiment classification or even \acrfull{absa} is one of the most challenging tasks in the field of natural language processing~\cite{Pang2012}. For once, understanding the subtle differences in language is a challenging task. A text can contain humor, negations or words which have different meanings depending on the context. The following review from amazon\footnote{\url{https://www.amazon.co.uk/gp/customer-reviews/REII5J393XCJW/ref=cm_cr_dp_d_rvw_ttl?ie=UTF8&ASIN=B007LJ4PPO}} demonstrates a positive review for a watertight pouch for a Kindle eBook reader.
 
 \begin{center}
-	"Got this for the Mother in-law for bath time, hoping it'd be crap, her kindle would slip out and electrocute her. So far, this bloody thing is staying in one piece. Great for waterproof kindling, crap for murder."
+    "Got this for the Mother-in-law for bath time, hoping it'd be crap, her kindle would slip out and electrocute her. So far, this bloody thing is staying in one piece. Great for waterproof kindling, crap for murder."
 \end{center}
 
-This review is undeniably positive. However most \gls{absa}- or sentiment analysis models would likely label this review as negative\footnote{The Stanford Sentiment Treebank online demo assigns a "very negative" label to this review}.
+This review is undeniably positive. However, most \gls{absa}- or sentiment analysis models would likely label this review as negative\footnote{The Stanford Sentiment Treebank online demo assigns a "very negative" label to this review}.
 
-Context is also important. A high price denotes a negative sentiment while a high quality indicates a positive sentiment.
+Context is also important. A high price denotes a negative sentiment while a high quality indicates positive sentiment.
 \medskip
 
-Getting data for sentiment analysis in general and aspect based sentiment analysis in particular is a another aggravating problem. It is very time consuming to annotate text data with aspect based sentiment. As a result, models which are trained on \gls{absa} tasks have to be trained with less data.
+Getting data for sentiment analysis in general and aspect based sentiment analysis, in particular, is another aggravating problem. It is very time-consuming to annotate text data with aspect-based sentiment. As a result, models trained on \gls{absa} tasks have to be trained with fewer samples.
 
 \section{Contributions}
 
-This thesis proposes a novel deep learning model for aspect based sentiment analysis. This model is based of two proven architectures for natural language processing. Our proposed model \acrfull{absat} uses the Google transformer~\cite{Vaswani2017d} as well as the idea of aspect heads~\cite{Schmitt2018}. This allows the model to predict multiple aspects and sentiments end-to-end.
+This thesis proposes a novel deep learning model for aspect-based sentiment analysis. This model is based on two proven architectures for natural language processing. Our proposed model \acrfull{absat} uses the Google transformer~\cite{Vaswani2017d} as well as the idea of aspect heads~\cite{Schmitt2018}. These aspect heads allow the model to predict multiple aspects and sentiments end-to-end.
 \medskip
 
 We also experiment with hyperparameter optimization and the implications of optimizing more than just model parameters.
 
-Furthermore, we explore multitask learning as a method to augment limited training data. Additionally, this thesis also examines the impact of transfer learning on the model performance. For this task we also built a new topic based sentiment analysis dataset using amazon reviews.
+Furthermore, we explore multitask-learning as a method to augment limited training data. Additionally, this thesis also examines the impact of transfer learning on model performance. For this task, we also built a new topic based sentiment analysis dataset using Amazon reviews.
 
 \section{Outline}
 
@@ -76,9 +76,8 @@ Chapter~\ref{ch:theory} takes a look at the main concepts and the theory behind 
 Chapter~\ref{ch:method} provides information about the chosen model architecture and how we use transfer- and multitask learning to boost performance.
 \smallskip
 
-Chapter~\ref{ch:setup} explains the experimental setup including data preprocessing, the datasets and how the models were trained and evaluated.
+Chapter~\ref{ch:setup} explains the experimental setup including data preprocessing, the datasets and how we trained and evaluated the models.
 \smallskip
 
 Results are then accumulated and discussed in Chapter~\ref{ch:discussion}. Lastly, the results are
-summarized in Chapter~\ref{ch:conclusion} and advice for future work is given.
-
+summarized in Chapter~\ref{ch:conclusion} and we give advice for future work.
