@@ -202,12 +202,12 @@ For the final evaluations we use transformer model with two encoder blocks, each
 	\bottomrule
 	\multicolumn{5}{c}{\textbf{CoNLL-2003 - NER}} \\
 	\end{tabular*}
-	\caption{Results of models on the shared CoNLL-2003 task for \gls{ner}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The CoNLL-2003 baseline \cite{Erik2003} was provided for the CoNLL-2003 NER competition. The best result at the competition achieved an F1-score of 0.8876 \cite{Florian2003}. At the time of writing {(April 2019)}, the best result on CoNLL-2003 NER is achieved by Baevski et al. \cite{Baevski2019}}.
+	\caption{Results of models on the shared CoNLL-2003 task for \gls{ner}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The CoNLL-2003 baseline~\cite{Erik2003} was provided for the CoNLL-2003 NER competition. The best result at the competition achieved an F1-score of 0.8876~\cite{Florian2003}. At the time of writing {(April 2019)}, the best result on CoNLL-2003 NER is achieved by Baevski et al.~\cite{Baevski2019}}.
 	\label{tab:06_resultsConLL}
 	\end{table}
 
 \bigskip
-Table~\ref{tab:06_resultsConLL} lists the result of our and other submissions for this tasks in order to assess the fitness of this model. The vanilla transformer model already achieves a very competitive performance. It outperforms every original submission for CoNLL-2013 by a wide margin and is only slightly behind current state of the art \cite{Baevski2019} even though it was not exclusively created for this purpose.
+Table~\ref{tab:06_resultsConLL} lists the result of our and other submissions for this tasks in order to assess the fitness of this model. The vanilla transformer model already achieves a very competitive performance. It outperforms every original submission for CoNLL-2013 by a wide margin and is only slightly behind current state of the art~\cite{Baevski2019} even though it was not exclusively created for this purpose.
 \medskip
 
 \begin{figure}[ht]
@@ -243,18 +243,18 @@ Finally, Section~\ref{sec:06_ResultsMultitask} and~\ref{sec:06_ResultsTransfer} 
 	\midrule
 					 & \textit{synchronic test}      	& \textit{diachronic test} 		& \textit{synchronic test}      		& \textit{diachronic test} 		\\
 	\midrule
-								 \multicolumn{5}{c}{GermEval-2017 competition \cite{Wojatzki2017}} 					\\
+								 \multicolumn{5}{c}{GermEval-2017 competition~\cite{Wojatzki2017}} 					\\
 	Majority Baseline        		 &  -        	&  -    	& 0.315        	&   0.384 							\\
 	\gls{svm} Baseline        		 &  -        	&  -    	& 0.322        	&   0.389 							\\
 	Best Submission 				 &  - 			&  - 		& 0.354 		& 0.401 							\\
 	\midrule
-								 \multicolumn{5}{c}{Schmitt et al. 2018 {(\gls{sota})} \cite{Schmitt2018}} 		\\
+								 \multicolumn{5}{c}{Schmitt et al. 2018 {(\gls{sota})}~\cite{Schmitt2018}} 		\\
 	Pipeline \gls{lstm} + FT 		 & -        	& -    		& 0.297     	&   0.342							\\
 	End-to-end \gls{lstm} + FT 		 & -        	& -    		& 0.315     	&   0.384 							\\
 	Pipeline \gls{cnn} + FT 		 & -        	& -    		& 0.295     	&   0.342 							\\
 	End-to-end \gls{cnn} + FT 		 & -        	& -    		& \textbf{0.423}&   \textbf{0.465} 					\\
 	\midrule
-	\multicolumn{5}{c}{Dugar 2019 \cite{Dugar2019}} 													\\
+	\multicolumn{5}{c}{Dugar 2019~\cite{Dugar2019}} 													\\
 	End-to-end \gls{lstm} + FT 		 & 0.56        	& -    		&  0.384 &   - 					\\
 	\midrule
 
@@ -267,7 +267,7 @@ Finally, Section~\ref{sec:06_ResultsMultitask} and~\ref{sec:06_ResultsTransfer} 
 	\multicolumn{5}{c}{\textbf{GermEval-2017 - Task C {(ABSA)}}} \\
 
 	\end{tabular*}
-	\caption{Evaluation and comparison of models on the shared GermEval-2017 task for \gls{absa}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The organizers of GermEval-2017 provide two baselines \cite{Wojatzki2017}. The first, just predicts the majority class which is \textit{"Neutral-Allgemein"}. This baseline already achieves a score of 0.315 on the synchronic test test. The second baseline uses a \gls{svm} classifier and achieves strong results very strong results of 0.322 and 0.389. The best submission for the GermEval-2017 challenge was achieved by Lee et al. \cite{Lee2017} with a score of 0.355 and 0.401. Schmitt et al. achieved \gls{sota} in 2018 with an End-to-end \gls{cnn} model with custom FastText {(FT)} embeddings. Their best score is 0.423 on the synchronic- and 0.465 on the diachronic test set. Our \gls{absat} model with linear mean heads and FastText embeddings outperforms every submission of the GermEval-2017 competition and is competitive with the end-to-end \gls{cnn} model of Schmitt et al.}
+	\caption{Evaluation and comparison of models on the shared GermEval-2017 task for \gls{absa}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The organizers of GermEval-2017 provide two baselines~\cite{Wojatzki2017}. The first, just predicts the majority class which is \textit{"Neutral-Allgemein"}. This baseline already achieves a score of 0.315 on the synchronic test test. The second baseline uses a \gls{svm} classifier and achieves strong results very strong results of 0.322 and 0.389. The best submission for the GermEval-2017 challenge was achieved by Lee et al.~\cite{Lee2017} with a score of 0.355 and 0.401. Schmitt et al. achieved \gls{sota} in 2018 with an End-to-end \gls{cnn} model with custom FastText {(FT)} embeddings. Their best score is 0.423 on the synchronic- and 0.465 on the diachronic test set. Our \gls{absat} model with linear mean heads and FastText embeddings outperforms every submission of the GermEval-2017 competition and is competitive with the end-to-end \gls{cnn} model of Schmitt et al.}
 	\label{tab:06_resultsGermEval}
 \end{table}
 
@@ -279,19 +279,19 @@ The GermEval-2017 dataset for \acrfull{absa} is a large dataset for multi label 
 Furthermore, Schmitt et al. - one of the inspirations for this thesis - use GermEval to evaluate their model. To compare the base transformer model we used the CoNLL-2003 NER task. To compare the whole architecture against other approaches it makes sense to use GermEval since there are other results which we can use to compare the performance of the \acrfull{absat} model.
 \bigskip
 
-Table~\ref{tab:06_resultsGermEval} reports on the result of the evaluation of our \gls{absat} against other GermEval models. The first three results are models created for the GermEval-2017 competition. Wojatzki et al. provide two baseline systems for the \gls{absa} task \cite{Wojatzki2017}. The first one is a majority class baseline which just predicts the class which contains most samples. For this dataset this is the class "Allgemein - Neutral". 
+Table~\ref{tab:06_resultsGermEval} reports on the result of the evaluation of our \gls{absat} against other GermEval models. The first three results are models created for the GermEval-2017 competition. Wojatzki et al. provide two baseline systems for the \gls{absa} task~\cite{Wojatzki2017}. The first one is a majority class baseline which just predicts the class which contains most samples. For this dataset this is the class "Allgemein - Neutral". 
 \medskip
 
 Since GermEval is very skewed towards this majority class the baseline is very strong. Refer to figure~\ref{fig:08_germEvalStatistics} for an overview of the aspects and their distributions. The second baseline system is a \gls{svm} classifier. At the time of the competition this baseline was very competitive and achieved the second place. Finally, the best submission for GermEval-2017 by Lee et al. achieves a micro F1 score of 0.354 on the first test set {(synchronic test)} and 0.401 on the second test set {(diachronic test)}.
 \medskip
 
-The current \acrfull{sota} is an end-to-end \gls{cnn} architecture by Schmitt et al. \cite{Schmitt2018} with custom FastText Embeddings. This architecture achieved a micro F1 score of 0.423 on the synchronic test set and 0.465 on the diachronic test set. 
+The current \acrfull{sota} is an end-to-end \gls{cnn} architecture by Schmitt et al.~\cite{Schmitt2018} with custom FastText Embeddings. This architecture achieved a micro F1 score of 0.423 on the synchronic test set and 0.465 on the diachronic test set. 
 \medskip
 
 In comparison, our \gls{absat} model achieves a micro F1 score of 0.390 and 0.413 on the first and second test sets. This means that our model outperforms even the best submission for the GermEval-2017 competition. In addition, the \gls{absat} model with \glspl{lmh} is competitive with the end-to-end \gls{cnn} created by Schmitt et al.
 \medskip
 
-Several techniques can be applied to produce even better results for the task. Schmitt et al. show that pre-training custom FastText embeddings on the target domain improves the model. Dugar also demonstrated that data augmentation can positively impact the model performance \cite{Dugar2019}. 
+Several techniques can be applied to produce even better results for the task. Schmitt et al. show that pre-training custom FastText embeddings on the target domain improves the model. Dugar also demonstrated that data augmentation can positively impact the model performance~\cite{Dugar2019}. 
 \smallskip
 In Section~\ref{sec:06_ResultsTransfer} we also demonstrate, that transfer learning positively impacts model performance. However, finding similar data in German might be challenging.
 

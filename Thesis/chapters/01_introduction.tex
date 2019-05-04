@@ -4,13 +4,13 @@
 \section{Motivation}
 \label{sec:introduction_motivation}
 
-In the recent past researches were able to advance machine learning models for computer vision further and further. These models have reached a state where they outperform humans on certain tasks. Andrej Karpathy, director of AI at Tesla, conducted an experiment at Standford where he trained himself to classify images from ImageNet \cite{Karpathy2014}. After a lot of training he achieved an error score of 6.8\% which, at the time, was better than predictions from GoogleLeNet. However, deep neural networks have now reached a level which is significantly below the threshold of 6.8\% Karpathy achieved. The best submission for the ImageNet Large Scale Visual Recognition Competition achieve an error rate of only 2.25\% \cite{Hu2018}.
+In the recent past researches were able to advance machine learning models for computer vision further and further. These models have reached a state where they outperform humans on certain tasks. Andrej Karpathy, director of AI at Tesla, conducted an experiment at Standford where he trained himself to classify images from ImageNet~\cite{Karpathy2014}. After a lot of training he achieved an error score of 6.8\% which, at the time, was better than predictions from GoogleLeNet. However, deep neural networks have now reached a level which is significantly below the threshold of 6.8\% Karpathy achieved. The best submission for the ImageNet Large Scale Visual Recognition Competition achieve an error rate of only 2.25\%~\cite{Hu2018}.
 \bigskip
 
-In the past years, researches have shifted their attention to the field of \acrfull{nlp}. This trend has been triggered by the development of efficient word embeddings \cite{Mikolov2013c}. Word embeddings are powerful mechanisms which are able transform words into meaningful vector representations. This technique allows researches to use deeper and deeper neural networks on tasks like \gls{ner}, \gls{pos} or sentiment analysis. Contrary to computer vision, however, we still have a long way to go until models are able to outperform humans on \gls{nlp} tasks.
+In the past years, researches have shifted their attention to the field of \acrfull{nlp}. This trend has been triggered by the development of efficient word embeddings~\cite{Mikolov2013c}. Word embeddings are powerful mechanisms which are able transform words into meaningful vector representations. This technique allows researches to use deeper and deeper neural networks on tasks like \gls{ner}, \gls{pos} or sentiment analysis. Contrary to computer vision, however, we still have a long way to go until models are able to outperform humans on \gls{nlp} tasks.
 \bigskip
 
-One of the most useful \gls{nlp} tasks is sentiment analysis. The goal of sentiment analysis is to predict whether a sequence of words carries a negative, neutral or positive emotion. Automated sentiment analysis can be applied to huge amounts of data to form an opinion landscape or even be used to create sales forecasts based on customer reviews \cite{Shen2015}. 
+One of the most useful \gls{nlp} tasks is sentiment analysis. The goal of sentiment analysis is to predict whether a sequence of words carries a negative, neutral or positive emotion. Automated sentiment analysis can be applied to huge amounts of data to form an opinion landscape or even be used to create sales forecasts based on customer reviews~\cite{Shen2015}. 
 \medskip
 
 \subsection*{Aspect Based Sentiment Analysis}
@@ -38,12 +38,12 @@ Capturing pure sentiment is often not enough to obtain an accurate sentiment cla
 	"I like the taste of organic apples but I'm not sure they are worth the extra money for me."
 \end{center}
 
-contains a positive sentiment for the aspect "\textit{taste}" and a negative sentiment for "\textit{price}". This is relatively easy {(at least for humans)}. At the same time it is challenging to categorize the overall sentiment of the sentence. As a matter of fact, researched demonstrated that "interleaving" aspect and sentiment leads to a better understanding of the underlying sentence \cite{Lakkaraju2014}.
+contains a positive sentiment for the aspect "\textit{taste}" and a negative sentiment for "\textit{price}". This is relatively easy {(at least for humans)}. At the same time it is challenging to categorize the overall sentiment of the sentence. As a matter of fact, researched demonstrated that "interleaving" aspect and sentiment leads to a better understanding of the underlying sentence~\cite{Lakkaraju2014}.
 
 
 \section{Challenges}
 
-Sentiment classification or even \acrfull{absa} is one of the most challenging tasks in the field of natural language processing \cite{Pang2012}. For once, understanding the subtle differences in language is a challenging task. A text can contain humor, negations or words which have different meanings depending on the context. The following review from amazon\footnote{\url{https://www.amazon.co.uk/gp/customer-reviews/REII5J393XCJW/ref=cm_cr_dp_d_rvw_ttl?ie=UTF8&ASIN=B007LJ4PPO}} demonstrates a positive review for a watertight pouch for a kindle eBook reader.
+Sentiment classification or even \acrfull{absa} is one of the most challenging tasks in the field of natural language processing~\cite{Pang2012}. For once, understanding the subtle differences in language is a challenging task. A text can contain humor, negations or words which have different meanings depending on the context. The following review from amazon\footnote{\url{https://www.amazon.co.uk/gp/customer-reviews/REII5J393XCJW/ref=cm_cr_dp_d_rvw_ttl?ie=UTF8&ASIN=B007LJ4PPO}} demonstrates a positive review for a watertight pouch for a kindle eBook reader.
 
 \begin{center}
 	"Got this for the Mother in-law for bath time, hoping it'd be crap, her kindle would slip out and electrocute her. So far, this bloody thing is staying in one piece. Great for waterproof kindling, crap for murder."
@@ -58,7 +58,7 @@ Getting data for sentiment analysis in general and aspect based sentiment analys
 
 \section{Contributions}
 
-This thesis proposes a novel deep learning model for aspect based sentiment analysis. This model is based of two proven architectures for natural language processing. Our proposed model \acrfull{absat} uses the Google transformer \cite{Vaswani2017d} as well as the idea of aspect heads \cite{Schmitt2018}. This allows the model to predict multiple aspects and sentiments end-to-end.
+This thesis proposes a novel deep learning model for aspect based sentiment analysis. This model is based of two proven architectures for natural language processing. Our proposed model \acrfull{absat} uses the Google transformer~\cite{Vaswani2017d} as well as the idea of aspect heads~\cite{Schmitt2018}. This allows the model to predict multiple aspects and sentiments end-to-end.
 \medskip
 
 We also experiment with hyperparameter optimization and the implications of optimizing more than just model parameters.

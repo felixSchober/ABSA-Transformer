@@ -1,18 +1,18 @@
 \chapter{Method}
 \label{ch:method}
 
-The transformer model has shown great potential on a variety challenging \gls{nlp} tasks. Originally, the transformer was created to perform machine translation where it outperformed previous models by a huge margin \cite{Vaswani2017}. In fact, at the time of writing, the transformer is the core of the Google translate engine.
+The transformer model has shown great potential on a variety challenging \gls{nlp} tasks. Originally, the transformer was created to perform machine translation where it outperformed previous models by a huge margin~\cite{Vaswani2017}. In fact, at the time of writing, the transformer is the core of the Google translate engine.
 \medskip
 
-OpenAI uses the transformer to perform various \gls{nlp} tasks \cite{Radford2018}. Their \gls{gpt}-model solves classification, entailment, similarity and multiple choice question answering tasks. They use a transformer encoder stack with 12 encoder blocks and task dependent classification heads. 
+OpenAI uses the transformer to perform various \gls{nlp} tasks~\cite{Radford2018}. Their \gls{gpt}-model solves classification, entailment, similarity and multiple choice question answering tasks. They use a transformer encoder stack with 12 encoder blocks and task dependent classification heads. 
 
 They show that even though the same base transformer model is used for each task they achieve \gls{sota} results for most of the tasks.
 \medskip
 
-One year later, in 2019, OpenAI published \gls{gpt}-2 which is an extension to \gls{gpt} \cite{Radford2019}. With \gls{gpt}-2 Radford et al. are able to achieve revolutionary results generating text with a transformer architecture\footnote{OpenAI will not release the trained model for the language generation task as they are afraid that it will be used for malicious intents - Source: OpenAI blog \url{https://openai.com/blog/better-language-models/}}. Again, they also achieve \gls{sota} results on other \gls{nlp} task mentioned above.
+One year later, in 2019, OpenAI published \gls{gpt}-2 which is an extension to \gls{gpt}~\cite{Radford2019}. With \gls{gpt}-2 Radford et al. are able to achieve revolutionary results generating text with a transformer architecture\footnote{OpenAI will not release the trained model for the language generation task as they are afraid that it will be used for malicious intents - Source: OpenAI blog \url{https://openai.com/blog/better-language-models/}}. Again, they also achieve \gls{sota} results on other \gls{nlp} task mentioned above.
 \bigskip
 
-We propose the \acrfull{absat} which builds on the knowledge that the transformer is a powerful architecture useful for a variety of NLP tasks. Radford et al. already show that the transformer can be used to predict sentiment for a document \cite{Radford2018}. 
+We propose the \acrfull{absat} which builds on the knowledge that the transformer is a powerful architecture useful for a variety of NLP tasks. Radford et al. already show that the transformer can be used to predict sentiment for a document~\cite{Radford2018}. 
 
 However, sentiment analysis is one of the few tasks where \gls{gpt}-1 is not able to achieve \gls{sota} results. Moreover, \gls{gpt}-1 only classifies standard sentiment and not aspect-based sentiment.
 \medskip
@@ -21,7 +21,7 @@ This will be the first architecture which uses a transformer to perform multi-ta
 
 \section{General Model Architecture}
 
-The following section describes the proposed \acrfull{absat} architecture. As the name suggests this design is based on the transformer model \cite{Vaswani2017}. The second model characteristic is influenced by the work of Schmitt et al. and their concept of separate aspect heads \cite{Schmitt2018}.
+The following section describes the proposed \acrfull{absat} architecture. As the name suggests this design is based on the transformer model~\cite{Vaswani2017}. The second model characteristic is influenced by the work of Schmitt et al. and their concept of separate aspect heads~\cite{Schmitt2018}.
 \bigskip
 
 \begin{figure}[htp]
@@ -55,7 +55,7 @@ However, the difference was only a few percent and it is conceivable that a tran
 Considering the smaller datasets that we use for \gls{absa}, the \gls{absat} model uses pre-trained embeddings instead of untrained embeddings. Pre-trained embeddings for both \gls{glove} and fastText are only available for up to 300 dimensions. As a consequence, the model size of transformer is only 300 instead of 512.
 \bigskip
 
-Similar to the vanilla transformer, \gls{absat} also uses an \gls{adam} optimizer \cite{Kingma2014} and a special learning rate decay which is called NOAM\footnote{It is not clear what noam stands for or where this learning rate decay schema came from. It is not mentioned or cited as noam but it is referred to as noam by the authors in discussions: \url{https://github.com/tensorflow/tensor2tensor/issues/280}} \cite{Vaswani2017}
+Similar to the vanilla transformer, \gls{absat} also uses an \gls{adam} optimizer~\cite{Kingma2014} and a special learning rate decay which is called NOAM\footnote{It is not clear what noam stands for or where this learning rate decay schema came from. It is not mentioned or cited as noam but it is referred to as noam by the authors in discussions: \url{https://github.com/tensorflow/tensor2tensor/issues/280}}~\cite{Vaswani2017}
 
 \begin{equation}
 	\text{NOAM:} \quad lr = d_\text{model}^{0.5} * min(step\_num^{0.5}, step\_num*warmup\_steps^{-1.5})
@@ -196,7 +196,7 @@ The results for this experiment is located in Section~\ref{sec:06_ResultsMultita
 Besides, multi-task learning we also perform transfer learning to test if the transformer is able to transfer knowledge from one domain to another domain. The transformer model is often used for language modelling and language understanding. These tasks are essential for every \gls{nlp} task and in general and sentiment analysis specifically. Hence, the transformer base should be domain independent. 
 \medskip
 
-It has been already shown that transferring knowledge from the word embedding layer from one domain to another is not only possible but beneficial for the overall performance \cite{Yosinski2014}. Therefore, in addition to the transformer base we will also use pre-trained word embeddings.
+It has been already shown that transferring knowledge from the word embedding layer from one domain to another is not only possible but beneficial for the overall performance~\cite{Yosinski2014}. Therefore, in addition to the transformer base we will also use pre-trained word embeddings.
 \medskip
 
 Due to the nature of the aspect heads we can not transfer knowledge from one domain to another. Not only are the aspect heads highly domain specific but also aspect specific. 
