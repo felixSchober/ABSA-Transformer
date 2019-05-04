@@ -10,12 +10,11 @@ from data.data_loader import Dataset
 from misc.preferences import PREFERENCES
 from misc.run_configuration import get_default_params, randomize_params, OutputLayerType, hyperOpt_goodParams, elmo_params, good_organic_hp_params
 from misc import utils
-
+import traceback
 from optimizer import get_optimizer
 from criterion import NllLoss, LossCombiner
 
 from models.transformer.encoder import TransformerEncoder
-from models.jointAspectTagger import JointAspectTagger
 from trainer.train import Trainer
 
 import pprint
@@ -59,10 +58,31 @@ class Experiment(object):
 		assert self.hp.seed is None
 
 	def load_model(self, dataset, rc, experiment_name):
-		loss = LossCombiner(4, dataset.class_weights, NllLoss)
+
 		transformer = TransformerEncoder(dataset.source_embedding,
 										hyperparameters=rc)
-		model = JointAspectTagger(transformer, rc, 4, 20, dataset.target_names)
+
+		if rc.use_random_classifier:
+			from models.random_model import RandomModel
+			model = RandomModel(rc, dataset.target_size, len(dataset.target_names), dataset.target_names)
+			loss = NllLoss(dataset.target_size, dataset.class_weights[0])
+
+			
+		else:
+			# NER or ABSA-task?
+			if rc.task == 'ner':
+				from models.transformer_tagger import TransformerTagger
+				from models.output_layers import SoftmaxOutputLayer
+				loss = NllLoss(dataset.target_size, dataset.class_weights[0])
+				softmax = SoftmaxOutputLayer(rc.model_size, dataset.target_size)
+				model = TransformerTagger(transformer, softmax)
+
+			else:
+				from models.jointAspectTagger import JointAspectTagger
+				loss = LossCombiner(dataset.target_size, dataset.class_weights, NllLoss)
+				model = JointAspectTagger(transformer, rc, dataset.target_size, len(dataset.target_names), dataset.target_names)
+
+
 		optimizer = get_optimizer(model, rc)
 		trainer = Trainer(
 							model,
@@ -71,8 +91,8 @@ class Experiment(object):
 							rc,
 							dataset,
 							experiment_name,
-							enable_tensorboard=True,
-							verbose=True)
+							enable_tensorboard=False,
+							verbose=False)
 		return trainer
 
 	def load_dataset(self, rc, logger, task):
@@ -90,7 +110,7 @@ class Experiment(object):
 			init_token=None,
 			eos_token=None
 		)
-		dataset.load_data(self.dsl, verbose=True)
+		dataset.load_data(self.dsl, verbose=False)
 		return dataset
 
 	def _objective(self, rc, run):
@@ -122,7 +142,8 @@ class Experiment(object):
 		try:
 			dataset = self.load_dataset(rc, dataset_logger, rc.task)
 		except Exception as err:
-			print('Could load dataset: ' + str(err))
+			print('Could load dataset: ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
 			logger.exception("Could not load dataset")
 			return {
 				'status': STATUS_FAIL,
@@ -137,7 +158,9 @@ class Experiment(object):
 		try:
 			trainer = self.load_model(dataset, rc, experiment_name)
 		except Exception as err:
-			print('Could not load model: ' + str(err))
+			print('Could not load model: ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
+
 			logger.exception("Could not load model")
 			return {
 				'status': STATUS_FAIL,
@@ -154,7 +177,8 @@ class Experiment(object):
 			tr_end = time.time()
 			model = result['model']
 		except Exception as err:
-			print('Exception while training: ' + str(err))
+			print('Exception while training: ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
 			logger.exception("Could not complete iteration")
 			return {
 				'status': STATUS_FAIL,
@@ -177,10 +201,11 @@ class Experiment(object):
 		# perform evaluation and log results
 		result = None
 		try:
-			result = trainer.perform_final_evaluation(use_test_set=True, verbose=False)
+			result = trainer.perform_final_evaluation(use_test_set=True, verbose=False, c_matrix=True)
 		except Exception as err:
 			logger.exception("Could not complete iteration evaluation.")
-			print('Could not complete iteration evaluation: ' + str(err))
+			print('Could not complete iteration evaluation: ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
 			return {
 				'status': STATUS_FAIL,
 				'eval_time': time.time() - run_time,
@@ -188,6 +213,8 @@ class Experiment(object):
 				'best_f1': trainer.get_best_f1()
 			}
 		print(f'VAL f1\t{trainer.get_best_f1()} - ({result[1][1]})')
+		print(f'(macro) f1\t{trainer.get_final_macro_f1()}')
+
 		print(f'VAL loss\t{trainer.get_best_loss()}')
 		return {
 				'loss': result[1][0],
@@ -205,11 +232,13 @@ class Experiment(object):
 					},
 					'validation': {
 						'loss': result[1][0],
-						'f1': result[1][1]
+						'f1': result[1][1],
+						'f1_macro': trainer.get_final_macro_f1()['valid']
 					},
 					'test': {
 						'loss': result[2][0],
-						'f1': result[2][1]
+						'f1': result[2][1],
+						'f1_macro': trainer.get_final_macro_f1()['test']
 					}
 				}
 			}
@@ -245,8 +274,12 @@ class Experiment(object):
 				df_row['train_f1'] = r_tr['f1']
 				df_row['val_loss'] = r_va['loss']
 				df_row['val_f1'] = r_va['f1']
+				df_row['val_f1_macro'] = r_va['f1_macro']
+
 				df_row['test_loss'] = r_te['loss']
 				df_row['test_f1'] = r_te['f1']
+				df_row['test_f1_macro'] = r_te['f1_macro']
+
 			self.data_frame = self.data_frame.append(df_row, ignore_index=True)
 			logger.info('#################################################################################')
 			logger.info('############################## EVALUATION COMPLETE ##############################')
@@ -265,37 +298,43 @@ class Experiment(object):
 		try:
 			self.data_frame.to_csv(e_path + 'df.csv')
 		except Exception as err:
-			logger.exception('Could not export dataframe to csv')
+			logger.exception('Could not export dataframe to csv ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
 
 		try:
 			self.data_frame.to_pickle(e_path + 'df.pkl')
 		except Exception as err:
-			logger.exception('Could not pickle dataframe')
+			logger.exception('Could not pickle dataframe ' + repr(err))
+			print(traceback.print_tb(err.__traceback__))
 
-		print('TEST F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
-		logger.info('\n' + str(self.data_frame.test_f1.describe()))
-		return self.data_frame
+		print('TEST MICRO F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
+		print('TEST MACRO F1 Statistics\n' + str(self.data_frame.test_f1_macro.describe()))
+
+		logger.info('\n\nMICRO\n' + str(self.data_frame.test_f1.describe()))
+		logger.info('\n\nMACRO\n' + str(self.data_frame.test_f1_macro.describe()))
+
+		return (self.data_frame, e_path)
 
 
 	def _print_result(self, result, i):
 		if result['status'] == STATUS_OK:
-			print(f"       .---.\n \
-	/     \\\n\
-	\\.@-@./\t\tExperiment: [{i}/{self.runs}]\n\
-	/`\\_/`\\\t\tStatus: {result['status']}\n\
-	//  _  \\\\\tLoss: {result['best_loss']}\n\
-	| \\     )|_\tf1: {result['best_f1']}\n\
-	/`\\_`>  <_/ \\\n\
-	\\__/'---'\\__/\n")
+			print(f".---.\n \
+/     \\\n\
+ \\.@-@./\t\tExperiment: [{i+1}/{self.runs}]\n\
+ /`\\_/`\\\t\tStatus: {result['status']}\n\
+ //  _  \\\\\tLoss: {result['best_loss']}\n\
+ | \\     )|_\tf1: {result['best_f1']}\n\
+ /`\\_`>  <_/ \\\n\
+ \\__/'---'\\__/\n")
 		else:
-			print(f"       .---.\n \
-	/     \\\n\
-	\\.@-@./\tExperiment: [{i}/{self.runs}] (FAIL)\n\
-	/`\\_/`\\\n\
-	//  _  \\\\\\n\
-	| \\     )|_\n\
-	/`\\_`>  <_/ \\\n\
-	\\__/'---'\\__/\n")
+			print(f"  .---.\n \
+/     \\\n\
+ \\.@-@./\tExperiment: [{i+1}/{self.runs}] (FAIL)\n\
+ /`\\_/`\\\n\
+ //  _  \\\\\n\
+| \\     )|_\n\
+ /`\\_`>  <_/ \\\n\
+ \\__/'---'\\__/\n")
 
 
 

@@ -178,21 +178,27 @@ class Dataset(object):
 		self.logger.info('\n' + parameter_table)
 
 	def show_stats(self):
-		stats = self._show_split_stats()
-		self.logger.info('\n' + stats)
-		print(stats)
+		try:
+			stats = self._show_split_stats()
+			self.logger.info('\n' + stats)
+			print(stats)
 
-		stats = self._show_field_stats()
-		self.logger.info('\n' + stats)
-		print(stats)
-
+			stats = self._show_field_stats()
+			self.logger.info('\n' + stats)
+			print(stats)
+		except Exception as err:
+			self.logger.exception('Could not show dataset stats')
+		
 		stats = self._calculate_dataset_stats()
-		self.logger.info('\n' + stats)
-		print(stats)
 
-		stats = self._show_ds_split_stats()
-		self.logger.info('\n' + stats)
-		print(stats)
+		try:
+			self.logger.info('\n' + stats)
+			print(stats)
+			stats = self._show_ds_split_stats()
+			self.logger.info('\n' + stats)
+			print(stats)
+		except Exception as err:
+			self.logger.exception('Could not print dataset stats')
 
 	def _show_split_stats(self) -> str:
 		t = PrettyTable(['Split', 'Size'])
@@ -204,6 +210,9 @@ class Dataset(object):
 		return result
 
 	def _show_ds_split_stats(self):
+
+		if self.ds_stats is None:
+			return ''
 
 		result = ''
 		split_names = ('Train', 'Validation', 'Test')
@@ -287,9 +296,12 @@ class Dataset(object):
 			t.add_row(['Head Weight', '', '', head_weight])
 
 			if self.verbose:
-				self.plot_dataset_stats(sentiment_distributions, labels, f'Sentiment Distribution - {name}', f'{name} sentiments.pdf')
-				self.plot_dataset_stats(observation_distribution, observation_distribution_lables, f'Ratio of N/A and sentiment - {name}', f'{name} observations.pdf')
-
+				try:
+					selffix.plot_dataset_stats(sentiment_distributions, labels, f'Sentiment Distribution - {name}', f'{name} sentiments.pdf')
+					self.plot_dataset_stats(observation_distribution, observation_distribution_lables, f'Ratio of N/A and sentiment - {name}', f'{name} observations.pdf')
+				except Exception as err:
+					self.logger.exception('Could not plot aspect dataset stats')
+				
 			if not 'majority_class' in self.baselines:
 				self.baselines['majority_class'] = majority_class_baseline
 				self.majority_class_baseline = majority_class_baseline
@@ -298,7 +310,11 @@ class Dataset(object):
 			result_str += '\n\n' + t.get_string(title=name) + '\n\n'
 
 		if self.verbose:
-			self.plot_dataset_stats(target_sentiment_samples, target_sentiment_distribution_labels, f'Dataset Aspects - Distribution', 'aspect_distribution.pdf')
+			try:
+				self.plot_dataset_stats(target_sentiment_samples, target_sentiment_distribution_labels, f'Dataset Aspects - Distribution', 'aspect_distribution.pdf')
+			except Exception as err:
+				self.logger.exception('Could not plot aspect dataset stats')
+
 
 		return result_str
 

@@ -36,7 +36,7 @@ def germeval2017_dataset(
 					use_cuda=False,
 					verbose=True):
 
-	assert hyperparameters.task == 'germeval'
+	assert hyperparameters.task == 'germeval' or hyperparameters.task == 'germeval_multitask'
 	assert hyperparameters.language == 'de'
 	if hyperparameters.use_stop_words:
 		stop_words = get_stop_words('de')
@@ -96,7 +96,7 @@ def germeval2017_dataset(
 							unk_token=None,
 							use_vocab=True)
 
-	aspect_sentiment_field = ReversibleField(
+	aspect_sentiment_field = data.Field(
 							batch_first=True,
 							is_target=True,
 							sequential=True,

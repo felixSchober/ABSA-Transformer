@@ -85,7 +85,31 @@ hyperOpt_goodParams = {
 	'harmonize_bahn': True,
 	'model_size': 300,
 	'organic_text_cleaning': False
+}
 
+conll_params = {
+	'task': 'ner',
+	'embedding_type': 'fasttext',
+	'learning_rate_scheduler': {
+		'noam_learning_rate_warmup': 3500,
+		'noam_learning_rate_factor': 0.5
+	},
+	'optimizer_type':  OptimizerType.Adam,
+	'optimizer':  {
+		'learning_rate': 7.2e-5,
+		'adam_beta1': 0.9,
+		'adam_beta2': 0.98,
+		'adam_eps': 1e-8,
+		'adam_weight_decay': 1e-6,
+	},
+	'num_encoder_blocks': 2,
+	'num_heads': 2,
+	'att_d_k': 150,
+	'att_d_v': 150,
+	'dropout_rate': 0.302424,
+	'pointwise_layer_size': 287,
+	'clip_comments_to': 200,
+	'model_size': 300
 }
 
 elmo_params = {
@@ -133,7 +157,7 @@ good_organic_hp_params = {
 		'adam_eps': 1.317166484e-05,		
 		'adam_weight_decay': 0.0001,
 	},
-	'use_bias': True,
+	'transformer_use_bias': True,
 	'num_encoder_blocks': 2,
 	'num_heads': 2,
 	'att_d_k': 150,
@@ -154,6 +178,90 @@ good_organic_hp_params = {
 	'task': 'entities'
 }
 
+good_organic_hp_params_2 = {
+	'output_layer_type': OutputLayerType.Convolutions,
+	'embedding_type': 'glove',
+	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
+	'learning_rate_scheduler': {
+		'noam_learning_rate_warmup': 3836,
+		'noam_learning_rate_factor': 1.5733172576455363
+	},
+	'optimizer_type':  OptimizerType.Adam,
+	'optimizer':  {
+		'learning_rate': 0.02899251,
+		'adam_beta1': 0.8947907481175669,
+		'adam_beta2': 0.7737347560683068,
+		'adam_eps': 0.040046922931353646,		
+		'adam_weight_decay': 0.001,
+	},
+	'transformer_use_bias': True,
+	'num_encoder_blocks': 2,
+	'num_heads': 1,
+	'att_d_k': 300,
+	'att_d_v': 300,
+	'dropout_rate': 0.16555331951810104,
+	'pointwise_layer_size': 178,
+	'output_dropout_rate': 0.15041815027056968,
+	'clip_comments_to': 66,
+	'model_size': 300,
+	'use_spell_checkers': False,
+	'batch_size': 62,
+	'language': 'en',
+	'early_stopping': 5,
+	'output_conv_num_filters': 104,
+	'output_conv_kernel_size': 7,
+	'output_conv_stride': 91,
+	'output_conv_padding': 0,
+	'num_epochs': 35,
+	'log_every_xth_iteration': -1,
+	'embedding_dim': 300,
+	'embedding_name': '6B',
+	'task': 'entities',
+	'use_stop_words': True
+}
+
+good_germeval_params = {
+	'output_layer_type': OutputLayerType.LinearSum,
+	'embedding_type': 'fasttext',
+	'learning_rate_scheduler_type': LearningSchedulerType.Noam,
+	'learning_rate_scheduler': {
+		'noam_learning_rate_warmup': 6706,
+		'noam_learning_rate_factor': 1.120962889284992
+	},
+	'optimizer_type':  OptimizerType.Adam,
+	'optimizer':  {
+		'learning_rate': 0.09624249687454951,
+		'adam_beta1': 0.8278419040185792,
+		'adam_beta2': 0.7523040247084006,
+		'adam_eps': 0.001028230097476593,		
+		'adam_weight_decay': 0.0001,
+	},
+	'transformer_use_bias': True,
+	'num_encoder_blocks': 6,
+	'num_heads': 5,
+	'att_d_k': 60,
+	'att_d_v': 60,
+	'dropout_rate': 0.3116352148277839,
+	'pointwise_layer_size': 199,
+	'output_dropout_rate': 0.1410769136750667,
+	'output_conv_num_filters': 117,
+	'output_conv_kernel_size': 5,
+	'output_conv_stride': 9,
+	'output_conv_padding': 0,
+	'clip_comments_to': 230,
+	'model_size': 300,
+	'use_spell_checkers': False,
+	'use_stop_words': True,
+	'batch_size': 26,
+	'language': 'de',
+	'early_stopping': 10,
+	'num_epochs': 35,
+	'log_every_xth_iteration': -1,
+	'embedding_dim': 300,
+	'embedding_name': '6B',
+	'task': 'germeval'
+}
+
 class RunConfiguration(object):
 
 		def __init__(self,
@@ -172,6 +280,10 @@ class RunConfiguration(object):
 			assert kwargs['batch_size'] > 0
 			assert early_stopping == -1 or early_stopping > 0
 			assert kwargs['task'] != None and kwargs['task'] != ''
+
+
+			# switch for a random classifier
+			self.use_random_classifier = self._get_default('use_random_classifier', default=False)
 
 			self.model_size = model_size
 			self.early_stopping = early_stopping
@@ -249,7 +361,7 @@ class RunConfiguration(object):
 			self.pointwise_layer_size = self._get_default('pointwise_layer_size', cast_int=True)
 
 			# Output Layer
-			self.last_layer_dropout = kwargs['output_dropout_rate']
+			self.last_layer_dropout = self._get_default('output_dropout_rate', 0.0)
 
 			# - Convolutions:	
 			if output_layer_type == OutputLayerType.Convolutions:

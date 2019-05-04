@@ -46,63 +46,83 @@ class OptimizerWrapper(torch.optim.Optimizer):
     def rate(self, step: int = None) -> float:
         return 0.0
 
+
+class LazyOptimizer(torch.optim.Optimizer):
+    """
+    This optimizer does nothing... what did you expect?
+    """
+    def __init__(self):
+        pass
+
+    def step(self, *args) -> None:
+        return
+
+    def zero_grad(self):
+        return
+
+    def rate(self, step: int = None) -> float:
+        return 0.0
+
         
 def get_optimizer(model, hp: RunConfiguration) -> torch.optim.Optimizer:
 
-	if hp.optimizer_type == OptimizerType.Adam:
-		optimizer = torch.optim.Adam(model.parameters(),
+    if hp.use_random_classifier:
+        return LazyOptimizer()
+
+    if hp.optimizer_type == OptimizerType.Adam:
+        optimizer = torch.optim.Adam(model.parameters(),
                             lr=hp.learning_rate,
                             betas=(hp.adam_beta1, hp.adam_beta2),
                             eps=hp.adam_eps,
-							weight_decay=hp.adam_weight_decay,
-							amsgrad=hp.adam_amsgrad)
+                            weight_decay=hp.adam_weight_decay,
+                            amsgrad=hp.adam_amsgrad)
 
-	elif hp.optimizer_type == OptimizerType.SGD:
-		optimizer = torch.optim.SGD(
-							model.parameters(),
-							lr=hp.learning_rate,
-							momentum=hp.sgd_momentum,
-							dampening=hp.sgd_dampening,
-							nesterov=hp.sgd_nesterov
-		)
+    elif hp.optimizer_type == OptimizerType.SGD:
+        optimizer = torch.optim.SGD(
+                            model.parameters(),
+                            lr=hp.learning_rate,
+                            momentum=hp.sgd_momentum,
+                            dampening=hp.sgd_dampening,
+                            nesterov=hp.sgd_nesterov
+        )
 
-	elif hp.optimizer_type == OptimizerType.RMS_PROP:
-		optimizer = torch.optim.RMSprop(
-										model.parameters(),
-										lr=hp.learning_rate,
-										alpha=hp.rmsprop_alpha,
-										eps=hp.rmsprop_eps,
-										weight_decay=hp.rmsprop_weight_decay,
-										centered=hp.rmsprop_centered,
-										momentum=hp.rmsprop_momentum
-		)
+    elif hp.optimizer_type == OptimizerType.RMS_PROP:
+        optimizer = torch.optim.RMSprop(
+                                        model.parameters(),
+                                        lr=hp.learning_rate,
+                                        alpha=hp.rmsprop_alpha,
+                                        eps=hp.rmsprop_eps,
+                                        weight_decay=hp.rmsprop_weight_decay,
+                                        centered=hp.rmsprop_centered,
+                                        momentum=hp.rmsprop_momentum
+        )
 
-	elif hp.optimizer_type == OptimizerType.AdaBound:
-		from adabound import AdaBound
-		optimizer = AdaBound(model.parameters(), lr=hp.learning_rate, final_lr=hp.adabound_finallr)
+    elif hp.optimizer_type == OptimizerType.AdaBound:
+        from adabound import AdaBound
+        optimizer = AdaBound(model.parameters(), lr=hp.learning_rate, final_lr=hp.adabound_finallr)
 
-	# elif hp.learning_rate_type == LearningSchedulerType.Adadelta:
-	# 	optimizer = torch.optim.Adadelta(model.parameters(), 
-	# 	lr=hp.learning_rate)
+    # elif hp.learning_rate_type == LearningSchedulerType.Adadelta:
+    # 	optimizer = torch.optim.Adadelta(model.parameters(), 
+    # 	lr=hp.learning_rate)
 
-	return wrap_optimizer(hp, optimizer)
+    return wrap_optimizer(hp, optimizer)
 
 
 def wrap_optimizer(hp: RunConfiguration, optimizer: torch.optim.Optimizer):
-	if hp.learning_rate_scheduler_type == LearningSchedulerType.NoSchedule:
-		return OptimizerWrapper(optimizer)
+    if hp.learning_rate_scheduler_type == LearningSchedulerType.NoSchedule:
+        return OptimizerWrapper(optimizer)
 
-	elif hp.learning_rate_scheduler_type == LearningSchedulerType.Noam:
-		return NoamOptimizer(hp.model_size,
+    elif hp.learning_rate_scheduler_type == LearningSchedulerType.Noam:
+        return NoamOptimizer(hp.model_size,
                             hp.noam_learning_rate_factor,
                             hp.noam_learning_rate_warmup,
                             optimizer)
 
-	elif hp.learning_rate_scheduler_type == LearningSchedulerType.Exponential:
-		return torch.optim.lr_scheduler.ExponentialLR(
-			optimizer,
-			gamma=hp.exponentiallr_gamma
+    elif hp.learning_rate_scheduler_type == LearningSchedulerType.Exponential:
+        return torch.optim.lr_scheduler.ExponentialLR(
+            optimizer,
+            gamma=hp.exponentiallr_gamma
         ) 
 
-	
+    
 

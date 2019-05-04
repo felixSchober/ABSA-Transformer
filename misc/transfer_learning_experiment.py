@@ -27,7 +27,7 @@ STATUS_OK = 'ok'
 
 class TransferLearningExperiment(object):
 
-	def __init__(self, task, experiment_name, experiment_description, default_hp, overwrite_hp, data_loaders, dataset_infos, runs=5):
+	def __init__(self, task, experiment_name, experiment_description, default_hp, overwrite_hp, data_loaders, dataset_infos, runs=5, load_model_path=None, produce_baseline=False):
 
 		# make sure preferences are set
 		assert data_loaders is not None
@@ -45,9 +45,16 @@ class TransferLearningExperiment(object):
 		self.runs = runs
 		self.hp = None
 		self.data_frame = pd.DataFrame()
+		self.load_model_path = load_model_path
+		self.skip_source_training = False # skip training if source model loaded
+		self.produce_baseline = produce_baseline
 
 		print(f'Transfer Learning Experiment {self.experiment_name} initialized. Source: {dataset_infos["data_root"][0]} -> Target {dataset_infos["data_root"][1]}')
-		
+		if self.load_model_path is not None:
+			print(f'Try to restore model at ' + self.load_model_path)
+
+			if not utils.check_if_file_exists(self.load_model_path):
+				print(f'Could not find model path. Please make sure the directory exists.')
 
 	def _initialize(self):
 		# make sure the seed is not set if more than one run
@@ -63,10 +70,16 @@ class TransferLearningExperiment(object):
 	def load_model(self, dataset, rc, experiment_name, iteration):
 		loss = LossCombiner(4, dataset.class_weights, NllLoss)
 
+		if self.produce_baseline:
+			iteration = 0
+
 		if iteration == 0:
 			self.current_transformer = TransformerEncoder(dataset.source_embedding,
 											hyperparameters=rc)
-		model = JointAspectTagger(self.current_transformer, rc, 4, 20, dataset.target_names)
+			model = JointAspectTagger(self.current_transformer, rc, 4, 20, dataset.target_names, initialize_params=True)
+		else:
+			model = JointAspectTagger(self.current_transformer, rc, 4, 20, dataset.target_names, initialize_params=False)
+
 		optimizer = get_optimizer(model, rc)
 		trainer = Trainer(
 							model,
@@ -77,6 +90,12 @@ class TransferLearningExperiment(object):
 							experiment_name,
 							enable_tensorboard=True,
 							verbose=True)
+
+		# see if we might be able to restore the source model
+		if iteration == 0 and self.load_model_path is not None:
+			model, optimizer, epoch = trainer.load_model(custom_path=self.load_model_path)
+			self.skip_source_training = True
+
 		return trainer
 
 	def load_dataset(self, rc, logger, task):
@@ -107,14 +126,14 @@ class TransferLearningExperiment(object):
 		logger = logging.getLogger(__name__)
 		dataset_logger = logging.getLogger('data_loader')
 		
-		logger.info(f'Experiment: [{run}/{self.runs}]')
+		logger.info(f'Experiment: [{run+1}/{self.runs}]')
 		logger.info('Name: ' + self.experiment_name)
 		logger.info('Actual Path Name: ' + experiment_name)
 		logger.info('Description: ' + self.experiment_description)
 		
 		print('\n\n#########################################################################')
-		print('Name: ' + self.experiment_name)
-		print('Description: ' + self.experiment_description)
+		print('######## Name: ' + self.experiment_name)
+		print('######## Description: ' + self.experiment_description)
 		print('#########################################################################\n\n')
 		print(rc)
 
@@ -129,11 +148,48 @@ class TransferLearningExperiment(object):
 				'status': STATUS_FAIL,
 				'eval_time': time.time() - run_time
 			}
-		logger.debug('dataset loaded')
+		logger.debug('dataset loader is initialized')
+		logger.debug('loading first dataset')
 
 		for i in dataset_generator:
 			logger.debug(f'Load model [{i}/{len(self.dsls)}]')
 			print(f'Load model [{i+1}/{len(self.dsls)}]')
+
+			if self.produce_baseline and i == 0:
+				logger.info('################################')
+				logger.info('####  SKIP SOURCE TRAINING  ####')
+				logger.info('################################')
+				print('################################')
+				print('######  PRODUCE BASELINE  ######')
+				print('####  SKIP SOURCE TRAINING  ####')
+				print('################################')
+				results.append({
+					'loss': 0,
+					'status': STATUS_OK,
+					'eval_time': time.time() - run_time,
+					'best_loss': 0,
+					'best_f1': 0,
+					'sample_iterations': 0,
+					'iterations': 0,
+					'rc': rc,
+					'results': {
+						'train': {
+							'loss': 0,
+							'f1': 0
+						},
+						'validation': {
+							'loss': 0,
+							'f1': 0,
+							'f1_macro': 0
+						},
+						'test': {
+							'loss': 0,
+							'f1': 0,
+							'f1_macro': 0
+						}
+					}
+				})
+				continue
 
 			try:
 				trainer = self.load_model(self.current_dataset, rc, experiment_name, i)
@@ -146,6 +202,43 @@ class TransferLearningExperiment(object):
 				}
 
 			logger.debug(f'model {i} loaded')
+
+			# can we skip source training? 
+			if i == 0 and self.skip_source_training:
+				logger.info('################################')
+				logger.info('####  SKIP SOURCE TRAINING  ####')
+				logger.info('################################')
+				print('################################')
+				print('####  SKIP SOURCE TRAINING  ####')
+				print('################################')
+				results.append({
+					'loss': 0,
+					'status': STATUS_OK,
+					'eval_time': time.time() - run_time,
+					'best_loss': 0,
+					'best_f1': 0,
+					'sample_iterations': 0,
+					'iterations': 0,
+					'rc': rc,
+					'results': {
+						'train': {
+							'loss': 0,
+							'f1': 0
+						},
+						'validation': {
+							'loss': 0,
+							'f1': 0,
+							'f1_macro': 0
+						},
+						'test': {
+							'loss': 0,
+							'f1': 0,
+							'f1_macro': 0
+						}
+					}
+				})
+				continue
+
 			logger.debug('Begin training')
 			model = None
 			try:
@@ -184,31 +277,35 @@ class TransferLearningExperiment(object):
 					'best_f1': trainer.get_best_f1()
 				}
 			print(f'VAL f1\t{trainer.get_best_f1()} - ({result[1][1]})')
+			print(f'(macro) f1\t{trainer.get_final_macro_f1()}')
+
 			print(f'VAL loss\t{trainer.get_best_loss()}')
 			results.append({
-					'loss': result[1][0],
-					'status': STATUS_OK,
-					'eval_time': time.time() - run_time,
-					'best_loss': trainer.get_best_loss(),
-					'best_f1': trainer.get_best_f1(),
-					'sample_iterations': trainer.get_num_samples_seen(),
-					'iterations': trainer.get_num_iterations(),
-					'rc': rc,
-					'results': {
-						'train': {
-							'loss': result[0][0],
-							'f1': result[0][1]
-						},
-						'validation': {
-							'loss': result[1][0],
-							'f1': result[1][1]
-						},
-						'test': {
-							'loss': result[2][0],
-							'f1': result[2][1]
-						}
+				'loss': result[1][0],
+				'status': STATUS_OK,
+				'eval_time': time.time() - run_time,
+				'best_loss': trainer.get_best_loss(),
+				'best_f1': trainer.get_best_f1(),
+				'sample_iterations': trainer.get_num_samples_seen(),
+				'iterations': trainer.get_num_iterations(),
+				'rc': rc,
+				'results': {
+					'train': {
+						'loss': result[0][0],
+						'f1': result[0][1]
+					},
+					'validation': {
+						'loss': result[1][0],
+						'f1': result[1][1],
+						'f1_macro': trainer.get_final_macro_f1()['valid']
+					},
+					'test': {
+						'loss': result[2][0],
+						'f1': result[2][1],
+						'f1_macro': trainer.get_final_macro_f1()['test']
 					}
-				})
+				}
+			})
 		return results
 
 	def run(self):
@@ -242,15 +339,19 @@ class TransferLearningExperiment(object):
 				df_row['train_f1'] = r_tr['f1']
 				df_row['val_loss'] = r_va['loss']
 				df_row['val_f1'] = r_va['f1']
+				df_row['val_f1_macro'] = r_va['f1_macro']
+
 				df_row['test_loss'] = r_te['loss']
 				df_row['test_f1'] = r_te['f1']
+				df_row['test_f1_macro'] = r_te['f1_macro']
+
 			self.data_frame = self.data_frame.append(df_row, ignore_index=True)
 			logger.info('#################################################################################')
 			logger.info('############################## EVALUATION COMPLETE ##############################')
 			logger.info('#################################################################################')
 
 		print('#################################################################################')
-		print('############################## EXPERIMENT COMPLETE ##############################\n\n')
+		print('############################## EXPERIMENT COMPLETE ##############################\n#################################################################################\n')
 
 		f1 = 0.0
 		for i, r in enumerate(results):
@@ -269,31 +370,34 @@ class TransferLearningExperiment(object):
 		except Exception as err:
 			logger.exception('Could not pickle dataframe')
 
-		print('TEST F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
-		logger.info('\n' + str(self.data_frame.test_f1.describe()))
-		return self.data_frame
+		print('TEST MICRO F1 Statistics\n' + str(self.data_frame.test_f1.describe()))
+		print('TEST MACRO F1 Statistics\n' + str(self.data_frame.test_f1_macro.describe()))
+
+		logger.info('\n\nMICRO\n' + str(self.data_frame.test_f1.describe()))
+		logger.info('\n\nMACRO\n' + str(self.data_frame.test_f1_macro.describe()))
+
+		return (self.data_frame, e_path)
 
 
 	def _print_result(self, result, i):
 		if result['status'] == STATUS_OK:
-			print(f"       .---.\n \
-	/     \\\n\
-	\\.@-@./\t\tExperiment: [{i}/{self.runs}]\n\
-	/`\\_/`\\\t\tStatus: {result['status']}\n\
-	//  _  \\\\\tLoss: {result['best_loss']}\n\
-	| \\     )|_\tf1: {result['best_f1']}\n\
-	/`\\_`>  <_/ \\\n\
-	\\__/'---'\\__/\n")
+			print(f".---.\n \
+/     \\\n\
+ \\.@-@./\t\tExperiment: [{i+1}/{self.runs}]\n\
+ /`\\_/`\\\t\tStatus: {result['status']}\n\
+ //  _  \\\\\tLoss: {result['best_loss']}\n\
+ | \\     )|_\tf1: {result['best_f1']}\n\
+ /`\\_`>  <_/ \\\n\
+ \\__/'---'\\__/\n")
 		else:
-			print(f"       .---.\n \
-	/     \\\n\
-	\\.@-@./\tExperiment: [{i}/{self.runs}] (FAIL)\n\
-	/`\\_/`\\\n\
-	//  _  \\\\\\n\
-	| \\     )|_\n\
-	/`\\_`>  <_/ \\\n\
-	\\__/'---'\\__/\n")
-
+			print(f"  .---.\n \
+/     \\\n\
+ \\.@-@./\tExperiment: [{i+1}/{self.runs}] (FAIL)\n\
+ /`\\_/`\\\n\
+ //  _  \\\\\n\
+| \\     )|_\n\
+ /`\\_`>  <_/ \\\n\
+ \\__/'---'\\__/\n")
 
 
 

@@ -4,48 +4,80 @@
 \section{Motivation}
 \label{sec:introduction_motivation}
 
-die zahl der personen die online reviews schreiben steigt stetig
+In the recent past researches were able to advance machine learning models for computer vision further and further. These models have reached a state where they outperform humans on many tasks. Andrej Karpathy, director of AI at Tesla, conducted an experiment at Stanford where he trained himself to classify images from ImageNet~\cite{Karpathy2014}. After much training, he achieved an error score of 6.8\% which, at the time, was better than predictions from GoogleLeNet. However, deep neural networks have now reached a level which is significantly below the threshold of 6.8\% Karpathy achieved. The best submission for the ImageNet Large Scale Visual Recognition Competition achieves an error rate of only 2.25\%~\cite{Hu2018}.
+\bigskip
 
-manche produkte auf e-commerce seiten wie amazon können hunderte oder tausende reviews enthalten
+In the past years, researches have shifted their attention to the field of \acrfull{nlp}. This trend has was triggered by the development of efficient word embeddings~\cite{Mikolov2013c}. Word embeddings are powerful mechanisms which are able to transform words into meaningful vector representations. This technique allows researches to use deeper and deeper neural networks on tasks like \gls{ner}, \gls{pos} or sentiment analysis. Contrary to computer vision, however, we still have a long way to go until models can outperform humans on \gls{nlp} tasks.
+\bigskip
 
-nur ein paar reviews lesen -> time consuming und nur biased 
+One of the most useful \gls{nlp} tasks is sentiment analysis. The goal of sentiment analysis is to predict whether a sequence of words carries a negative, neutral or positive emotion. Automated sentiment analysis can be applied to vast amounts of data to form an opinion landscape or even be used to create sales forecasts based on customer reviews~\cite{Shen2015}. 
+\medskip
 
-eingedampft auf sterne wertung
-machnche aspekte wichtig und manche aspekte unwichtig. für andere personen anders
+\subsection*{Aspect Based Sentiment Analysis}
 
-good motivation: "Reviews for products online are seldom fully negative or positive in sentiment. Rather, they describe the positive and negative core aspects of a product. To demonstrate this issue, consider an excerpt from this 3/5 star review for a laptop:
-“The faux leather cover is a wee bit cheesy for my taste, but I loved the price and the performance.”
-For a purchaser, this review may not be useful when viewed only as a contribution to a mean score. The aspects “performance” and “price” have highly positive sentiment, while “appearence” receives a slightly negative sentiment. For a customer indifferent to the aesthetic of a laptop, this review should contribute higher than a 3/5 score to the mean.
-More useful to the consumer are summary statistics for each of a product’s features. Our goal is to bring this structure to Amazon product reviews using deep learning." \cite{Marx2015}
+As more and more people buy products and services online the significance of online reviews increases. Platforms like Amazon encourage customers to write reviews and rate products. However, popular products can receive hundreds or thousands of reviews. It is often not feasible to read all reviews. Though, reading only several reviews may impose a bias depending on which reviews the customer reads.
+\medskip
 
-"
-However, the reader’s taste may differ
-from the reviewers’. For example, the reader may feel
-strongly about the quality of the gym in a hotel, whereas
-many reviewers may focus on other aspects of the ho-tel, such as the decor or the location. Thus, the reader is
-forced to wade through a large number of reviews looking
-for information about particular features of interest." \cite{Popescu2005}
+To make the decision easier platforms often provide a mean rating. The problem is that certain aspects may be important for some people but not for others. Consider this review for console game on amazon\footnote{\url{https://www.amazon.com/Mario-Kart-8-Deluxe-Nintendo-Switch/dp/B01N1037CV}} for instance:
 
-Example:
-"
-In order to illustrate the task at hand, let us consider a text snippet expressing a customer’s opinion
-about a particular beer. “This beer is tasty and leaves a thick lacing around the glass” This snippet
-discusses multiple aspects such as the taste of the beer and its appearance. The review expresses
-positive sentiments about both the aspects. It is interesting to note that the word “tasty” serves both
-as an aspect as well as a sentiment word in this case. The phrase “leaves a thick lacing” suggests
-that the snippet is discussing about the appearance of the beer and usage of “thick lacing” can be
-attributed to positive sentiment. This example demonstrates the intricacies involved in the task of
-aspect specific sentiment analysis." \cite{Lakkaraju2014}
+\begin{center}
+    "Decent game, but basically the same exact thing as the normal Mario Kart 8."
+\end{center}
 
+This review reduces the overall score for the game even though this aspect might not be relevant for customers who did not play the previous game before. 
 
-"interleaving these two phases in a more tightly coupled manner allows us to capture subtle dependencies." \cite{Lakkaraju2014}
+Another great example are hotel reviews. One guest might care if the room contains a minibar while for another potential guest this aspect does not matter.
+\bigskip
+
+\acrfull{absa} is an extension to sentiment analysis. It tries to automate the task of detecting sentiment for a given aspect. Applied on customer reviews, this solves many issues for consumers, but it has even further implications.
+\medskip
+
+Capturing pure sentiment is often not enough to obtain an accurate sentiment classification. For instance, the sentence
+
+\begin{center}
+    "I like the taste of organic apples, but I'm not sure they are worth the extra money for me."
+\end{center}
+
+contains a positive sentiment for the aspect "\textit{taste}" and a negative sentiment for "\textit{price}". Classifying this sentence is relatively easy {(at least for humans)}. At the same time, it is challenging to categorize the overall sentiment of the sentence even for humans. As a matter of fact, Lakkaraju demonstrated that "interleaving" aspect and sentiment leads to a better understanding of the underlying sentence for classifiers~\cite{Lakkaraju2014}.
 
 
-"We conclude by examining
-factors that make the sentiment classifica-tion problem more challenging." \cite{Pang2012}
+\section{Challenges}
 
-it is very expensive to collect annotated data for absa. Therefore models have to be trained with less data.
+Sentiment classification or even \acrfull{absa} is one of the most challenging tasks in the field of natural language processing~\cite{Pang2012}. For once, understanding the subtle differences in language is a challenging task. A text can contain humor, negations or words which have different meanings depending on the context. The following review from amazon\footnote{\url{https://www.amazon.co.uk/gp/customer-reviews/REII5J393XCJW/ref=cm_cr_dp_d_rvw_ttl?ie=UTF8&ASIN=B007LJ4PPO}} demonstrates a positive review for a watertight pouch for a Kindle eBook reader.
 
-Sales forecast based on sentiment prediction of customer reviews \cite{Shen2015}
+\begin{center}
+    "Got this for the Mother-in-law for bath time, hoping it'd be crap, her kindle would slip out and electrocute her. So far, this bloody thing is staying in one piece. Great for waterproof kindling, crap for murder."
+\end{center}
+
+This review is undeniably positive. However, most \gls{absa}- or sentiment analysis models would likely label this review as negative\footnote{The Stanford Sentiment Treebank online demo assigns a "very negative" label to this review}.
+
+Context is also important. A high price denotes a negative sentiment while a high quality indicates positive sentiment.
+\medskip
+
+Getting data for sentiment analysis in general and aspect based sentiment analysis, in particular, is another aggravating problem. It is very time-consuming to annotate text data with aspect-based sentiment. As a result, models trained on \gls{absa} tasks have to be trained with fewer samples.
+
+\section{Contributions}
+
+This thesis proposes a novel deep learning model for aspect-based sentiment analysis. This model is based on two proven architectures for natural language processing. Our proposed model \acrfull{absat} uses the Google transformer~\cite{Vaswani2017d} as well as the idea of aspect heads~\cite{Schmitt2018}. These aspect heads allow the model to predict multiple aspects and sentiments end-to-end.
+\medskip
+
+We also experiment with hyperparameter optimization and the implications of optimizing more than just model parameters.
+
+Furthermore, we explore multitask-learning as a method to augment limited training data. Additionally, this thesis also examines the impact of transfer learning on model performance. For this task, we also built a new topic based sentiment analysis dataset using Amazon reviews.
 
 \section{Outline}
+
+This thesis is structured into 7 chapters. Chapter~\ref{ch:relWork} outlines previous work done on sentiment analysis and aspect based sentiment analysis.
+\smallskip
+
+Chapter~\ref{ch:theory} takes a look at the main concepts and the theory behind word representations, the chosen architecture, transfer- and multitask learning concepts as well as the theory behind hyperparameter optimization.
+\smallskip
+
+Chapter~\ref{ch:method} provides information about the chosen model architecture and how we use transfer- and multitask learning to boost performance.
+\smallskip
+
+Chapter~\ref{ch:setup} explains the experimental setup including data preprocessing, the datasets and how we trained and evaluated the models.
+\smallskip
+
+Results are then accumulated and discussed in Chapter~\ref{ch:discussion}. Lastly, the results are
+summarized in Chapter~\ref{ch:conclusion} and we give advice for future work.

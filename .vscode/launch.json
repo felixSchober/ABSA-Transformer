@@ -3,7 +3,7 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [        
+    "configurations": [
         {
             "name": "Coarse Organic",
             "type": "python",
@@ -11,6 +11,102 @@
             "program": "${workspaceFolder}/main.py",
 			"console": "integratedTerminal",
 			"args": ["organic", "--runs", "1", "--task", "coarse"]
+		},
+		{
+            "name": "Coarse Organic - No cuda",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["organic", "--runs", "1", "--task", "coarse", "--cuda", "False"]
+		},
+		{
+            "name": "Coarse Organic - TL (AMAZON - C-ORGANIC)",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["transfer-amazon-organic", "--runs", "1", "--task", "coarse"]
+		},
+		{
+            "name": "Coarse Organic - RANDOM",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["organic", "--runs", "1", "--task", "coarse", "--random", "true"]
+		},
+		{
+            "name": "Organic Entities",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["organic", "--runs", "1", "--task", "entities"]
+		},
+		{
+            "name": "Organic Attributes",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["organic", "--runs", "1", "--task", "attributes"]
+		},
+		{
+            "name": "Amazon Reviews",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["amazon", "--runs", "1", "--task", "amazon"]
+		},
+		{
+            "name": "Amazon Reviews - RANDOM",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["amazon", "--runs", "1", "--task", "amazon", "--random", "true"]
+		},
+		{
+            "name": "GermEval-2017",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["germeval", "--runs", "1", "--task", "germeval"]
+		},
+		{
+            "name": "GermEval-2017 - MT",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["germeval", "--runs", "1", "--task", "germeval_multitask"]
+		},
+		{
+            "name": "CoNLL-2003 - NER",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["coNLL-2003", "--runs", "1", "--task", "ner"]
+		},
+		{
+            "name": "CoNLL-2003 - NER - RANDOM",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["coNLL-2003", "--runs", "5", "--task", "ner", "--random", "true"]
+		},
+		{
+            "name": "GermEval-2017 - RANDOM",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+			"console": "integratedTerminal",
+			"args": ["germeval", "--runs", "5", "--task", "germeval", "--random", "true"]
 		},
 		{
             "name": "hyperOpt",

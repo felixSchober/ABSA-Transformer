@@ -66,7 +66,7 @@ class AmazonDataset(Dataset):
 		# depending on the hps we have to adjust the paths
 		train = add_tr_prefixes(train, hp.token_removal_1, hp.token_removal_2, hp.token_removal_3,  hp.use_spell_checkers)
 		validation = add_tr_prefixes(validation, hp.token_removal_1, hp.token_removal_2, hp.token_removal_3, hp.use_spell_checkers)
-		test = add_tr_prefixes(test, hp.token_removal_1, hp.token_removal_2, hp.use_spell_checkers)
+		test = add_tr_prefixes(test, hp.token_removal_1, hp.token_removal_2, hp.token_removal_3, hp.use_spell_checkers)
 
 		train_data = None if train is None else cls(
 			os.path.join(path, train), hp=hp, **kwargs)

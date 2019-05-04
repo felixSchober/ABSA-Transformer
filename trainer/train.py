@@ -50,7 +50,7 @@ class Trainer(object):
 	early_stopping : EarlyStopping
 	checkpoint_dir : str
 	log_dir: str
-	log_imgage_dir : str
+	log_image_dir : str
 	seed : int
 	enable_tensorboard : bool
 	log_every_xth_iteration : int
@@ -100,7 +100,7 @@ class Trainer(object):
 
 		self.log_dir = os.path.join(os.getcwd(), 'logs', experiment_name)
 		self.checkpoint_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'checkpoints')
-		self.log_imgage_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'images')
+		self.log_image_dir = os.path.join(os.getcwd(), 'logs', experiment_name, 'images')
 		self.seed = hyperparameters.seed
 		self.log_every_xth_iteration = hyperparameters.log_every_xth_iteration
 
@@ -116,13 +116,24 @@ class Trainer(object):
 			verbose,
 			hyperparameters,
 			dataset,
-			self.log_imgage_dir,
+			self.log_image_dir,
 			self.loss.name)		
 
 		# use special evaluator for germeval
-		if self.dataset.name == 'germeval':
+		if self.dataset.name == 'germeval' or self.dataset.name == 'germeval_multitask':
 			from trainer.train_evaluator_germEval import TrainEvaluatorGermEval
 			self.evaluator = TrainEvaluatorGermEval(
+				self.model,
+				self.loss,
+				self.iterations_per_epoch_train,
+				self.log_every_xth_iteration,
+				(dataset.train_iter, dataset.valid_iter, dataset.test_iter),
+				self.train_logger,
+				self.pre_training,
+				dataset)
+		elif self.dataset.name == 'ner':
+			from trainer.train_evaluator_conll import TrainEvaluatorCoNLL
+			self.evaluator = TrainEvaluatorCoNLL(
 				self.model,
 				self.loss,
 				self.iterations_per_epoch_train,
@@ -313,8 +324,14 @@ class Trainer(object):
 					self.model.train()
 
 					#x, _, padding, y = batch.comments, batch.general_sentiments, batch.padding, batch.aspect_sentiments
-					x, padding, y = batch.comments, batch.padding, batch.aspect_sentiments
-					source_mask = create_padding_masks(padding, 1)
+					x, y = batch.comments, batch.aspect_sentiments
+
+					if hasattr(batch, 'padding'):
+						padding = batch.padding
+						source_mask = create_padding_masks(padding, 1)
+					else:
+						source_mask = None
+						padding = None
 
 					train_loss = self._step(x, y, source_mask)
 					self.train_logger.log_scalar(self.evaluator.train_loss_history, train_loss.item(), 'loss', 'train', self.current_sample_iteration)
@@ -447,6 +464,9 @@ class Trainer(object):
 			return self.evaluator.best_f1
 		return 0.0
 
+	def get_final_macro_f1(self):
+		return self.evaluator.final_macro_f1
+
 	def get_num_iterations(self) -> int:
 		return self.iterations_per_epoch_train * self.evaluator.epoch
 
@@ -456,8 +476,8 @@ class Trainer(object):
 	def get_df(self):
 		return self.train_logger.data_frame
 
-	def perform_final_evaluation(self, use_test_set: bool=True, verbose: bool=True):
-		return self.evaluator.perform_final_evaluation(use_test_set, verbose)
+	def perform_final_evaluation(self, use_test_set: bool=True, verbose: bool=True, c_matrix: bool=False):
+		return self.evaluator.perform_final_evaluation(use_test_set, verbose, c_matrix=c_matrix)
 	
 	def classify_sentence(self, sentence: str) -> str:
 		x = self.manual_process(sentence, self.dataset.source_reverser)

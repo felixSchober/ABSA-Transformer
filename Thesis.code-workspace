@@ -3,5 +3,14 @@
 		{
 			"path": "Thesis"
 		}
-	]
+	],
+	"settings": {
+		"cSpell.words": [
+			"Eval",
+			"GMOs",
+			"Hyperopt",
+			"Vaswani",
+			"noam"
+		]
+	}
 }

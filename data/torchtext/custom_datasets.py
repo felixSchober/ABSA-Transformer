@@ -93,13 +93,14 @@ class Dataset(torch.utils.data.Dataset):
 			os.path.join(path, train), **kwargs)
 
 		# make sure, we use exactly the same fields across all splits
-		train_fields = train_data.fields
+		if 'fields' not in kwargs.keys():
+			kwargs['fields'] = train_data.fields
 
 		val_data = None if validation is None else cls(
-			os.path.join(path, validation), fields=train_data.fields, **kwargs)
+			os.path.join(path, validation), **kwargs)
 
 		test_data = None if test is None else cls(
-			os.path.join(path, test), fields=train_data.fields, **kwargs)
+			os.path.join(path, test), **kwargs)
 
 		return tuple(d for d in (train_data, val_data, test_data)
 					 if d is not None)
