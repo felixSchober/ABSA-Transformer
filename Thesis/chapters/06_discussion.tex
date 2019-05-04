@@ -1,8 +1,6 @@
 \chapter{Discussion of Results}
 \label{ch:discussion}
 
-%TODO: Idee: Attention visualisieren am Anfang und am Ende des Transformers: Hat er während des Trainings gelernt?
-
 \section{Hyper Parameter Optimization}
 
 The following presents the results of the hyper parameter optimization on GermEval-2017 Task C and the Organic-2019 Coarse category dataset. We evaluate the performance of Hyperopt compared to a random search. Then, the next sections show how certain parameters impact the model performance. 
@@ -13,7 +11,7 @@ The following presents the results of the hyper parameter optimization on GermEv
 	\centering
 	\includegraphics[width=0.49\textwidth]{figures/06_results/06_hp_ge_lm_loss-iteration_validation}
 	\includegraphics[width=0.49\textwidth]{figures/06_results/06_hp_ge_lm_loss-iteration_test}
-	\caption{Validation- {(blue - left)} and test {(red - right)} losses during 100 Hyperopt iterations on GermEval-2017 dataset}
+	\caption{\textbf{Validation- {(blue - left)} and test {(red - right)} losses} during 100 Hyperopt iterations on GermEval-2017 dataset}
 	\label{fig:06_ValidationLossGermEvalHp}
 \end{figure}
 
@@ -30,24 +28,24 @@ Figure~\ref{fig:06_ValidationLossGermEvalHp} visualizes the improvement of the v
 Unfortunately, the \gls{ols} analysis~\ref{tab:08_olsLossItVal} and~\ref{tab:08_olsLossItTest} in the appendix show that the negative correlation is in fact not significant. This implies that the \gls{tpe} algorithm does not sample parameters from the space which actually improve the loss of the model. This is even more obvious in figure~\ref{fig:06_F1GermEvalHp}. This figure shows the development of F1-Score during optimization. While the results on the left for GermEval might look like they improve over the course of the optimization the results\footnote{The improvement is still not significant {(0.340)}} for the optimization of the coarse organic dataset clearly show no improvement.
 \medskip
 
-There are several possible explanations which could contribute to this behaviour:
+There are several possible explanations which could contribute to this behavior:
 
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.49\textwidth]{figures/06_results/06_hp_ge_lm_f1time}
 	\includegraphics[width=0.49\textwidth]{figures/06_results/06_hp_og_lm_f1time}
-	\caption{F1 Scores of the hyperparamter optimization of GermEval-2017 {(left)} and Coarse Organic 2019 datasets {(right)}.}
+	\caption{\textbf{F1 Scores of the hyperparameter optimization} of GermEval-2017 {(left)} and Coarse Organic 2019 datasets {(right)}.}
 	\label{fig:06_F1GermEvalHp}
 \end{figure}
 
 \subsubsection*{Iterations}
 
-First, it could be possible that 100 iterations are not enough to provide a stochastic model which is able to make good predictions in the hyperparameter space. It is worth noting that Bergstra et. al. show that hyperopt outperforms random search within 200 trials~\cite{Bergstra2013}. However, for most architectures it is not feasible to run an optimization search for much longer than 200 iterations let alone the 1000 iterations they claim as the point where hyperopt converges. 
+First, it could be possible that 100 iterations are not enough to provide a stochastic model which is able to make good predictions in the hyperparameter space. It is worth noting that Bergstra et al. show that hyperopt outperforms random search within 200 trials~\cite{Bergstra2013}. However, for most architectures it is not feasible to run an optimization search for much longer than 200 iterations let alone the 1000 iterations they claim as the point where hyperopt converges. 
 \medskip
 
 It is also worth mentioning that the Hyperopt module uses a random sampler for the first 10 iterations to get data points to initialize the \glspl{tpe}. Decreasing this number could yield to better results for computational expensive models since the algorithm is forced to suggest values earlier.
 
-\subsubsection*{Hyperparamter Search Space}
+\subsubsection*{Hyperparameter Search Space}
 
 It is possible that the hyperparameter search space which Hyperopt uses to generate new parameters is too large. Table~\ref{tab:08_hpSpace} shows the hyperparameter search space for the optimization of the GermEval-2017 dataset. There are parameters which do not change the outcome by a huge margin and then there are parameters which decide whether or not the model trains at all. However, finding those parameters is a challenging task.
 
@@ -71,7 +69,7 @@ It is possible that the hyperparameter search space which Hyperopt uses to gener
 	MLS-A    &   23 &  0.261533 &  0.044603 &  0.181078 &  0.356296 \\
 	\bottomrule
 	\end{tabular}
-	\caption{Result of sampling of Aspect Head choices during \gls{tpe} Hyperopt optimization. Values show micro F1-score achieved by models on the GermEval-2017 dataset. * The 10th iteration failed which is the reason why the warmup does not sum up to 10.}
+	\caption{\textbf{Result of sampling of Aspect Head choices during \gls{tpe} Hyperopt optimization.} Values show micro F1-score achieved by models on the GermEval-2017 dataset. * The 10th iteration failed which is the reason why the warmup does not sum up to 10.}
 	\label{tab:08_hpAspectHeadsSpace}	
 \end{table}
 
@@ -95,7 +93,7 @@ This leads to the following conclusion: During the warmup phase of Hyperopt the 
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=\textwidth]{figures/06_results/06_hp_ge_vio_tpeRand}
-	\caption{Comparison of HyperOpt TPE algorithm against a classical random search. The results for TPE are light blue on the left, whereas results for the random search are a deep blue on the right.}
+	\caption{\textbf{Comparison of HyperOpt TPE algorithm against a classical random search.} The results for TPE are light blue on the left, whereas results for the random search are a deep blue on the right.}
 	\label{fig:06_HpOptimTpe_Rand}
 \end{figure}
 
@@ -107,7 +105,7 @@ Due to the high dimensionality of the hyperparameter search space, statistical s
 
 \subsubsection{Aspect Heads}
 
-As discussed in section~\ref{sec:06_hp_warmup} it is not entirely possible to favor one or the other aspect head. Both can provide similar results. 
+As discussed in Section~\ref{sec:06_hp_warmup} it is not entirely possible to favor one or the other aspect head. Both can provide similar results. 
 
 \begin{figure}[ht]
 	\centering
@@ -118,14 +116,14 @@ As discussed in section~\ref{sec:06_hp_warmup} it is not entirely possible to fa
 
 Figure~\ref{fig:06_HpOptim_CnnParams} shows the impact of the two \gls{cnna} parameters 'Kernel Size' and 'Number of Filters'. The number of filters does not seem to impact the result. However, there is a {(statistical\footnote{Significant at a $p$-value of 0.05})} significant negative correlation between the kernel size and the model performance. 
 
-Smaller filters lead to a performance improvement compared to bigger filters. This result seems to follow the literature. For instance, Schmitt et. al. use filter sizes of 3, 4 and 5~\cite{Schmitt2018}.
+Smaller filters lead to a performance improvement compared to bigger filters. This result seems to follow the literature. For instance, Schmitt et al. use filter sizes of 3, 4 and 5~\cite{Schmitt2018}.
 \medskip
 
 There is no significant change for the other two parameters 'Kernel Padding' and 'Kernel Stride'. The impact on the F1-Score of both parameters is visualized in figure~\ref{fig:06_HpOptim_CnnParams2} in the appendix.
 
 \subsubsection{Point-wise Feed-Forward Layer Size}
 
-In the original transformer model the inner \acrfull{pwfc} has a dimensionality of 1024 while the model size has a dimensionality of 512~\cite{Vaswani2017c}. This is a 2x increase over the model size. Due to the availability of pretrained Glove or Fasttext embeddings our \gls{absat} model only uses a model size of 300. Consequently, the inner \gls{pwfc} layer dimensionality should be around 600. However, layer sizes above 300-400 neurons quickly lead to interesting model behavior. After a few training iterations the \glspl{pwfc} transform every input to the exact same output. In other words, no matter what the model gets as input it always predicts the same output.
+In the original transformer model the inner \acrfull{pwfc} has a dimensionality of 1024 while the model size has a dimensionality of 512~\cite{Vaswani2017c}. This is a 2x increase over the model size. Due to the availability of pre-trained Glove or fastText embeddings our \gls{absat} model only uses a model size of 300. Consequently, the inner \gls{pwfc} layer dimensionality should be around 600. However, layer sizes above 300-400 neurons quickly lead to interesting model behavior. After a few training iterations the \glspl{pwfc} transform every input to the exact same output. In other words, no matter what the model gets as input it always predicts the same output.
 \medskip
 
 The solution for this overfitting behavior is to use a smaller inner \gls{pwfc}. Values from 100 to 200 neurons lead to the best results.
@@ -204,7 +202,7 @@ For the final evaluations we use transformer model with two encoder blocks, each
 	\bottomrule
 	\multicolumn{5}{c}{\textbf{CoNLL-2003 - NER}} \\
 	\end{tabular*}
-	\caption{Results of models on the shared CoNLL-2003 task for \gls{ner}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The CoNLL-2003 baseline \cite{Erik2003} was provided for the CoNLL-2003 NER competition. The best result at the competition achieved an F1-score of 0.8876 \cite{Florian2003}. At the time of writing {(April 2019)}, the best result on CoNLL-2003 NER is achieved by Baevski et. al. \cite{Baevski2019}}.
+	\caption{Results of models on the shared CoNLL-2003 task for \gls{ner}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The CoNLL-2003 baseline \cite{Erik2003} was provided for the CoNLL-2003 NER competition. The best result at the competition achieved an F1-score of 0.8876 \cite{Florian2003}. At the time of writing {(April 2019)}, the best result on CoNLL-2003 NER is achieved by Baevski et al. \cite{Baevski2019}}.
 	\label{tab:06_resultsConLL}
 	\end{table}
 
@@ -227,12 +225,12 @@ The normalized confusion matrices in figure~\ref{fig:06_NER_cmatrices} show the 
 \section{Results for Aspect-Based Sentiment Analysis}
 The following sections outline the results on \acrfull{absa}. The first section contains the results for the GermEval-2017 dataset. This dataset uses a special evaluation method. To be able to compare our results we also use the evaluation method that GermEval-2017 provides.
 
-The method GermEval-2017 uses is described in section~\ref{sec:05_GermEvalEvaluation}.
+The method GermEval-2017 uses is described in Section~\ref{sec:05_GermEvalEvaluation}.
 \medskip
 
-Section~\ref{sec:06_ResultsOrganic} reports results on the Organic-2019 dataset and section~\ref{sec:06_ResultsAmazon} discusses the results on the Amazon Reviews dataset.
+Section~\ref{sec:06_ResultsOrganic} reports results on the Organic-2019 dataset and Section~\ref{sec:06_ResultsAmazon} discusses the results on the Amazon Reviews dataset.
 
-Finally, section~\ref{sec:06_ResultsMultitask} and~\ref{sec:06_ResultsTransfer} review the results of multitask learning and transfer learning.
+Finally, Section~\ref{sec:06_ResultsMultitask} and~\ref{sec:06_ResultsTransfer} review the results of multitask learning and transfer learning.
 
 \subsection{Results for GermEval-2017}
 \label{sec:06_ResultsGermEval}
@@ -250,7 +248,7 @@ Finally, section~\ref{sec:06_ResultsMultitask} and~\ref{sec:06_ResultsTransfer} 
 	\gls{svm} Baseline        		 &  -        	&  -    	& 0.322        	&   0.389 							\\
 	Best Submission 				 &  - 			&  - 		& 0.354 		& 0.401 							\\
 	\midrule
-								 \multicolumn{5}{c}{Schmitt et. al. 2018 {(\gls{sota})} \cite{Schmitt2018}} 		\\
+								 \multicolumn{5}{c}{Schmitt et al. 2018 {(\gls{sota})} \cite{Schmitt2018}} 		\\
 	Pipeline \gls{lstm} + FT 		 & -        	& -    		& 0.297     	&   0.342							\\
 	End-to-end \gls{lstm} + FT 		 & -        	& -    		& 0.315     	&   0.384 							\\
 	Pipeline \gls{cnn} + FT 		 & -        	& -    		& 0.295     	&   0.342 							\\
@@ -269,7 +267,7 @@ Finally, section~\ref{sec:06_ResultsMultitask} and~\ref{sec:06_ResultsTransfer} 
 	\multicolumn{5}{c}{\textbf{GermEval-2017 - Task C {(ABSA)}}} \\
 
 	\end{tabular*}
-	\caption{Evaluation and comparison of models on the shared GermEval-2017 task for \gls{absa}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The organizers of GermEval-2017 provide two baselines \cite{Wojatzki2017}. The first, just predicts the majority class which is \textit{"Neutral-Allgemein"}. This baseline already achieves a score of 0.315 on the synchronic test test. The second baseline uses a \gls{svm} classifier and achieves strong results very strong results of 0.322 and 0.389. The best submission for the GermEval-2017 challenge was achieved by Lee et. al. \cite{Lee2017} with a score of 0.355 and 0.401. Schmitt et. al. achieved \gls{sota} in 2018 with an End-to-end \gls{cnn} model with custom FastText {(FT)} embeddings. Their best score is 0.423 on the synchronic- and 0.465 on the diachronic test set. Our \gls{absat} model with linear mean heads and FastText embeddings outperforms every submission of the GermEval-2017 competition and is competitive with the end-to-end \gls{cnn} model of Schmitt et. al.}
+	\caption{Evaluation and comparison of models on the shared GermEval-2017 task for \gls{absa}. The random classifier acts as a minimal baseline as it will predict completely random classes for each sample. The organizers of GermEval-2017 provide two baselines \cite{Wojatzki2017}. The first, just predicts the majority class which is \textit{"Neutral-Allgemein"}. This baseline already achieves a score of 0.315 on the synchronic test test. The second baseline uses a \gls{svm} classifier and achieves strong results very strong results of 0.322 and 0.389. The best submission for the GermEval-2017 challenge was achieved by Lee et al. \cite{Lee2017} with a score of 0.355 and 0.401. Schmitt et al. achieved \gls{sota} in 2018 with an End-to-end \gls{cnn} model with custom FastText {(FT)} embeddings. Their best score is 0.423 on the synchronic- and 0.465 on the diachronic test set. Our \gls{absat} model with linear mean heads and FastText embeddings outperforms every submission of the GermEval-2017 competition and is competitive with the end-to-end \gls{cnn} model of Schmitt et al.}
 	\label{tab:06_resultsGermEval}
 \end{table}
 
@@ -278,24 +276,24 @@ The GermEval-2017 dataset for \acrfull{absa} is a large dataset for multi label 
 
 %TODO: Write about dataset
 
-Furthermore, Schmitt et. al. - one of the inspirations for this thesis - use GermEval to evaluate their model. To compare the base transformer model we used the CoNLL-2003 NER task. To compare the whole architecture against other approaches it makes sense to use GermEval since there are other results which we can use to compare the performance of the \acrfull{absat} model.
+Furthermore, Schmitt et al. - one of the inspirations for this thesis - use GermEval to evaluate their model. To compare the base transformer model we used the CoNLL-2003 NER task. To compare the whole architecture against other approaches it makes sense to use GermEval since there are other results which we can use to compare the performance of the \acrfull{absat} model.
 \bigskip
 
-Table~\ref{tab:06_resultsGermEval} reports on the result of the evaluation of our \gls{absat} against other GermEval models. The first three results are models created for the GermEval-2017 competition. Wojatzki et. al. provide two baseline systems for the \gls{absa} task \cite{Wojatzki2017}. The first one is a majority class baseline which just predicts the class which contains most samples. For this dataset this is the class "Allgemein - Neutral". 
+Table~\ref{tab:06_resultsGermEval} reports on the result of the evaluation of our \gls{absat} against other GermEval models. The first three results are models created for the GermEval-2017 competition. Wojatzki et al. provide two baseline systems for the \gls{absa} task \cite{Wojatzki2017}. The first one is a majority class baseline which just predicts the class which contains most samples. For this dataset this is the class "Allgemein - Neutral". 
 \medskip
 
-Since GermEval is very skewed towards this majority class the baseline is very strong. Refer to figure~\ref{fig:08_germEvalStatistics} for an overview of the aspects and their distributions. The second baseline system is a \gls{svm} classifier. At the time of the competition this baseline was very competitive and achieved the second place. Finally, the best submission for GermEval-2017 by Lee et. al. achieves a micro F1 score of 0.354 on the first test set {(synchronic test)} and 0.401 on the second test set {(diachronic test)}.
+Since GermEval is very skewed towards this majority class the baseline is very strong. Refer to figure~\ref{fig:08_germEvalStatistics} for an overview of the aspects and their distributions. The second baseline system is a \gls{svm} classifier. At the time of the competition this baseline was very competitive and achieved the second place. Finally, the best submission for GermEval-2017 by Lee et al. achieves a micro F1 score of 0.354 on the first test set {(synchronic test)} and 0.401 on the second test set {(diachronic test)}.
 \medskip
 
-The current \acrfull{sota} is an end-to-end \gls{cnn} architecture by Schmitt et. al. \cite{Schmitt2018} with custom FastText Embeddings. This architecture achieved a micro F1 score of 0.423 on the synchronic test set and 0.465 on the diachronic test set. 
+The current \acrfull{sota} is an end-to-end \gls{cnn} architecture by Schmitt et al. \cite{Schmitt2018} with custom FastText Embeddings. This architecture achieved a micro F1 score of 0.423 on the synchronic test set and 0.465 on the diachronic test set. 
 \medskip
 
-In comparison, our \gls{absat} model achieves a micro F1 score of 0.390 and 0.413 on the first and second test sets. This means that our model outperforms even the best submission for the GermEval-2017 competition. In addition, the \gls{absat} model with \glspl{lmh} is competitive with the end-to-end \gls{cnn} created by Schmitt et. al.
+In comparison, our \gls{absat} model achieves a micro F1 score of 0.390 and 0.413 on the first and second test sets. This means that our model outperforms even the best submission for the GermEval-2017 competition. In addition, the \gls{absat} model with \glspl{lmh} is competitive with the end-to-end \gls{cnn} created by Schmitt et al.
 \medskip
 
-Several techniques can be applied to produce even better results for the task. Schmitt et. al. show that pretraining custom FastText embeddings on the target domain improves the model. Dugar also demonstrated that data augmentation can positively impact the model performance \cite{Dugar2019}. 
+Several techniques can be applied to produce even better results for the task. Schmitt et al. show that pre-training custom FastText embeddings on the target domain improves the model. Dugar also demonstrated that data augmentation can positively impact the model performance \cite{Dugar2019}. 
 \smallskip
-In section~\ref{sec:06_ResultsTransfer} we also demonstrate, that transfer learning positively impacts model performance. However, finding similar data in German might be challenging.
+In Section~\ref{sec:06_ResultsTransfer} we also demonstrate, that transfer learning positively impacts model performance. However, finding similar data in German might be challenging.
 
 \subsection{Results for Amazon Product Reviews}
 \label{sec:06_ResultsAmazon}
@@ -320,7 +318,7 @@ In section~\ref{sec:06_ResultsTransfer} we also demonstrate, that transfer learn
 Due to the large size of the dataset no hyperparameter tuning was performed. Parameters from previous optimizations on the smaller organic dataset were chosen for the evaluation. The final model uses the \gls{lmh} architecture with FastText embeddings. Comments are clipped to a fixed length of 100 and spell checking as well as stop word removal is enabled to reduce the vocabulary size. The model consists of one attention head with $d_k$ and $d_v$ of 300 and two encoder blocks. The inner \gls{pwfc}-layer acts as a bottleneck with a size of 128. Finally, a reduced batch size of 12 was chosen to be able to fit the model into \gls{gpu} memory which would not have been otherwise possible.
 \medskip
 
-The vocabulary size of the amazon dataset after all reductions consists of $389,371$ unique tokens. This creates an embedding layer which maps the vocabulary size of $389,371$ to a 300-dimensional vector. Unfortunately, a lot of those tokens are not part of the pretrained embedding so the parameters of the embedding layer can not be locked during training. Therefore, the embedding layer has a size of $116,811,300$ trainable parameters. As a result, the first embedding layer makes up over 99\% of the overall number of model parameters which is $117,710,780$.
+The vocabulary size of the amazon dataset after all reductions consists of $389,371$ unique tokens. This creates an embedding layer which maps the vocabulary size of $389,371$ to a 300-dimensional vector. Unfortunately, a lot of those tokens are not part of the pre-trained embedding so the parameters of the embedding layer can not be locked during training. Therefore, the embedding layer has a size of $116,811,300$ trainable parameters. As a result, the first embedding layer makes up over 99\% of the overall number of model parameters which is $117,710,780$.
 \medskip
 
 \begin{figure}[htb]
@@ -360,7 +358,7 @@ The nature of neutral product reviews are also very different than a neutral sen
 
 \subsubsection*{Hyperparameter Tuning}
 \label{sec:06_hpTuningAmazon}
-As already mentioned, we did not perform any hyperparamter tuning on this dataset. This is very noticeable when looking at the reported F1 score for the test and dev splits. Usually, the result for the dev portion of the data is much higher because this part is typically used for hyperparameter optimization. Therefore, researches pick the model with the highest score on the dev split, indirectly picking a model which is overfitted on the validation split to an extent. This demonstrates that it is important to never perform optimization on the test split. However, if no optimization is performed at all, the validation split can be used as additional data for the training.  
+As already mentioned, we did not perform any hyperparameter tuning on this dataset. This is very noticeable when looking at the reported F1 score for the test and dev splits. Usually, the result for the dev portion of the data is much higher because this part is typically used for hyperparameter optimization. Therefore, researches pick the model with the highest score on the dev split, indirectly picking a model which is overfitted on the validation split to an extent. This demonstrates that it is important to never perform optimization on the test split. However, if no optimization is performed at all, the validation split can be used as additional data for the training.  
 
 
 
@@ -393,7 +391,7 @@ Classifiers {(and humans)} struggle with the amount of fine-grained aspects. To 
 	\bottomrule
 	\multicolumn{4}{c}{\textbf{Organic-2019 - Dataset Partitions}} \\
 	\end{tabular*}
-	\caption{Report of results on different data partitions on the Organic-2019 dataset. Entity-Attributes denotes the full fine-grained combinations of entities and attributes. Entities 2C corresponds to the sentence combination technique explained in section~\ref{sec:05_sentenceCombination}}
+	\caption{Report of results on different data partitions on the Organic-2019 dataset. Entity-Attributes denotes the full fine-grained combinations of entities and attributes. Entities 2C corresponds to the sentence combination technique explained in Section~\ref{sec:05_sentenceCombination}}
 	\label{tab:06_resultsOrganic1}
 \end{table}
 
@@ -409,7 +407,7 @@ We used the same network architecture for each test run regardless of the data s
 Furthermore, we apply a dropout of 0.28 for the dropout layers in the transformer and a 0.4 dropout for the output layers. This architecture was discovered by performing hyperparameter tuning on the dataset for the coarse partition.
 \bigskip
 
-This approach has one interesting consequence. When comparing the results of the dev and test splits it is noticeable that the performance on the dev split for the coarse organic partition is significantly better. This is the phenomenon mentioned in section~\ref{sec:06_hpTuningAmazon}.
+This approach has one interesting consequence. When comparing the results of the dev and test splits it is noticeable that the performance on the dev split for the coarse organic partition is significantly better. This is the phenomenon mentioned in Section~\ref{sec:06_hpTuningAmazon}.
 \smallskip
 
 However, this is not the case for the other partitions even though the data is exactly the same and the task is very similar. This seems to confirm that by choosing an architecture for a task it is also possible to overfit the model architecture on this specific task.
@@ -418,8 +416,6 @@ However, this is not the case for the other partitions even though the data is e
 \subsubsection*{Results for Organic-2019 Coarse}
 The following section takes a deeper look into the dataset by utilizing the coarse data partition.
 
-
-%TODO: Replace with data!
 \begin{figure}[htb]
 	\centering
 	\subfloat[Coarse - TEST]{
@@ -429,7 +425,7 @@ The following section takes a deeper look into the dataset by utilizing the coar
 		\includegraphics[width=0.49\textwidth]{figures/06_results/06_org_coarse_final_valid_c_matrix}
 	}
 	
-	\caption{Normalized confusion matrices for the coarse partition on the Organic-2019 dataset. The matrix on the left {(a)} shows the performance of the model on the test set while the right {(b)} confusion matrix visualizes the performance on the validation / development set.}
+	\caption{\textbf{Normalized confusion matrices for the coarse partition on the Organic-2019 dataset.} The matrix on the left {(a)} shows the performance of the model on the test set while the right {(b)} confusion matrix visualizes the performance on the validation / development set.}
 	\label{fig:06_ORG_coarse_cmatrices}
 \end{figure}
 
@@ -489,11 +485,11 @@ Finally, it is possible that the chosen architecture is not the optimal choice f
 It is possible to classify documents but only if the document has unique labels. This means the transformer is capable to classify a document with multiple sentences with aspects A, B and C. However, the \gls{absat} model cannot classify two sentences at the same time when both sentences are the same aspect.
 \medskip
 
-We tried to overcome this limitation by prepending previous sentences to the current sentence. Hence, only classifying the current sentence and thereby circumventing the limitations. However, as table \ref{tab:06_resultsOrganic1} shows this approach actually hurt the performance.
+We tried to overcome this limitation by prepending previous sentences to the current sentence. Hence, only classifying the current sentence and thereby circumventing the limitations. However, as table~\ref{tab:06_resultsOrganic1} shows this approach actually hurt the performance.
 \section{Impact of Multitask Learning}
 \label{sec:06_ResultsMultitask}
 
-As explained in section~\ref{sec:04_multitask} we test the effect of \acrfull{mtl} by predicting an additional sentiment label on the GermEval dataset.
+As explained in Section~\ref{sec:04_multitask} we test the effect of \acrfull{mtl} by predicting an additional sentiment label on the GermEval dataset.
 
 Table~\ref{tab:06_resultsMultitask} shows the performance of the transformer with- and without the additional task.  
 
@@ -511,7 +507,7 @@ Table~\ref{tab:06_resultsMultitask} shows the performance of the transformer wit
 	\bottomrule
 	\multicolumn{5}{c}{\textbf{GermEval-2017 Dataset - Multitask}} \\
 	\end{tabular*}
-	\caption{Results for \acrfull{mtl} on GermEval-2017. The \gls{mtl} model is trained with the additional task of detecting the overall sentiment for a task. This auxiliary task does not count into the calculation of the F1 score.}
+	\caption{\textbf{Results for \acrfull{mtl} on GermEval-2017.} The \gls{mtl} model is trained with the additional task of detecting the overall sentiment for a task. This auxiliary task does not count into the calculation of the F1 score.}
 	\label{tab:06_resultsMultitask}
 \end{table}
 
@@ -547,14 +543,14 @@ In order to still compare the performance we also trained the same architecture 
 	\bottomrule
 	\multicolumn{5}{c}{\textbf{Amazon reviews > Organic coarse - Transfer Learning}} \\
 	\end{tabular*}
-	\caption{Impact of \acrfull{tl} on the model performance. The transformer was first trained for five epochs on the amazon reviews dataset. After this, the aspect heads were exchanged for the new task on the organic-2019 coarse data partition. For this experiment we reduced the combined vocabulary size to the 40,000 most frequent words. Therefore, it is not possible to directly compare the performance of these results to the results reported in table~\ref{tab:06_resultsOrganic2}. To proof wether or not \gls{tl} can boost performance we also trained a non-\gls{tl} baseline which uses the same vocabulary as the \gls{tl} version.}
+	\caption{\textbf{Impact of \acrfull{tl} on the model performance.} The transformer was first trained for five epochs on the amazon reviews dataset. After this, the aspect heads were exchanged for the new task on the organic-2019 coarse data partition. For this experiment we reduced the combined vocabulary size to the 40,000 most frequent words. Therefore, it is not possible to directly compare the performance of these results to the results reported in table~\ref{tab:06_resultsOrganic2}. To proof wether or not \gls{tl} can boost performance we also trained a non-\gls{tl} baseline which uses the same vocabulary as the \gls{tl} version.}
 	\label{tab:06_resultsTransferLearning}
 \end{table}
 
 \begin{figure}[htb]
 	\centering
 	\includegraphics[width=\textwidth]{figures/06_results/06_org_coarse_transfer}
-	\caption{Performance comparison of a model using transfer learning {(blue)} against a baseline model {(orange)}. The transfer learning model was trained on the amazon reviews dataset as the source dataset. After 5 epochs of training on the amazon dataset normal training on the coarse organic dataset started,}
+	\caption{\textbf{Performance comparison of a model using transfer learning {(blue)} against a baseline model {(orange)}.} The transfer learning model was trained on the amazon reviews dataset as the source dataset. After 5 epochs of training on the amazon dataset normal training on the coarse organic dataset started,}
 	\label{fig:06_org_coarse_transfer}
 \end{figure}
 
@@ -571,4 +567,4 @@ Figure~\ref{fig:06_org_coarse_transfer} visualizes the training process by plott
 It takes roughly three epochs until the \gls{tl}-model is able to overcome this issue. The reason for this is the special learning scheduler, that the transformer uses. The learning rate starts very low and increases linearly during a warm-up phase. After the warm-up phase the scheduler reduces the learning rate again.
 \medskip
 
-In the beginning the learning rate is too low to make an impact on the pre-trained weights. However, when the learning rate starts increasing the optimizer is able to change those pretrained weights which put the emphasis on the wrong, domain specific aspects. This is the point where the F1 score drastically improves because the model is able to take full advantage of the pretraining.
+In the beginning the learning rate is too low to make an impact on the pre-trained weights. However, when the learning rate starts increasing the optimizer is able to change those pre-trained weights which put the emphasis on the wrong, domain specific aspects. This is the point where the F1 score drastically improves because the model is able to take full advantage of the pre-training.

@@ -6,7 +6,7 @@ During the course of this thesis a novel model architecture was proposed and imp
 Furthermore, we took a closer look at multitask- and transfer learning. We performed experiments to evaluate how these methods can be used to increase the model performance. Specifically, we used multitask learning to augment our dataset by performing classification on an auxiliary task. 
 \smallskip
 
-For the transfer learning experiments we created a new dataset out of existing amazon reviews which contains almost 1.2 million samples. We used this dataset as a source dataset and pretrained the transformer base and the word embedding layer. We then used this pretrained network for classification on the coarse organic data partition.
+For the transfer learning experiments we created a new dataset out of existing amazon reviews which contains almost 1.2 million samples. We used this dataset as a source dataset and pre-trained the transformer base and the word embedding layer. We then used this pre-trained network for classification on the coarse organic data partition.
 \medskip
 
 In addition we show that neural network models can be trained inside a virtualized Docker container including \gls{cuda} support without any performance decrease. 

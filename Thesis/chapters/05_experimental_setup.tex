@@ -1,10 +1,10 @@
 \chapter{Experimental Setup}
 \label{ch:setup}
 
-The following chapter describes the experimental setup for the discussion of results in chapter~\ref{ch:discussion}. The first section of the chapter deals with data preprocessing. Section~\ref{sec:05_Data} lists all datasets used for evaluations of the models and finally section~\ref{sec:05_TrainingAndEvaluation} provides detail about the training and evaluation process used to generate the results.
+The following chapter describes the experimental setup for the discussion of results in Chapter~\ref{ch:discussion}. The first section of the chapter deals with data preprocessing. Section~\ref{sec:05_Data} lists all datasets used for evaluations of the models and finally Section~\ref{sec:05_TrainingAndEvaluation} provides detail about the training and evaluation process used to generate the results.
 
 \section{Data Preprocessing}
-The following section describes the general data preprocessing steps which were taken for all datasets described in section~\ref{sec:05_Data}. Some of the preprocessing steps are specific to certain datasets and will be described there. All data preprocessing steps can be enabled or disabled to evaluate the impact on the performance of these preprocessing steps. Some of those results will be discussed in section~\ref{subsec:06_dataPreprocessing} in chapter~\ref{ch:discussion}.
+The following section describes the general data preprocessing steps which were taken for all datasets described in Section~\ref{sec:05_Data}. Some of the preprocessing steps are specific to certain datasets and will be described there. All data preprocessing steps can be enabled or disabled to evaluate the impact on the performance of these preprocessing steps. Some of those results will be discussed in Section~\ref{subsec:06_dataPreprocessing} in chapter~\ref{ch:discussion}.
 
 \subsection{Text Cleaning}
 The main goal of the text cleaning step is 
@@ -19,10 +19,8 @@ without changing the semantics of the text.
 The first step of the data preprocessing pipeline is the removal of all unknown characters which are not UTF-8 compatible. Those characters can occur because of encoding issues or words outside of the target language. 
 \subsubsection*{Contraction Expansion}
 
-Before we remove any special characters all contractions are expanded with the goal of reducing the vocabulary size and language normalization. Contractions are shortened versions of several words or syllables. In the English language, vowels are often replaced by an apostrophe.  Especially in social media and spoken language a lot of contractions are used. '\textit{I'll've}' and '\textit{I will have}' have the same meaning but if they are not expanded they produce a completely different embedding. '\textit{I'll've}' will produce a (300)-dimensional vector (for glove and fasttext) whereas '\textit{I will have}' will be interpreted as 3 300-dimensional vectors.
+Before we remove any special characters all contractions are expanded with the goal of reducing the vocabulary size and language normalization. Contractions are shortened versions of several words or syllables. In the English language, vowels are often replaced by an apostrophe.  Especially in social media and spoken language a lot of contractions are used. '\textit{I'll've}' and '\textit{I will have}' have the same meaning but if they are not expanded they produce a completely different embedding. '\textit{I'll've}' will produce a (300)-dimensional vector (for GloVe and fastText) whereas '\textit{I will have}' will be interpreted as 3 300-dimensional vectors.
 \medskip
-
-% TODO: Cite and/or check fasttext and glove naming
 
 The contraction expansion is followed by the replacement of \glspl{url} with the token '<URL>' and e-mail addresses with the token '<MAIL>'. E-Mails and URLs are always out-of vocabulary and contain very little information that is worth encoding. 
 \medskip
@@ -49,20 +47,12 @@ All of the above replacements are very bad because they change the meaning of th
 
 Nevertheless, in terms of vocabulary size reduction they are clearly outperforming other techniques as table~\ref{tab:05_amazonVocabSize} demonstrates. Running Hunspell on the Amazon dataset reduces the original vocabulary size of 1.6 Million by over 80\% to about 311,000 unique words. In addition, as column \textit{SP + TR-1} shows there are no tokens which only appear once. The reason for this is, that Hunspell always suggests something. Even words like \textit{\^{}\_\^{}b4} are replaced by new words even if it would make more sense to delete those words altogether.
 
+\subsubsection*{Stop word Removal}
 
-\subsubsection*{Stemming and Lemmatization}
-
-% TODO: cite and explain Stemming and Lemmatization
-Stemming were also briefly explored, however, they did not provide a significant performance improvement.
-
-\subsubsection*{Stopword Removal}
-
-%TODO: Write stop word section
+As another technique to reduce the amount of information the model has to process we explored stop word removal. Stop words are filtered out during the preprocessing step and are removed without replacement.
 
 \subsection{Comment Clipping}
 \label{subsec:06_CommentClipping}
-
-% TODO: Show how many comments are very long in dataset
 
 The transformer works with different input sequence lengths within one batch. Therefore, it is possible to group similar sequence lengths together and have arbitrary sequence lengths. Unfortunately, in each dataset there is a small percentage of sequences which are longer than other sequences. Due to the limited computational resources a batch of those long sequences  does not fit into \gls{gpu} memory. Therefore, all sentences are either padded or clipped to a fixed length. This is also a requirement for the CNN-based transformer aspect head since CNN-layers need a fixed number of input channels.
 
@@ -78,25 +68,25 @@ The process starts by repeatedly adding sentences to a stack. All $n-1$ sentence
 
 % TODO: Show where sentiment is: analyise per word predictions and see if it makes sense to cut at the front or the back 
 
-See section~\ref{subsec:06_CommentClipping} for the evaluation of this preprocessing step.
+See Section~\ref{subsec:06_CommentClipping} for the evaluation of this preprocessing step.
 
 \section{Data}
 \label{sec:05_Data}
 
-This section describes the four datasets which were used for the evaluation of the ABSA-Transformer architecture described previously.
+This section describes the four datasets which were used for the evaluation of the \acrfull{absat} architecture described previously.
 
 The first dataset - CoNLL-2003 - is used to evaluate just the transformer model without the use of aspect heads. The task of this dataset is word level \gls{ner} prediction. Since the original transformer model provides predictions on the word level this is good task to evaluate just the transformer part.
 \medskip
 
-GermEval-2017 described in section~\ref{sec:05_germeval} is a dataset for aspect-based sentiment analysis and contains over 25,000 review documents from social media.
+GermEval-2017 described in Section~\ref{sec:05_germeval} is a dataset for aspect-based sentiment analysis and contains over 25,000 review documents from social media.
 \medskip
 
-Organic-2019 is a very recent dataset, also providing an aspect-based sentiment analysis task in the domain of organic food. Whereas, GermEval-2017 contains document level annotations, Organic-2019 contains word level over 10,000 annotated sentences. Organic-2019 is described in section~\ref{sec:05_organic2019}.
+Organic-2019 is a very recent dataset, also providing an aspect-based sentiment analysis task in the domain of organic food. Whereas, GermEval-2017 contains document level annotations, Organic-2019 contains word level over 10,000 annotated sentences. Organic-2019 is described in Section~\ref{sec:05_organic2019}.
 \medskip
 
-Finally, section~\ref{sec:05_amazonReviews} describes a new dataset consisting of Amazon reviews which was created with the goal to provide a big dataset as the source for transfer learning. The dataset contains almost 1.2 million reviews with 20 domains spanning the Amazon product catalog.
+Finally, Section~\ref{sec:05_amazonReviews} describes a new dataset consisting of Amazon reviews which was created with the goal to provide a big dataset as the source for transfer learning. The dataset contains almost 1.2 million reviews with 20 domains spanning the Amazon product catalog.
 
-\subsection{CoNLL-2003 - Named Entity Recognition}
+\subsection{CoNLL-2003 - \acrfull{ner}}
 
 The CoNLL-2003 shared task contains datasets in English and German for \acrfull{ner} \cite{Erik2003}. \gls{ner} describes the task of assigning labels to individual words. The four labels which are used for CoNLL-2003 are \textit{persons}, \textit{locations}, \textit{organizations} and \textit{names} \cite{Erik2003}. For example the sentence "Gerry is a researcher at TUM in Munich" would be labeled as "[\textit{PER} Gerry] is a researcher at [\textit{ORG} TUM] in [\textit{LOC} Munich]".
 \medskip
@@ -114,7 +104,7 @@ The English data which was used for this research consists of news stories which
 		Test & 231 & 3,684 & 46,435 & 1668 & 702 & 1661 & 1617 \\ 
 		\bottomrule 
 	\end{tabular} 
-\caption{Number of samples and labels for each split in the CoNLL-2003 English \gls{ner} dataset}
+\caption{\textbf{CoNLL dataset statistics} - Number of samples and labels for each split in the CoNLL-2003 English \gls{ner} dataset}
 \label{tab:05_conll2003DatasetStats}
 \end{table}
 
@@ -133,7 +123,7 @@ GermEval-2017 is a shared dataset for four different tasks:
 	\item \textcolor{darkgray}{Task-C: Opinion Target Extraction}
 \end{enumerate}
 
-This work focuses on Subtask C and results for the aspect-based sentiment analysis are reported in section~\ref{sec:06_ResultsGermEval}.
+This work focuses on Subtask C and results for the aspect-based sentiment analysis are reported in Section~\ref{sec:06_ResultsGermEval}.
 \medskip
 
 Beating the baseline systems of GermEval is not trivial since the dataset is extremely skewed towards the dominant category 'general' {(\textit{Allgemein})}. This category makes up 62.2\% of all the samples in the dataset. Some categories contain less than 50 samples which is only 2\% of the whole data. Almost half of the aspects have less than 1\% share of the total amount of samples. There is even one aspect \textit{QR-Code} which has a total of two samples and none in the training split. Table~\ref{tab:05_germevalDatasetStats} provides the detailed breakdown of the number of samples per aspect.
@@ -172,7 +162,7 @@ In addition, there are some issues with the evaluation metric that the organizer
 		Total                        & 2467   & 1721   & 19,297 & 2310 & 25,795 & 100\%   \\ 
 		\bottomrule
 	\end{tabular}
-	\caption{Number of samples for each aspect per split in the GermEval-2017 shared task dataset.}
+	\caption{\textbf{GermEval-2017 - Dataset statistics} - Number of samples for each aspect per split in the GermEval-2017 shared task dataset.}
 \label{tab:05_germevalDatasetStats}
 \end{table}
 
@@ -204,17 +194,17 @@ The Amazon Reviews Dataset consists of over 130 million Amazon product reviews f
 In 2013 McAuley and Leskovec compiled a subset of Amazon reviews \cite{McAuley2013}. This dataset contains 34,7 million reviews ranging from 1995 till 2013 grouped into 33 categories\footnote{Available through Stanford \url{https://snap.stanford.edu/data/web-Amazon.html}}. The authors also created a "Fine Food" Dataset from Amazon reviews \cite{McAuley2013a} \footnote{Available through Kaggle \url{https://www.kaggle.com/snap/amazon-fine-food-reviews}}. This dataset consists of 568,454 Amazon reviews from 1995 till 2012. The domain of this specific dataset is related to the organic domain with 273 occurrences of the word 'organic'. Unfortunately, it does not contain predefined aspects so \gls{absa} is not possible without extensive pre-processing to generate aspects out of the reviews.
 \medskip
 
-The datasets created in 2013 contains duplicates so McAuley et. al. generated an improved Amazon Reviews dataset in 2015 without duplicates \cite{McAuley2015}\cite{He2016}. This iteration of the dataset contains 142.8 million reviews from 1996 till 2014\footnote{Available here: \url{http://jmcauley.ucsd.edu/data/amazon/}}. Due to the size of this dataset the authors provide a smaller dataset which only contains reviews from users who wrote exactly 5 reviews. This 5-core subset features 18 million reviews. The distribution of the domain categories is visualized in figure~\ref{fig:05_amazonDatasetDistributin}. As one can observe the dataset is substantially skewed towards the largest domain 'books' which makes up of 49\% of the data.
+The datasets created in 2013 contains duplicates so McAuley et al. generated an improved Amazon Reviews dataset in 2015 without duplicates \cite{McAuley2015}\cite{He2016}. This iteration of the dataset contains 142.8 million reviews from 1996 till 2014\footnote{Available here: \url{http://jmcauley.ucsd.edu/data/amazon/}}. Due to the size of this dataset the authors provide a smaller dataset which only contains reviews from users who wrote exactly 5 reviews. This 5-core subset features 18 million reviews. The distribution of the domain categories is visualized in figure~\ref{fig:05_amazonDatasetDistributin}. As one can observe the dataset is substantially skewed towards the largest domain 'books' which makes up of 49\% of the data.
 \medskip
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{figures/05_setup/05_amazonReviewsCategories}
-	\caption{Number of reviews per domain category in the amazon review dataset by McAuley et. al. \cite{McAuley2015}}
+	\caption{\textbf{Amazon Reviews Statistics} - Number of reviews per domain category in the amazon review dataset by McAuley et al. \cite{McAuley2015}}
 	\label{fig:05_amazonDatasetDistributin}
 \end{figure}
 
-To combat data imbalance and the sheer size of the dataset we propose a balanced subset of the 5-core dataset with 60000 reviews for each domain aside from \textit{Musical Instruments}, \textit{Amazon Instant Video}, \textit{Automotive} and \textit{Patio, Lawn and Garden}. These categories contain less than 50000 reviews so including them would skew the dataset again. In addition, we also transformed the star-rating to the common negative-neutral-positive rating schema. Similar to Blitzer et. al. we interpret $1-2$ stars as negative, 3 stars as neutral and $4-5$ stars as positive sentiment \cite{Blitzer2007}.
+To combat data imbalance and the sheer size of the dataset we propose a balanced subset of the 5-core dataset with 60000 reviews for each domain aside from \textit{Musical Instruments}, \textit{Amazon Instant Video}, \textit{Automotive} and \textit{Patio, Lawn and Garden}. These categories contain less than 50000 reviews so including them would skew the dataset again. In addition, we also transformed the star-rating to the common negative-neutral-positive rating schema. Similar to Blitzer et al. we interpret $1-2$ stars as negative, 3 stars as neutral and $4-5$ stars as positive sentiment \cite{Blitzer2007}.
 \medskip
 
 To create a balanced dataset not only on domains but also on sentiment we sampled 20000 reviews for each sentiment for each domain. Overall, there are more positive reviews than neutral or negative reviews. Thus, some domains contain less than 20000 reviews per sentiment category. To prevent data imbalance, reviews from the remaining other sentiment categories are sampled so that each domain contains 60000 reviews in sum. This distribution and additional statistics about the dataset are documented in table~\ref{tab:05_amazonDatasetStats}.
@@ -250,7 +240,7 @@ To create a balanced dataset not only on domains but also on sentiment we sample
 		Total						&	0.35 & 	   506202 &	349677& 337379&    3.31 &	 122 &  151 \\
 		\bottomrule
 	\end{tabularx}
-	\caption{Dataset statistics for the generated Amazon review subset for the domain categories. This table contains mean helpfulness rating; number of positive reviews; number of neutral reviews; number of negative reviews; mean star rating; mean number of words per review; standard deviation of the number of words per review }
+	\caption{\textbf{Dataset statistics for the generated Amazon review subset for the domain categories.} This table contains mean helpfulness rating; number of positive reviews; number of neutral reviews; number of negative reviews; mean star rating; mean number of words per review; standard deviation of the number of words per review }
 		\label{tab:05_amazonDatasetStats}
 \end{table}
 
@@ -263,7 +253,7 @@ There are over 145 million words in the dataset. These words combine into a voca
 	\item Removing rare tokens
 \end{enumerate}
 
-The process for the first technique is described in section~\ref{sec:05_SpellChecking}. Another way to reduce the vocabulary size is by removing tokens, that only occur once or twice. These tokens make up the majority of the vocabulary size but only a small percentage of the overall word count. Table~\ref{tab:05_amazonVocabSize} shows the proportion of tokens which only occur 1, 2, or 3 times. As demonstrated in the table, infrequent tokens are very rare {(all the tokens with one occurrence make up only 0.33\% of the whole dataset)}. Yet, infrequent tokens make up over 74\% of the total vocabulary size. Removing all tokens with one occurrence, therefore reduces the vocabulary size by 74\% but only 0.33\% of information is lost.
+The process for the first technique is described in Section~\ref{sec:05_SpellChecking}. Another way to reduce the vocabulary size is by removing tokens, that only occur once or twice. These tokens make up the majority of the vocabulary size but only a small percentage of the overall word count. Table~\ref{tab:05_amazonVocabSize} shows the proportion of tokens which only occur 1, 2, or 3 times. As demonstrated in the table, infrequent tokens are very rare {(all the tokens with one occurrence make up only 0.33\% of the whole dataset)}. Yet, infrequent tokens make up over 74\% of the total vocabulary size. Removing all tokens with one occurrence, therefore reduces the vocabulary size by 74\% but only 0.33\% of information is lost.
 
 Most of these rare tokens are either incorrectly written {(\textit{nthis})}, are part of structural elements such as headings {(\textit{review=======pros})} or are other unidentifiable characters and digits ({\textit{\^{}\_\^{}b4}}).
 
@@ -295,26 +285,28 @@ This means that it is necessary to collect model results multiple times. Unfortu
 Therefore, for each dataset-result we repeat the experiment 5-times and report the mean and standard deviation. Iyer and Rhinehart suggest to run an experiment up to a 1000 times to get an optimal result \cite{Iyer1999}. However, this is not possible for our models due to computational constraints.
 \medskip
 
-All experiments on hyper parameters are performed once with a fixed seed of 42. This should make sure that all experiments on hyper parameters are reproducible. There are however some cudnn functions which are non-deterministic which means that even though a random seed is set the results could differ when running the same model with the same parameters multiple times.
+All experiments on hyper parameters are performed once with a fixed seed of 42. This should make sure that all experiments on hyper parameters are reproducible. There are however some \gls{cudnn} functions which are non-deterministic which means that even though a random seed is set the results could differ when running the same model with the same parameters multiple times.
 
 \subsubsection*{GermEval 2017 - Evaluation}
 \label{sec:05_GermEvalEvaluation}
+
 Wojatzki et al. \cite{Wojatzki} provide an evaluation script for their dataset GermEval-2017. All results from the GermEval 2017 challenge were evaluated using this dataset. Therefore, all results reported in this thesis also use the evaluation script to calculate the f1 score. This is done to be able to compare the results on this datasets to other approaches on this data.
 
 \begin{table}
 	\centering
-	\label{tab:05_germevalEvaluationExample}
-	\caption{Example for GermEval-2017 evaluation. None sentiment is not shown. Document 1 is predicted correctly. Document 2 has a correct prediction for aspect A but an incorrect prediction for the sentiment of aspect B {(in bold)}.}
+	\caption{\textbf{Example for GermEval-2017 evaluation}. None sentiment is not shown. Document 1 is predicted correctly. Document 2 has a correct prediction for aspect A but an incorrect prediction for the sentiment of aspect B {(in bold)}.}
 	\begin{tabular}{@{}lcc}
 		\toprule 
 		& \textbf{Gold} & \textbf{Prediction} \\ 
-		\hline 
-		Document 1 & A : negative & A : negative \\ 
-		\hline 
-		\multirow{2}{*}{Document 2} & A : positive & A : positive \\ 
+		\midrule 
+		Document 1 & A : negative & A : negative \\
+		\midrule 
+		\multirow{2}{*}{Document 2} & A : positive & A : positive \\
 		& B : \textbf{positive} & B : \textbf{negative} \\ 
-		\hline 
+		\bottomrule 
 	\end{tabular}
+	\label{tab:05_germevalEvaluationExample}
+
 \end{table}
 
 Unfortunately, there are irregularities in the calculation of the micro f1 score. The evaluation script first creates every possible permutation of the combination of aspect and sentiment. If there are just two aspects {(Aspect A and Aspect B)} and four sentiments {(n/a, negative, neutral, positive)} this will generate 8 combinations {(A-n/a, A-negative, ..., B-positive)}. This is used as the first input {(\textit{aspect\_sentiment\_combinations})} of the GermEval-2017 evaluation algorithm shown in~\ref{algo:05_germeval}.
@@ -388,8 +380,7 @@ One could therefore argue that instead of producing two False Positives and two 
 Training and evaluation of the models was done on four different machines. One of the servers belongs to the faculty of applied informatics, one is a local desktop machine and the last two are cloud instances. One is an Azure virtual compute instance with 8 \gls{cpu} cores and 28 \gls{gb} of \gls{ram} and the other is a Google Cloud \gls{gpu} compute instance instance with an Intel Xeon E5-2670 processor, 15 \gls{gb} of \gls{ram} and a NVIDIA Grid K520 \gls{gpu}. See table~\ref{tab:05_usedHardware} for more details.
 \begin{table}
 	\centering
-	\caption{Hardware used for model training}
-	\label{tab:05_usedHardware}
+	\caption{Hardware used for training and evaluation of model architectures.}
 	\begin{tabular}{@{}cclrl@{}}
 		\toprule
 		\multicolumn{1}{c}{\textbf{}}    & \multicolumn{1}{c}{\textbf{OS}} & \multicolumn{1}{c}{\textbf{CPU}}                    & \multicolumn{1}{c}{\textbf{RAM}} & \multicolumn{1}{c}{\textbf{GPU}}     \\ \midrule
@@ -400,6 +391,7 @@ Training and evaluation of the models was done on four different machines. One o
 		
 		\bottomrule
 	\end{tabular}
+	\label{tab:05_usedHardware}
 \end{table}
 
 
@@ -407,7 +399,7 @@ Training and evaluation of the models was done on four different machines. One o
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=\textwidth]{figures/05_setup/05_dockerExecution}
-	\caption{Docker vs. Local environment - Comparision of model training times.}
+	\caption{\textbf{Docker vs. Local environment} - Comparison of model training times.}
 	\label{fig:05_dockerExecution}
 \end{figure}
 

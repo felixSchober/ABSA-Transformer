@@ -9,19 +9,19 @@ OpenAI uses the transformer to perform various \gls{nlp} tasks \cite{Radford2018
 They show that even though the same base transformer model is used for each task they achieve \gls{sota} results for most of the tasks.
 \medskip
 
-One year later, in 2019, OpenAI published \gls{gpt}-2 which is an extension to \gls{gpt} \cite{Radford2019}. With \gls{gpt}-2 Radford et. al. are able to achieve revolutionary results generating text with a transformer architecture\footnote{OpenAI will not release the trained model for the language generation task as they are afraid that it will be used for malicious intents - Source: OpenAI blog \url{https://openai.com/blog/better-language-models/}}. Again, they also achieve \gls{sota} results on other \gls{nlp} task mentioned above.
+One year later, in 2019, OpenAI published \gls{gpt}-2 which is an extension to \gls{gpt} \cite{Radford2019}. With \gls{gpt}-2 Radford et al. are able to achieve revolutionary results generating text with a transformer architecture\footnote{OpenAI will not release the trained model for the language generation task as they are afraid that it will be used for malicious intents - Source: OpenAI blog \url{https://openai.com/blog/better-language-models/}}. Again, they also achieve \gls{sota} results on other \gls{nlp} task mentioned above.
 \bigskip
 
-We propose the \acrfull{absat} which builds on the knowledge that the transformer is a powerful architecture useful for a variety of NLP tasks. Radford et. al. already show that the transformer can be used to predict sentiment for a document \cite{Radford2018}. 
+We propose the \acrfull{absat} which builds on the knowledge that the transformer is a powerful architecture useful for a variety of NLP tasks. Radford et al. already show that the transformer can be used to predict sentiment for a document \cite{Radford2018}. 
 
 However, sentiment analysis is one of the few tasks where \gls{gpt}-1 is not able to achieve \gls{sota} results. Moreover, \gls{gpt}-1 only classifies standard sentiment and not aspect-based sentiment.
 \medskip
 
-This will be the first architecture which uses a transformer to perform multi-task aspect-based sentiment analysis. The next section describes the architecture of the \gls{absat} model. Section~\ref{sec:04_multitask} describes how \gls{absat} is used in combination with multi task learning and finally, section~\ref{sec:04_transferLearning} explains how we used transfer learning to boost the training performance.
+This will be the first architecture which uses a transformer to perform multi-task aspect-based sentiment analysis. The next section describes the architecture of the \gls{absat} model. Section~\ref{sec:04_multitask} describes how \gls{absat} is used in combination with multi task learning and finally, Section~\ref{sec:04_transferLearning} explains how we used transfer learning to boost the training performance.
 
 \section{General Model Architecture}
 
-The following section describes the proposed \acrfull{absat} architecture. As the name suggests this design is based on the transformer model \cite{Vaswani2017}. The second model characteristic is influenced by the work of Schmitt et. al. and their concept of separate aspect heads \cite{Schmitt2018}.
+The following section describes the proposed \acrfull{absat} architecture. As the name suggests this design is based on the transformer model \cite{Vaswani2017}. The second model characteristic is influenced by the work of Schmitt et al. and their concept of separate aspect heads \cite{Schmitt2018}.
 \bigskip
 
 \begin{figure}[htp]
@@ -42,17 +42,17 @@ Figure~\ref{fig:04_t-absa} visualizes a simplified \gls{absat} model. This speci
 
 Each aspect head is isolated from the rest which allows the transformer to perform multi-label \gls{absa}. When a document or sentence contains a specific aspect the corresponding aspect head outputs either \textit{negative}, \textit{neutral} or \textit{positive}. If this aspect is not part of the sentence, the output is \textit{not applicable}.
 
-We propose two different versions of aspect heads which are described in section~\ref{sec:04_aspectHeads} in detail.
+We propose two different versions of aspect heads which are described in Section~\ref{sec:04_aspectHeads} in detail.
 
 \section{Transformer}
 \label{sec:04_transformer}
 
-The original transformer uses undisclosed word embeddings which output a 512-dimensional vector\footnote{They also experiment with 256 and 1024 dimensional vectors}. It is possible that the original transformer does not use pretrained embeddings. We performed experiments with \gls{absat} and untrained word embeddings but concluded that pretrained word embeddings outperform untrained word embeddings. 
+The original transformer uses undisclosed word embeddings which output a 512-dimensional vector\footnote{They also experiment with 256 and 1024 dimensional vectors}. It is possible that the original transformer does not use pre-trained embeddings. We performed experiments with \gls{absat} and untrained word embeddings but concluded that pre-trained word embeddings outperform untrained word embeddings. 
 
 However, the difference was only a few percent and it is conceivable that a transformer with more training data would be able to train its own word embeddings.
 \medskip
 
-Considering the smaller datasets that we use for \gls{absa}, the \gls{absat} model uses pretrained embeddings instead of untrained embeddings. Pretrained embeddings for both \gls{glove} and fastText are only available for up to 300 dimensions. As a consequence, the model size of transformer is only 300 instead of 512.
+Considering the smaller datasets that we use for \gls{absa}, the \gls{absat} model uses pre-trained embeddings instead of untrained embeddings. Pre-trained embeddings for both \gls{glove} and fastText are only available for up to 300 dimensions. As a consequence, the model size of transformer is only 300 instead of 512.
 \bigskip
 
 Similar to the vanilla transformer, \gls{absat} also uses an \gls{adam} optimizer \cite{Kingma2014} and a special learning rate decay which is called NOAM\footnote{It is not clear what noam stands for or where this learning rate decay schema came from. It is not mentioned or cited as noam but it is referred to as noam by the authors in discussions: \url{https://github.com/tensorflow/tensor2tensor/issues/280}} \cite{Vaswani2017}
@@ -167,7 +167,7 @@ where $\mathcal{L}(f(x), y_m)$ is the \gls{nll}-loss of the model $f$ with input
 
 \subsection{Multitask Task Data Augmentation}
 
-As described in section~\ref{sec:03_mtlAdvantages} it is also possible to augment the data by using an auxiliary task in addition to the regular classification tasks.
+As described in Section~\ref{sec:03_mtlAdvantages} it is also possible to augment the data by using an auxiliary task in addition to the regular classification tasks.
 
 There are three possible auxiliary tasks to consider:
 
@@ -185,7 +185,7 @@ Training with the auxiliary sentiment label is performed by adding an additional
 However, during evaluation this task is ignored when calculating the F1-score for the model.
 \medskip
 
-The results for this experiment is located in section~\ref{sec:06_ResultsMultitask}.
+The results for this experiment is located in Section~\ref{sec:06_ResultsMultitask}.
 
 %We also experiment with the weighting of the tasks in the loss
 
@@ -196,7 +196,7 @@ The results for this experiment is located in section~\ref{sec:06_ResultsMultita
 Besides, multi-task learning we also perform transfer learning to test if the transformer is able to transfer knowledge from one domain to another domain. The transformer model is often used for language modelling and language understanding. These tasks are essential for every \gls{nlp} task and in general and sentiment analysis specifically. Hence, the transformer base should be domain independent. 
 \medskip
 
-It has been already shown that transferring knowledge from the word embedding layer from one domain to another is not only possible but beneficial for the overall performance \cite{Yosinski2014}. Therefore, in addition to the transformer base we will also use pretrained word embeddings.
+It has been already shown that transferring knowledge from the word embedding layer from one domain to another is not only possible but beneficial for the overall performance \cite{Yosinski2014}. Therefore, in addition to the transformer base we will also use pre-trained word embeddings.
 \medskip
 
 Due to the nature of the aspect heads we can not transfer knowledge from one domain to another. Not only are the aspect heads highly domain specific but also aspect specific. 
@@ -218,18 +218,18 @@ The results were in line with our theories that the transformer produces the maj
 
 \subsection{Knowledge Transfer from Amazon Reviews}
 
-In section~\ref{sec:06_ResultsTransfer} we will perform experiments to asses the theory about the transferability of the transformer base. We will train a transformer model on the amazon reviews dataset {(section~\ref{sec:05_amazonReviews})} which we collected just for this experiment. This dataset is very large and balanced along the aspects.
+In Section~\ref{sec:06_ResultsTransfer} we will perform experiments to asses the theory about the transferability of the transformer base. We will train a transformer model on the amazon reviews dataset {(Section~\ref{sec:05_amazonReviews})} which we collected just for this experiment. This dataset is very large and balanced along the aspects.
 \medskip
 
-After training is completed we take the models embedding and transformer base and exchange the aspect heads with new heads for the training on the target dataset. For the target dataset we use  the organic-2019 dataset {(section~\ref{sec:05_organic2019})}.
+After training is completed we take the models embedding and transformer base and exchange the aspect heads with new heads for the training on the target dataset. For the target dataset we use  the organic-2019 dataset {(Section~\ref{sec:05_organic2019})}.
 \bigskip
 
 \subsubsection*{Transfer of Knowledge from Word Embeddings}
 
-A lot of information is encoded in the word embeddings. In fact it makes up a vast majority of the trainable network parameters {(see section~\ref{sec:06_ResultsAmazon})}. Furthermore, the transformer is conditioned on the word vectors the embedding produces as they shift from the pretrained embeddings to more domain specific embeddings. This can be observed when we freeze the embeddings during training so that they do not change. This significantly impacts the performance negatively.
+A lot of information is encoded in the word embeddings. In fact it makes up a vast majority of the trainable network parameters {(see Section~\ref{sec:06_ResultsAmazon})}. Furthermore, the transformer is conditioned on the word vectors the embedding produces as they shift from the pre-trained embeddings to more domain specific embeddings. This can be observed when we freeze the embeddings during training so that they do not change. This significantly impacts the performance negatively.
 \medskip
 
-Unfortunately, this is a threat for the transferability of the embedding layer. When the embeddings are first created, they are initialized with the vocabulary of the dataset. Especially, for the amazon dataset there is a huge number of infrequent words {(see section~\ref{sec:05_amazonTokens})} that do not necessarily occur in the target dataset. Even when removing the most infrequent tokens a large percentage of the vocabulary from the amazon dataset is not used for the target dataset which makes a large portion of the embedding domain specific. 
+Unfortunately, this is a threat for the transferability of the embedding layer. When the embeddings are first created, they are initialized with the vocabulary of the dataset. Especially, for the amazon dataset there is a huge number of infrequent words {(see Section~\ref{sec:05_amazonTokens})} that do not necessarily occur in the target dataset. Even when removing the most infrequent tokens a large percentage of the vocabulary from the amazon dataset is not used for the target dataset which makes a large portion of the embedding domain specific. 
 \medskip
 
 On the other hand, there are tokens in the target dataset which do not occur in the amazon reviews dataset. For the organic dataset these tokens are highly domain specific. Most of these tokens are chemical compounds and other words like "Glyphosate" which are very important for this dataset.

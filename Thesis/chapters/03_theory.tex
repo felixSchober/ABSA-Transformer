@@ -44,7 +44,7 @@ Of course, this task can also be solved by neural networks. Imagine $W$ to be a 
 Instead of improving $W$ directly, we use $W$ to train a network on an auxiliary task like predicting the next word in a sequence. Instead of training $W$ supervised we use an unsupervised task and train $W$ indirectly. This is the basic principle how many modern word embeddings are trained and interestingly, this produces fascinating results shown in figure~\ref{fig:03_WordEmbeddings}.
 \medskip
 
-Word vectors even allow for basic vector arithmetic. $W(\text{"King"})-W(\text{"Man"})+W(\text{"Woman"})=W(\text{"Queen"})$ is a famous example for this demonstrated by Mikolov et. al. \cite{Mikolov2013d}.
+Word vectors even allow for basic vector arithmetic. $W(\text{"King"})-W(\text{"Man"})+W(\text{"Woman"})=W(\text{"Queen"})$ is a famous example for this demonstrated by Mikolov et al. \cite{Mikolov2013d}.
 \medskip
 
 \begin{figure}[ht]
@@ -52,7 +52,7 @@ Word vectors even allow for basic vector arithmetic. $W(\text{"King"})-W(\text{"
 	\includegraphics[width=0.32\textwidth]{figures/03_theory/03_wordEmbeddings1}
 	\includegraphics[width=0.32\textwidth]{figures/03_theory/03_wordEmbeddings2}
 	\includegraphics[width=0.32\textwidth]{figures/03_theory/03_wordEmbeddings3}
-	\caption[Three regions of a word embedding visualized by t-SNE. Source: Turian et. al. \cite{Turian2010} - Source for full image \url{http://metaoptimize.s3.amazonaws.com/cw-embeddings-ACL2010/embeddings-mostcommon.EMBEDDING_SIZE=50.png}]{Three regions of a word embedding visualized by t-SNE. The left region contains names of countries, the middle region consists of days and the right regions is made up of financial terms. Source: Turian et. al. \cite{Turian2010}\protect\footnotemark}
+	\caption[Three regions of a word embedding visualized by t-SNE. Source: Turian et al. \cite{Turian2010} - Source for full image \url{http://metaoptimize.s3.amazonaws.com/cw-embeddings-ACL2010/embeddings-mostcommon.EMBEDDING_SIZE=50.png}]{Three regions of a word embedding visualized by t-SNE. The left region contains names of countries, the middle region consists of days and the right regions is made up of financial terms. Source: Turian et al. \cite{Turian2010}\protect\footnotemark}
 	\label{fig:03_WordEmbeddings}
 \end{figure}
 \footnotetext{Full source for image \url{http://metaoptimize.s3.amazonaws.com/cw-embeddings-ACL2010/embeddings-mostcommon.EMBEDDING_SIZE=50.png}}
@@ -62,7 +62,7 @@ For many \gls{nlp} tasks, word representations have become indispensable and one
 \subsection{Word2Vec}
 \label{sec:03_word2vec}
 
-Word2Vec by Mikolov et. al. is a very popular method which learns to produce word embeddings unsupervised from raw text \cite{Mikolov2013}. The authors propose two approaches to learn an embedding. Both are very similar and rely on shallow neural networks to generate good embeddings. Moreover, these methods are computationally much more efficient than previous architectures without sacrificing performance. This allows word2vec to be applied on much bigger corpora with billions of words which was not possible before \cite{Mikolov2013c}.
+Word2Vec by Mikolov et al. is a very popular method which learns to produce word embeddings unsupervised from raw text \cite{Mikolov2013}. The authors propose two approaches to learn an embedding. Both are very similar and rely on shallow neural networks to generate good embeddings. Moreover, these methods are computationally much more efficient than previous architectures without sacrificing performance. This allows word2vec to be applied on much bigger corpora with billions of words which was not possible before \cite{Mikolov2013c}.
 
 
 \subsubsection*{Skip-gram Model}
@@ -84,12 +84,12 @@ Skip-gram works better for smaller datasets than \gls{cbow} since it is possible
 
 \subsection{\acrfull{glove}}
 
-There are two methods for create word vectors: word co-occurrence counting {(section~\ref{sec:03_vectorSpace})} and the window based skip-gram / \gls{cbow} methods {(section~\ref{sec:03_word2vec})}. Co-occurrence is relatively fast and efficient to collect and train unless the vocabulary is very big. A co-occurrence matrix also captures a lot of global statistical information whereas local window based models only capture the statistics for the window. However, most of the information a co-occurrence matrix provides is about the word similarity and not necessarily about the semantics. In addition, frequent words like "the" or "a" co-occur with a lot of other words. Therefore, they have huge co-occurrence counts with many words without providing any useful information \cite{Pennington2014a}.
+There are two methods for create word vectors: word co-occurrence counting {(Section~\ref{sec:03_vectorSpace})} and the window based skip-gram / \gls{cbow} methods {(Section~\ref{sec:03_word2vec})}. Co-occurrence is relatively fast and efficient to collect and train unless the vocabulary is very big. A co-occurrence matrix also captures a lot of global statistical information whereas local window based models only capture the statistics for the window. However, most of the information a co-occurrence matrix provides is about the word similarity and not necessarily about the semantics. In addition, frequent words like "the" or "a" co-occur with a lot of other words. Therefore, they have huge co-occurrence counts with many words without providing any useful information \cite{Pennington2014a}.
 
 Local window based models like word2vec have the disadvantage that training is not as efficient and a lot of statistical information is not captured \cite{Pennington2014a}. 
 \medskip
 
-\gls{glove} which was introduced by Pennington et. al. tries to combine the advantages of both model families \cite{Pennington2014a}. \gls{glove} captures the global corpus statistics directly by creating a co-occurence matrix $X$ where the entry $X_{ij}$ denotes how often the word $j$ occurs together with $i$. The probability that $i$ appears in the context of $j$ is 
+\gls{glove} which was introduced by Pennington et al. tries to combine the advantages of both model families \cite{Pennington2014a}. \gls{glove} captures the global corpus statistics directly by creating a co-occurence matrix $X$ where the entry $X_{ij}$ denotes how often the word $j$ occurs together with $i$. The probability that $i$ appears in the context of $j$ is 
 
 \begin{equation}
 	P_{ij}=P(j|i)=\frac{X_{ij}}{X_i}=\frac{X_{ij}}{\sum_k X_{ik}}\quad.
@@ -97,7 +97,7 @@ Local window based models like word2vec have the disadvantage that training is n
 
 To put it simply, $P_{ij}$ is just the number of times $i$ and $j$ appeared together divided by the sum of all words that $i$ appeared with \cite{Pennington2014a}.
 
-Pennington et. al. demonstrate that the ratio of probabilities $P_{ik} / P_{jk}$  encodes a lot of the meaning that is lost in traditional co-occurence based methods \cite{Pennington2014a}.
+Pennington et al. demonstrate that the ratio of probabilities $P_{ik} / P_{jk}$  encodes a lot of the meaning that is lost in traditional co-occurence based methods \cite{Pennington2014a}.
 \medskip
 
 The authors use $F$ to describe this ratio as
@@ -153,7 +153,7 @@ Lastly, FastText represents rare words a lot better than word2vec. Even if a wor
 
 \section{Google Transformer Architecture}
 \label{sec:03_transformer}
-The Google transformer architecture is a novel neural network architecture for automatic machine translation tasks by Vaswani et. al. \cite{Vaswani2017d}. Instead of relying on \gls{rnn} based architectures with recurrence, the transformer uses an attention mechanism to achieve \gls{sota} results on machine translation tasks. Like most of sequence-to-sequence models the transformer also uses the encoder-decoder pattern to translate a sentence from the source to the target language. We will mostly focus on the encoder part of the model since this is the part, we use to perform \gls{absa} classification.
+The Google transformer architecture is a novel neural network architecture for automatic machine translation tasks by Vaswani et al. \cite{Vaswani2017d}. Instead of relying on \gls{rnn} based architectures with recurrence, the transformer uses an attention mechanism to achieve \gls{sota} results on machine translation tasks. Like most of sequence-to-sequence models the transformer also uses the encoder-decoder pattern to translate a sentence from the source to the target language. We will mostly focus on the encoder part of the model since this is the part, we use to perform \gls{absa} classification.
 \medskip
 
 The issue when training many \gls{rnn}-based architectures is the problem of long-range dependencies. These dependencies may lead to either vanishing or exploding gradient \cite{Hochreiter2009}. The dilemma is, that language translations features a lot of long dependencies. For some translations like "I like planes" to "Ich mag Flugzeuge" each token exactly matches the position of the translation. However, in many cases the positioning of words is different. Take the sentence "I think I \underline{saw} you at the airport \emph{yesterday}". This would translate to "Ich glaube, dass ich dich \emph{gestern} im Flughafen \underline{gesehen habe}".
@@ -256,7 +256,7 @@ The first linear layer scales the input to the inner layer dimensionality of 204
 
 \subsection{\gls{adam}}
 
-Vaswani et. al. propose to use the \acrfull{adam} optimizer \cite{Kingma2014}. \gls{adam} is an extension to the popular \gls{sgd} optimizer. However, instead of having a fixed learning rate like \gls{sgd}, Adam computes a learning rate for each trainable network parameter. Those learning rates are directly obtained by the decaying mean and uncentered variance of the past gradients \cite{Kingma2014}.
+Vaswani et al. propose to use the \acrfull{adam} optimizer \cite{Kingma2014}. \gls{adam} is an extension to the popular \gls{sgd} optimizer. However, instead of having a fixed learning rate like \gls{sgd}, Adam computes a learning rate for each trainable network parameter. Those learning rates are directly obtained by the decaying mean and uncentered variance of the past gradients \cite{Kingma2014}.
 \medskip
 
 This is different to AdaGrad \cite{Duchi2011} and RMSProp \cite{Hinton} which also maintain a learning rate for each parameter. However, RMSProp only use the mean and AdaGrad updates parameters based on how frequent the specific parameter is used as a feature.
@@ -461,10 +461,10 @@ The side effect of this is, that classifiers that tend to predict the most frequ
 The macro F1 score is calculated by averaging F1 scores for the classes. First, micro F1 scores are calculated at the lowest level. Then, the average F1 score is taken over all classes. This has the effect that each class counts the same towards the overall F1 score. Classes with only a few samples are therefore as important as classes with the majority of samples. This method does therefore not take label imbalance into account.
 \medskip
 
-There is one small exension to the macro F1 score which is the weighted F1 score. This score does also average the micro f1 scores but it uses weights to change the influence a class has over the total score.
+There is one small extension to the macro F1 score which is the weighted F1 score. This score does also average the micro f1 scores but it uses weights to change the influence a class has over the total score.
 \bigskip
 
-Both scores are very valuable to asses the performance of a model. The micro F1 score tells a researcher how well the model is able to replicate the overall data distribtion since models which predict majority classes more often will achieve a higher score. 
+Both scores are very valuable to asses the performance of a model. The micro F1 score tells a researcher how well the model is able to replicate the overall data distribution since models which predict majority classes more often will achieve a higher score. 
 \medskip
 
 The macro F1 score is useful to measure how the model treats minority classes. A high micro F1 score and a low macro F1 score imply that the model predicts classes with many samples very well but fails to predict classes with few samples.
