@@ -4,7 +4,7 @@
 The following chapter describes the experimental setup for the discussion of results in Chapter~\ref{ch:discussion}. The first section of the chapter deals with data preprocessing. Section~\ref{sec:05_Data} lists all datasets used for evaluations of the models and finally Section~\ref{sec:05_TrainingAndEvaluation} provides detail about the training and evaluation process used to generate the results.
 
 \section{Data Preprocessing}
-The following section describes the general data preprocessing steps which were taken for all datasets described in Section~\ref{sec:05_Data}. Some of the preprocessing steps are specific to certain datasets and will be described there. All data preprocessing steps can be enabled or disabled to evaluate the impact on the performance of these preprocessing steps. Some of those results will be discussed in Section~\ref{subsec:06_dataPreprocessing} in chapter~\ref{ch:discussion}.
+The following section describes the general data preprocessing steps which were taken for all datasets described in Section~\ref{sec:05_Data}. Some of the preprocessing steps are specific to certain datasets and will be described there. All data preprocessing steps can be enabled or disabled to evaluate the impact on the performance of these preprocessing steps. Some of those results will be discussed in Section~\ref{subsec:06_dataPreprocessing} in Chapter~\ref{ch:discussion}.
 
 \subsection{Text Cleaning}
 The main goal of the text cleaning step is 
@@ -75,7 +75,7 @@ See Section~\ref{subsec:06_CommentClipping} for the evaluation of this preproces
 
 This section describes the four datasets which were used for the evaluation of the \acrfull{absat} architecture described previously.
 
-The first dataset - CoNLL-2003 - is used to evaluate just the transformer model without the use of aspect heads. The task of this dataset is word level \gls{ner} prediction. Since the original transformer model provides predictions on the word level this is good task to evaluate just the transformer part.
+The first dataset -- CoNLL-2003 -- is used to evaluate just the transformer model without the use of aspect heads. The task of this dataset is word level \gls{ner} prediction. Since the original transformer model provides predictions on the word level this is good task to evaluate just the transformer part.
 \medskip
 
 GermEval-2017 described in Section~\ref{sec:05_germeval} is a dataset for aspect-based sentiment analysis and contains over 25,000 review documents from social media.
@@ -86,7 +86,7 @@ Organic-2019 is a very recent dataset, also providing an aspect-based sentiment 
 
 Finally, Section~\ref{sec:05_amazonReviews} describes a new dataset consisting of Amazon reviews which was created with the goal to provide a big dataset as the source for transfer learning. The dataset contains almost 1.2 million reviews with 20 domains spanning the Amazon product catalog.
 
-\subsection{CoNLL-2003 - \acrfull{ner}}
+\subsection{CoNLL-2003 -- \acrfull{ner}}
 
 The CoNLL-2003 shared task contains datasets in English and German for \acrfull{ner}~\cite{Erik2003}. \gls{ner} describes the task of assigning labels to individual words. The four labels which are used for CoNLL-2003 are \textit{persons}, \textit{locations}, \textit{organizations} and \textit{names}~\cite{Erik2003}. For example the sentence "Gerry is a researcher at TUM in Munich" would be labeled as "[\textit{PER} Gerry] is a researcher at [\textit{ORG} TUM] in [\textit{LOC} Munich]".
 \medskip
@@ -104,12 +104,12 @@ The English data which was used for this research consists of news stories which
 		Test & 231 & 3,684 & 46,435 & 1668 & 702 & 1661 & 1617 \\ 
 		\bottomrule 
 	\end{tabular} 
-\caption{\textbf{CoNLL dataset statistics} - Number of samples and labels for each split in the CoNLL-2003 English \gls{ner} dataset}
+\caption{\textbf{CoNLL dataset statistics} -- Number of samples and labels for each split in the CoNLL-2003 English \gls{ner} dataset}
 \label{tab:05_conll2003DatasetStats}
 \end{table}
 
 
-\subsection{GermEval-2017 - Customer Feedback on Deutsche Bahn}
+\subsection{GermEval-2017 -- Customer Feedback on Deutsche Bahn}
 \label{sec:05_germeval}
 GermEval 2017 is a dataset for Aspect-Based Sentiment Analysis on customer feedback about \textit{"Deutsche Bahn"} in German~\cite{Wojatzki2017}. \textit{"Deutsche Bahn"} is the largest railway operator in Europe\footnote{Financial Earnings Presentation 2014: \url{https://ir.deutschebahn.com/fileadmin/Deutsch/2014/Anhaenge/2014_finanzpraesentation_asien_de.pdf}}. All data is collected from social media, blogs and Q\&A pages over the course of one year from May 2015 till June 2016. Each document is annotated with a relevance flag, a document-level sentiment polarity as well as up to 19 different aspect-sentiment combinations such as atmosphere {(\textit{Atmosphäre})} or the experience of buying a ticket {(\textit{Ticketkauf})}.
 \medskip
@@ -162,11 +162,11 @@ In addition, there are some issues with the evaluation metric that the organizer
 		Total                        & 2467   & 1721   & 19,297 & 2310 & 25,795 & 100\%   \\ 
 		\bottomrule
 	\end{tabular}
-	\caption{\textbf{GermEval-2017 - Dataset statistics} - Number of samples for each aspect per split in the GermEval-2017 shared task dataset.}
+	\caption{\textbf{GermEval-2017 -- Dataset statistics} -- Number of samples for each aspect per split in the GermEval-2017 shared task dataset.}
 \label{tab:05_germevalDatasetStats}
 \end{table}
 
-\subsection{Organic-2019 - Organic Comments}
+\subsection{Organic-2019 -- Organic Comments}
 \label{sec:05_organic2019}
 This dataset was collected and annotated in the end of 2018 and the beginning of 2019. It contains 1,373 comments and 10,439 annotated sentences from Quora, a social question-and-answer website.
 \medskip
@@ -200,7 +200,7 @@ The datasets created in 2013 contains duplicates so McAuley et al. generated an 
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{figures/05_setup/05_amazonReviewsCategories}
-	\caption{\textbf{Amazon Reviews Statistics} - Number of reviews per domain category in the amazon review dataset by McAuley et al.~\cite{McAuley2015}}
+	\caption{\textbf{Amazon Reviews Statistics} -- Number of reviews per domain category in the amazon review dataset by McAuley et al.~\cite{McAuley2015}}
 	\label{fig:05_amazonDatasetDistributin}
 \end{figure}
 
@@ -287,7 +287,7 @@ Therefore, for each dataset-result we repeat the experiment 5-times and report t
 
 All experiments on hyper parameters are performed once with a fixed seed of 42. This should make sure that all experiments on hyper parameters are reproducible. There are however some \gls{cudnn} functions which are non-deterministic which means that even though a random seed is set the results could differ when running the same model with the same parameters multiple times.
 
-\subsubsection*{GermEval 2017 - Evaluation}
+\subsubsection*{GermEval 2017 -- Evaluation}
 \label{sec:05_GermEvalEvaluation}
 
 Wojatzki et al.~\cite{Wojatzki} provide an evaluation script for their dataset GermEval-2017. All results from the GermEval 2017 challenge were evaluated using this dataset. Therefore, all results reported in this thesis also use the evaluation script to calculate the f1 score. This is done to be able to compare the results on this datasets to other approaches on this data.
@@ -315,10 +315,10 @@ Unfortunately, there are irregularities in the calculation of the micro f1 score
 In the next step, all gold-labels and predictions are paired together for each document based on the specific aspect-sentiment combination. The example in table~\ref{tab:05_germevalEvaluationExample} will produce the following combinations where the left side represents the gold labels and the right side the predictions. This would be the second input parameter \textit{golds\_predictions} for algorithm~\ref{algo:05_germeval}: 
 
 \begin{enumerate}
-	\item A:neg - A:neg (Document 1)
-	\item A:pos - A:pos (Document 2)
-	\item B:pos - B:n/a (Document 2)
-	\item B:n/a - B:neg (Document 2)
+	\item A:neg -- A:neg (Document 1)
+	\item A:pos -- A:pos (Document 2)
+	\item B:pos -- B:n/a (Document 2)
+	\item B:n/a -- B:neg (Document 2)
 \end{enumerate}
 
 Using these inputs the algorithm will compute the following results:
@@ -399,7 +399,7 @@ Training and evaluation of the models was done on four different machines. One o
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=\textwidth]{figures/05_setup/05_dockerExecution}
-	\caption{\textbf{Docker vs. Local environment} - Comparison of model training times.}
+	\caption{\textbf{Docker vs. Local environment} -- Comparison of model training times.}
 	\label{fig:05_dockerExecution}
 \end{figure}
 

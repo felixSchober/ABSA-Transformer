@@ -52,7 +52,7 @@ Word vectors even allow for basic vector arithmetic. $W(\text{"King"})-W(\text{"
 	\includegraphics[width=0.32\textwidth]{figures/03_theory/03_wordEmbeddings1}
 	\includegraphics[width=0.32\textwidth]{figures/03_theory/03_wordEmbeddings2}
 	\includegraphics[width=0.32\textwidth]{figures/03_theory/03_wordEmbeddings3}
-	\caption[Three regions of a word embedding visualized by t-SNE. Source: Turian et al.~\cite{Turian2010} - Source for full image \url{http://metaoptimize.s3.amazonaws.com/cw-embeddings-ACL2010/embeddings-mostcommon.EMBEDDING_SIZE=50.png}]{Three regions of a word embedding visualized by t-SNE. The left region contains names of countries, the middle region consists of days and the right regions is made up of financial terms. Source: Turian et al.~\cite{Turian2010}\protect\footnotemark}
+	\caption[Three regions of a word embedding visualized by t-SNE. Source: Turian et al.~\cite{Turian2010} -- Source for full image \url{http://metaoptimize.s3.amazonaws.com/cw-embeddings-ACL2010/embeddings-mostcommon.EMBEDDING_SIZE=50.png}]{Three regions of a word embedding visualized by t-SNE. The left region contains names of countries, the middle region consists of days and the right regions is made up of financial terms. Source: Turian et al.~\cite{Turian2010}\protect\footnotemark}
 	\label{fig:03_WordEmbeddings}
 \end{figure}
 \footnotetext{Full source for image \url{http://metaoptimize.s3.amazonaws.com/cw-embeddings-ACL2010/embeddings-mostcommon.EMBEDDING_SIZE=50.png}}
@@ -273,7 +273,7 @@ When tasks are related this also holds true for machine learning. When learning 
 
 There are four important aspects one can use to determine if \gls{mtl} can bring performance boosts for a specific objective:
 \begin{enumerate}
-	\item Multi Label Task: Multi Label classification task where one sample can have more than one label are almost always inherintly solved using \gls{mtl} if labels are predicted by one model. Multiple authors show that adding tasks always improves performance compared to a separate model for each task as an alternative~\cite{Ramsundar2015}. %TODO: More citations
+	\item Multi Label Task: Multi Label classification task where one sample can have more than one label are almost always inherently solved using \gls{mtl} if labels are predicted by one model. Multiple authors show that adding tasks always improves performance compared to a separate model for each task as an alternative~\cite{Ramsundar2015}. %TODO: More citations
 	\item Shared low-level features: \gls{mtl} only makes sense if the tasks share low level features. For instance, image classification and \gls{nlp} do not share common features. In this case the model would not benefit from \gls{mtl} because one task can not help to improve the other task. Therefore, it is important to choose tasks that are related to each other~\cite{Zhang2017a}. In most cases \gls{mtl} will work with \gls{nlp} tasks because they usually share at least some kind of sentence or word embedding as a common layer.   % citation to do
 	\item Task Data Amount: Several authors have suggested that it is important for the success of \gls{mtl} training that the amount of data for the tasks is similar. Otherwise the model will mainly optimize for the task with most training samples.
 	\item Model Size: Finally, the multi-task model needs to have enough parameters to support all tasks~\cite{Caruana1997a}. 
@@ -308,7 +308,7 @@ Similarly, Plank et al. show that learning to predict word-frequencies along wit
 
 
 \subsection{Architecture}
-The most common architecture for multitask learning is shown in figure~\ref{fig:03_mtl_architecture}. It is called hard parameter sharing and consists of at least one layer which is shared among all tasks. In addition, each task has at least one separate layer. This approach is also the one we used for our model which is described in chapter~\ref{ch:method}. 
+The most common architecture for multitask learning is shown in figure~\ref{fig:03_mtl_architecture}. It is called hard parameter sharing and consists of at least one layer which is shared among all tasks. In addition, each task has at least one separate layer. This approach is also the one we used for our model which is described in Chapter~\ref{ch:method}. 
 
 The easiest way to compute the loss for a hard parameter sharing \gls{mtl} architecture is to take the sum of all losses for the individual tasks which is shown in equation ...
 
@@ -354,11 +354,11 @@ This paradigm can also be applied on natural language processing. Understanding 
 
 Generally, there are two sets of parameters in machine learning: learned parameters and hyperparameters which are used to configure various aspects of the training process. Learned parameters such as neural network weights are optimized during training whereas hyperparameters are usually defined at the beginning and without a few exceptions {(e.g. learning rate)} do not change during training.
 
-It has been demonstrated that there are a few hyperparameters which have an enormous impact on the overall model performance but identifying those parameters among a big set of possible candidates is difficult~\cite{Bergstra2012a}. However, correctly setting these parameters is crucial for achieving a good model performance. Cox and Pinto demonstrated that hyperparameters make the difference between a state of the art model and a model which does not perform better than a random classifier~\cite{Cox2011}. Therefore, hyperparamter tuning is critical for the model performance.
+It has been demonstrated that there are a few hyperparameters which have an enormous impact on the overall model performance but identifying those parameters among a big set of possible candidates is difficult~\cite{Bergstra2012a}. However, correctly setting these parameters is crucial for achieving a good model performance. Cox and Pinto demonstrated that hyperparameters make the difference between a state of the art model and a model which does not perform better than a random classifier~\cite{Cox2011}. Therefore, hyperparameter tuning is critical for the model performance.
 
-Hyperparameters are either hand tuned by reviewing similar literature or by the researchers understanding of the underlying architecutre and how he expects certain parameters to influence the architecture. Another way is to semi automatically optimize or fully automatically optimize the search for good hyperparameters.
+Hyperparameters are either hand tuned by reviewing similar literature or by the researchers understanding of the underlying architecture and how he expects certain parameters to influence the architecture. Another way is to semi automatically optimize or fully automatically optimize the search for good hyperparameters.
 
-This section presents three approaches to optimize the hyperparameter space. The first two are naive, semi-automatic approaches where a set of possible parameters is tried and the success is recorded. The researcher then selects the most promising results. The third example, HyperOpt, is an algorithm which treats the hyperparamter search as an optimization problem and identifies critical parameters and tries to find their optimum value for the given model and task~\cite{Bergstra2013}.
+This section presents three approaches to optimize the hyperparameter space. The first two are naive, semi-automatic approaches where a set of possible parameters is tried and the success is recorded. The researcher then selects the most promising results. The third example, HyperOpt, is an algorithm which treats the hyperparameter search as an optimization problem and identifies critical parameters and tries to find their optimum value for the given model and task~\cite{Bergstra2013}.
 
 
 
@@ -400,7 +400,7 @@ For instance the choice of a optimizer or even the machine learning algorithm it
 Another difficulty is the limited "fitness evaluation budget"~\cite{Bergstra2011}. This means that for each evaluation of a hyperparameter set the model has to be trained which potentially takes a long time. Therefore, Hyperopt has to cope with less evaluation steps than a normal optimization algorithm.
 
 \subsubsection*{Tree of Parzen Estimators {(TPEs)}}
-The Hyperopt package uses \glspl{tpe} to sample good hyperparaters from the hyperparameter search space~\cite{Bergstra2013a}. To model $p(x|y)$ \gls{tpe} replaces, all distributions in the configuration space by Gaussian mixture equivalents: uniform $\rightarrow$ truncated Gaussian mixture, log-uniform $\rightarrow$ exponentiated trucanted Gaussian mixture and categorical $\rightarrow$ re-weighted categorical~\cite{Bergstra2013a}. The prior for the calculation - the different observations $\{x^1,..., x^n, ..., x^k\}$ - is initialized by performing $n$ random runs where the default value for $n$ is 10.
+The Hyperopt package uses \glspl{tpe} to sample good hyperparameters from the hyperparameter search space~\cite{Bergstra2013a}. To model $p(x|y)$ \gls{tpe} replaces, all distributions in the configuration space by Gaussian mixture equivalents: uniform $\rightarrow$ truncated Gaussian mixture, log-uniform $\rightarrow$ exponentiated truncated Gaussian mixture and categorical $\rightarrow$ re-weighted categorical~\cite{Bergstra2013a}. The prior for the calculation -- the different observations $\{x^1,..., x^n, ..., x^k\}$ -- is initialized by performing $n$ random runs where the default value for $n$ is 10.
 
 The \gls{tpe} defines $p(x|y)$ as 
 
@@ -420,7 +420,7 @@ where $l(x)$ {(first case)} is a density formed by an observation $\{x^i\}$ wher
 The following section describes the performance measurement which were used to evaluate the performance of a model.
 
 
-\subsection{Precession - Recall - F1 Score}
+\subsection{Precession -- Recall -- F1 Score}
 The most commonly used measurement for \gls{nlp} tasks is the F1-score. This metric has one advantage over accuracy. Accuracy does not take data imbalance into account. Accuracy is just the number of correctly classified samples divided by the total amount of samples. This means a classifier which just predicts the majority class will get a high accuracy.
 \medskip
 
@@ -450,7 +450,7 @@ The F1 score is scaled from $[0, 1]$ were 0 is a result with no true positive sa
 
 \subsubsection*{Micro- and Macro F1 score}
 
-There are two popular methods to aggregate the F1 score. Researches can use the micro- or the macro F1 score. Equation \ref{eq:03_f1} remains the same but the way it is aggregated changes. 
+There are two popular methods to aggregate the F1 score. Researches can use the micro- or the macro F1 score. Equation~\ref{eq:03_f1} remains the same but the way it is aggregated changes. 
 \medskip
 
 The micro F1 score is calculated by taking the sum of all true positives, false positives and false negatives. This has the implication that the class with the biggest number of samples contributes most towards the total score. Therefore, descriptions of the micro F1 score often point out that this method takes label imbalance into account. 

@@ -4,7 +4,7 @@
 \section{Motivation}
 \label{sec:introduction_motivation}
 
-In the recent past researches were able to advance machine learning models for computer vision further and further. These models have reached a state where they outperform humans on certain tasks. Andrej Karpathy, director of AI at Tesla, conducted an experiment at Standford where he trained himself to classify images from ImageNet~\cite{Karpathy2014}. After a lot of training he achieved an error score of 6.8\% which, at the time, was better than predictions from GoogleLeNet. However, deep neural networks have now reached a level which is significantly below the threshold of 6.8\% Karpathy achieved. The best submission for the ImageNet Large Scale Visual Recognition Competition achieve an error rate of only 2.25\%~\cite{Hu2018}.
+In the recent past researches were able to advance machine learning models for computer vision further and further. These models have reached a state where they outperform humans on certain tasks. Andrej Karpathy, director of AI at Tesla, conducted an experiment at Stanford where he trained himself to classify images from ImageNet~\cite{Karpathy2014}. After a lot of training he achieved an error score of 6.8\% which, at the time, was better than predictions from GoogleLeNet. However, deep neural networks have now reached a level which is significantly below the threshold of 6.8\% Karpathy achieved. The best submission for the ImageNet Large Scale Visual Recognition Competition achieve an error rate of only 2.25\%~\cite{Hu2018}.
 \bigskip
 
 In the past years, researches have shifted their attention to the field of \acrfull{nlp}. This trend has been triggered by the development of efficient word embeddings~\cite{Mikolov2013c}. Word embeddings are powerful mechanisms which are able transform words into meaningful vector representations. This technique allows researches to use deeper and deeper neural networks on tasks like \gls{ner}, \gls{pos} or sentiment analysis. Contrary to computer vision, however, we still have a long way to go until models are able to outperform humans on \gls{nlp} tasks.
@@ -49,7 +49,7 @@ Sentiment classification or even \acrfull{absa} is one of the most challenging t
 	"Got this for the Mother in-law for bath time, hoping it'd be crap, her kindle would slip out and electrocute her. So far, this bloody thing is staying in one piece. Great for waterproof kindling, crap for murder."
 \end{center}
 
-This review is undeniably positive. However most \gls{absa}- or sentiment analysis models would likely label this review as negative\footnote{The stanford sentiment treebank online demo assigns a "very negative" label to this review}.
+This review is undeniably positive. However most \gls{absa}- or sentiment analysis models would likely label this review as negative\footnote{The Stanford Sentiment Treebank online demo assigns a "very negative" label to this review}.
 
 Context is also important. A high price denotes a negative sentiment while a high quality indicates a positive sentiment.
 \medskip
@@ -67,18 +67,18 @@ Furthermore, we explore multitask learning as a method to augment limited traini
 
 \section{Outline}
 
-This thesis is structured into 7 chapters. Chapter \ref{ch:relWork} outlines previous work done on sentiment analysis and aspect based sentiment analysis.
+This thesis is structured into 7 chapters. Chapter~\ref{ch:relWork} outlines previous work done on sentiment analysis and aspect based sentiment analysis.
 \smallskip
 
-Chapter \ref{ch:theory} takes a look at the main concepts and the theory behind word representations, the chosen architecture, transfer- and multitask learning concepts as well as the theory behind hyperparameter optimization.
+Chapter~\ref{ch:theory} takes a look at the main concepts and the theory behind word representations, the chosen architecture, transfer- and multitask learning concepts as well as the theory behind hyperparameter optimization.
 \smallskip
 
-Chapter \ref{ch:method} provides information about the chosen model architecture and how we use transfer- and multitask learning to boost performance.
+Chapter~\ref{ch:method} provides information about the chosen model architecture and how we use transfer- and multitask learning to boost performance.
 \smallskip
 
-Chapter \ref{ch:setup} explains the experimental setup including data preprocessing, the datasets and how the models were trained and evaluated.
+Chapter~\ref{ch:setup} explains the experimental setup including data preprocessing, the datasets and how the models were trained and evaluated.
 \smallskip
 
-Results are then accumulated and discussed in chapter \ref{ch:discussion}. Lastly, the results are
-summarized in chapter \ref{ch:conclusion} and advice for future work is given.
+Results are then accumulated and discussed in Chapter~\ref{ch:discussion}. Lastly, the results are
+summarized in Chapter~\ref{ch:conclusion} and advice for future work is given.
 
