@@ -193,7 +193,7 @@ Since training on the full number of entities and attributes is very challenging
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{figures/05_setup/05_organicCoarseGrained}
-    \caption{Distribution of the \textit{coarse-grained} aspects in the Organic-2019 dataset}
+    \caption{\textbf{Organic-2019 - Coarse Data partition.} Distribution of the \textit{coarse-grained} aspects in the Organic-2019 dataset}
     \label{fig:05_organic2019_coarse}
 \end{figure}
 
@@ -281,7 +281,7 @@ Most of these rare tokens are either incorrectly written {("\textit{nthis}")}, a
             \bottomrule     
     \end{tabular}
 
-    \caption{Different vocabulary size reduction techniques. This table shows the proportion of tokens that occur only 1, 2 or 3 times relative to the total word count and the vocabulary size. \textit{SP} is the spell checked dataset; \textit{TR-}$n$ is the token removal technique where $n$ is the number times, tokens can occur in the dataset.}
+    \caption{\textbf{Different vocabulary size reduction techniques.} This table shows the proportion of tokens that occur only 1, 2 or 3 times relative to the total word count and the vocabulary size. \textit{SP} is the spell checked dataset; \textit{TR-}$n$ is the token removal technique where $n$ is the number times, tokens can occur in the dataset.}
     \label{tab:05_amazonVocabSize}
 \end{table}
 
@@ -402,7 +402,7 @@ One could, therefore, argue that instead of producing two False Positives and tw
         
         \bottomrule
 	\end{tabular}
-	\caption{Hardware used for training and evaluation of model architectures.}
+	\caption{\textbf{Hardware} used for training and evaluation of model architectures.}
     \label{tab:05_usedHardware}
 \end{table}
 Training and evaluation of the models were performed on four different machines. One of the servers belongs to the faculty of applied informatics, one is a local desktop machine, and the last two are cloud instances. One is an Azure virtual compute instance with 8 \gls{cpu} cores and 28 \gls{gb} of \gls{ram} and the other is a Google Cloud \gls{gpu} compute instance instance with an Intel Xeon E5-2670 processor, 15 \gls{gb} of \gls{ram} and a NVIDIA Grid K520 \gls{gpu}. See table~\ref{tab:05_usedHardware} for more details.
