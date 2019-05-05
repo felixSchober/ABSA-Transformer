@@ -7,24 +7,27 @@ The model we propose classifies multi-label aspect-based sentiment end-to-end. T
 \medskip
 
 Furthermore, this thesis explores transfer- and multitask learning. We show that multitask learning is capable of augmenting data with auxiliary tasks, thereby boosting model performance. 
-
-For transfer learning, we extend and categorize a collection of Amazon reviews to form a new large scale amazon review dataset with almost 1.2 million reviews. We use this dataset to transfer knowledge to a much smaller organic dataset. We achieve significant performance increases using this technique.
 \medskip
 
-We evaluate and benchmark our proposed architecture on four datasets and show that the proposed \acrfull{absat} model achieves very competitive results on all datasets.
+For the evaluation of transfer learning, we reduce and categorize a collection of 18 million Amazon reviews. From this data, we form a new, large scale topic-based amazon review dataset with almost 1.2 million reviews. We use this dataset to transfer knowledge to a much smaller organic dataset. We demonstrate that we achieve significant performance increases using this technique.
+\medskip
+
+Finally, we evaluate and benchmark our proposed architecture on four datasets and report that the proposed \acrfull{absat} model achieves very competitive results on all datasets.
 
 
 \chapter{Zusammenfassung}
 
-In der folgenden Abschlussarbeit wird eine neuartige Deep Learning Architektur für Aspekt basierte Sentiment Analyse vorgeschlagen {(ABSA)}. Die Architektur basiert auf dem Google Transformer, welcher 2017 von einem Team um Vaswani et al. ~\cite{Vaswani2017} vorgeschlagen wurde. Zudem zieht die Arbeit Inspirationen aus der Arbeit von Schmitt et al.~\cite{Schmitt2018}.
+In der dieser Abschlussarbeit wird eine neuartige Deep Learning Architektur für Aspekt basierte Sentiment Analyse vorgestellt. Die Architektur basiert auf dem Google Transformer, der 2017 von einem Team um Vaswani et al. ~\cite{Vaswani2017} entwickelt wurde. Zudem wurden Anregungen aus der Arbeit von Schmitt et al. einbezogen~\cite{Schmitt2018}.
 \medskip
 
-Das in dieser Arbeit vorgeschlagene Modell, ist in der Lage, textuelles Sentiment basierend auf Aspekten zu klassifizieren. Soweit wir wissen, ist dies die erste Forschung, die versucht, mit einer Transformer basierten Architektur, Aspekt basierte Sentiment Analyse zu betreiben.
+Das in dieser Arbeit vorgeschlagene Modell ist in der Lage, textuelles Sentiment verschiedener Aspekte zu klassifizieren. Dies ist vermutlich die erste Forschung, die versucht, mit einer Transformer basierten Architektur, Aspekt basierte Sentiment Analyse zu betreiben.
+
+Das vorgeschlagene Modell wurde auf vier verschiedenen Datensätzen trainiert und evaluiert.
 \medskip
 
-Diese Arbeit befasst sich außerdem umfassend mit Transfer- und Multitask-Lernen. Es wird gezeigt, dass Multitask-Lernen in der Lage ist, bei einer existierenden Klassifizierung neue Impulse zu geben, um so das Ergebnis zu verbessern. 
+Außerdem befasst sich diese Arbeit umfassend mit Transfer- und Multitask-Lernen. Es konnte gezeigt werden, dass Multitask-Lernen in der Lage ist, bei einer existierenden Klassifizierung neue Impulse zu geben, um das Ergebnis zu verbessern. 
 
-Um den Einfluss von Transfer Lernen zu bewerten, wurde ein bestehender Datensatz aus Amazon Bewertungen auf 1.2 Millionen Bewertungen kondensiert und kategorisiert. Auf diesem Datensatz wurde ein Modell trainiert und nach dem erfolgreichen Training auf einem kleineren Datensatz angewendet. Durch diesen Vorgang ließen sich erhebliche Verbesserungen des Ergebnisses erzielen.
+Zur Bewertung des Einflusses von Transfer-Lernen, wurde ein bestehender Datensatz aus ca. 18 Millionen Amazon Bewertungen auf 1.2 Millionen Bewertungen reduziert und kategorisiert. Auf diesem Datensatz wurde ein Modell trainiert und nach erfolgreichem Training wiederum auf einem kleineren Datensatz angewandt. Es ließen sich dadurch erhebliche Verbesserungen des Ergebnisses erzielen.
 \medskip
 
-Das vorgeschlagene Modell wurde auf vier verschiedenen Datensätzen trainiert und evaluiert. Es kann gezeigt werden, dass das im Rahmen dieser Abschlussarbeit vorgeschlagene Modell mit anderen Architekturen auf allen Datensätzen konkurrenzfähig ist.
+ Insgesamt konnte für jeden der vier erpropten Datensätze gezeigt werden, dass das im Rahmen dieser Abschlussarbeit vorgeschlagene Modell mit von anderen Autoren entwickelten Architekturen konkurrenzfähig ist.
