@@ -522,10 +522,10 @@ Table~\ref{tab:06_resultsMultitask} shows the performance of the transformer wit
     \label{tab:06_resultsMultitask}
 \end{table}
 
-With the additional task, the model performance improved slightly. The baseline system achieved an F1 score of 0.390 whereas the \gls{mtl}-version achieved 0.398. While this is a very small improvement over the baseline, this increase in performance is achieved without adding any new data.
+With the additional task, the model performance improved slightly. The baseline system achieved an F1 score of 0.390 whereas the \gls{mtl}-version achieved 0.398. While this is a very small improvement over the baseline, this increase in performance is achieved without adding new datasets.
 \medskip
 
-This specific task has data points for every sample whereas there is usually just one aspect per sample. By adding this task, the gradient flow through the transformer base is doubled. Even if a sample has two aspects, we still increase the gradient flow by 33\%.
+This specific task has data points for every sample. Usually, one sample just contains once aspect.  Therefore, by adding this task, we can double the gradient flow through the transformer base. Even if a sample has two aspects, we still increase the gradient flow by 33\%.
 
 
 \section{Impact of Transfer Learning}
