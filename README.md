@@ -10,10 +10,54 @@ I recommend to check out the excellent [Annotated Transformer](http://nlp.seas.h
 ## Abstract
 
 In this master’s thesis, we propose a novel neural network architecture for Aspect Based Sentiment Analysis (ABSA). This architecture is based on the Google transformer introduced in 2017 by Vaswani et al. [80] and inspired by the works of Schmitt et al. [69].
+
 The model we propose classifies multi-label aspect-based sentiment end-to-end. To the best of our knowledge, this is the first model which uses a transformer for aspect-based sentiment analysis.
+
 Furthermore, this thesis explores transfer- and multitask learning. We show that multitask learning is capable of augmenting data with auxiliary tasks, thereby boosting model performance.
+
 For the evaluation of transfer learning, we reduce and categorize a collection of 18 million Amazon reviews. From this data, we form a new, large scale topic-based amazon review dataset with almost 1.2 million reviews. We use this dataset to trans- fer knowledge to a much smaller organic dataset. We demonstrate that we achieve significant performance increases using this technique.
+
+
 Finally, we evaluate and benchmark our proposed architecture on four datasets and report that the proposed ABSA-Transformer (ABSA-T) model achieves very competitive results on all datasets.
+
+## Data
+
+This application provides data loaders for the following datasets:
+
+- GermEval-2017
+- CoNLL-2003
+- Organic-2019
+- Custom Amazon Reviews
+
+### GermEval-2017
+
+The data for GermEval-2017 can be downloaded directly from the project website. To be able to train on this data, make sure to correct a spelling mistake in one of the data splits. There is one label which is spelled incorrectly. Instead of `postive` it should be `positive`.
+
+Put the data into `data/data/germeval-2017`.
+
+### CoNLL-2003
+
+The data from the project website can be used directly without changes.
+
+Put the data into `data/data/conll2003`
+
+### Organic-2019
+
+To get the data please send a mail to the socialROM team @ TUM.
+
+Put the data into `data/data/organic2019`
+
+
+### Custom Amazon Reviews
+
+I will make the data available for download in the future. In the meantime just contact me.
+
+If you have the data place it in `data/data/amazon/splits`
+
+
+## Word Vectors
+
+The application should automatically download missing word vectors into `.vector_cache`. However, sometimes connection problems may prevent this. In this case, place the manually downloaded vector files into the `.vector_cache` folder. The file should either be a `.txt` file for GloVe vectors or a `.vec` file for fastText vectors.
 
 ## Run Code
 
