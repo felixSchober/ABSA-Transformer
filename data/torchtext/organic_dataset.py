@@ -233,6 +233,7 @@ class OrganicDataset(Dataset):
 	def _load(self, path, filename, fields, a_sentiment=[], separator='|', verbose=True, hp=None, task=None, length=None, **kwargs):
 		examples = []
 		
+		# OLD
 		# 0: Sequence number
 		# 1: Index
 		# 2: Author_Id
@@ -247,6 +248,21 @@ class OrganicDataset(Dataset):
 		# 11: Apsect Specific sentiment List
 		# 12: Padding Field
 		# 13+: aspect Sentiment 1/n
+
+
+		# NEW
+		# 0: Author ID
+		# 1: Author Name
+		# 2: Comment Number
+		# 3: Sentence Number
+		# 4: Domain Relevance
+		# 5: Sentiment
+		# 6: Entity
+		# 7: Attribute
+		# 8: Sentence
+		# 9: Source File
+		# 10: Annotator
+		# 11: Aspect
 
 		# load organic spell checker
 		if hp.organic_text_cleaning:
@@ -302,12 +318,12 @@ class OrganicDataset(Dataset):
 					continue
 
 				# comment is not relevant
-				if columns[6] == '0' or columns[-1] == '':
+				if columns[4] == '0' or columns[-1] == 'nan-nan':
 					# skip for now
 					continue
 
 				# aspect sentiment is missing
-				if len(columns) == 12:
+				if len(columns) == 11:
 					columns.append('')
 					columns.append(dict())
 					last_sample = columns
@@ -319,14 +335,14 @@ class OrganicDataset(Dataset):
 					# use mapping to get a more human readable name
 					aspect_category = mapping[aspect_category]
 					
-					s_k = columns[7].strip()
+					s_k = columns[5].strip()
 					if s_k != '':
-						aspect_sentiment = od_sentiment_mapping[columns[7].strip()]	
+						aspect_sentiment = od_sentiment_mapping[columns[5].strip()]	
 						self.stats[aspect_category][aspect_sentiment] += 1
 	
 
-					crnt_sentence_number = columns[5]
-					crnt_comment_number = columns[4]
+					crnt_sentence_number = columns[3]
+					crnt_comment_number = columns[2]
 					# if last_sentence_number and last_comment are set and equal this means we need to add to the sentiment dict
 					# otherwise we add the last sample and move on
 					
@@ -416,7 +432,7 @@ class OrganicDataset(Dataset):
 			# 10+: aspect Sentiment 1/n
 			
 			# construct example and add it
-			example = raw_example[0:6] + [raw_example[6]] + [raw_example[10], '', ''] + ss
+			example = [f'{raw_example[0]}_{raw_example[2]}_{raw_example[3]}'] + raw_example[1:6] + [raw_example[6]] + [raw_example[10], '', ''] + ss
 			examples.append(data.Example.fromlist(example, tuple(fields)))
 
 		# clip comments
@@ -434,7 +450,7 @@ class OrganicDataset(Dataset):
 
 	def process_comment_text(self, sample, hp, organic_text_cleaning_dict, spell):
 		# remove punctuation and clean text
-		comment = sample[-3]
+		comment = sample[-4]
 		comment = comment.translate(punctuation_remover)
 
 		# remove non ascii characters with empty space
@@ -458,7 +474,7 @@ class OrganicDataset(Dataset):
 		if hp.use_text_cleaner:
 			comment = text_cleaner(comment, hp.language)
 
-		sample[-3] = comment
+		sample[10] = comment
 		return sample
 
 	def convert_to_raw_examples(self, comments, hp):
