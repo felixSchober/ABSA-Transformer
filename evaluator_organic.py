@@ -6,7 +6,7 @@ from data.data_loader import Dataset
 from data.organic2019 import organic_dataset as dsl
 from misc.preferences import PREFERENCES
 from misc.visualizer import *
-from misc.run_configuration import get_default_params, randomize_params, OutputLayerType, hyperOpt_goodParams, elmo_params, good_organic_hp_params, default_params
+from misc.run_configuration import get_default_params, randomize_params, OutputLayerType, hyperOpt_goodParams, elmo_params, good_organic_hp_params_2, default_params
 from misc import utils
 
 from optimizer import get_optimizer
@@ -225,7 +225,7 @@ use_cuda = True
 experiment_name = utils.create_loggers(experiment_name=experiment_name)
 logger = logging.getLogger(__name__)
 
-baseline = {**default_params, **good_organic_hp_params}
+baseline = {**default_params, **good_organic_hp_params_2}
 test_params = {**baseline, **{'task': 'all', 'log_every_xth_iteration': -1}}
 
 rc = get_default_params(use_cuda=True, overwrite={}, from_default=test_params)
