@@ -249,7 +249,7 @@ for i in range(8):
 	trainer = load_model(dataset, rc, experiment_name)
 	logger.debug('model loaded')
 
-	#trainer.train(perform_evaluation=False)
+	trainer.train(perform_evaluation=False)
 	result = trainer.perform_final_evaluation(use_test_set=True, verbose=False)
 	f1_scores_val.append(result[1][1])
 	f1_scores_test.append(result[2][1])
