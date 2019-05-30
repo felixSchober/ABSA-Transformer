@@ -226,7 +226,7 @@ experiment_name = utils.create_loggers(experiment_name=experiment_name)
 logger = logging.getLogger(__name__)
 
 baseline = {**default_params, **good_organic_hp_params_2}
-test_params = {**baseline, **{'task': 'coarse', 'log_every_xth_iteration': -1}}
+test_params = {**baseline, **{'task': 'coarse', 'log_every_xth_iteration': -1, 'seed': None}}
 
 rc = get_default_params(use_cuda=True, overwrite={}, from_default=test_params)
 logger = logging.getLogger(__name__)
