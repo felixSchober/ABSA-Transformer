@@ -226,7 +226,7 @@ experiment_name = utils.create_loggers(experiment_name=experiment_name)
 logger = logging.getLogger(__name__)
 
 baseline = {**default_params, **good_organic_hp_params}
-test_params = {**baseline, **{'num_epochs': 1, 'batch_size': 45, 'task': 'all', 'log_every_xth_iteration': -1}}
+test_params = {**baseline, **{'task': 'all', 'log_every_xth_iteration': -1}}
 
 rc = get_default_params(use_cuda=True, overwrite={}, from_default=test_params)
 logger = logging.getLogger(__name__)
@@ -240,7 +240,7 @@ utils.create_dir_if_necessary(path)
 f1_scores_test = []
 f1_scores_val = []
 
-for i in range(2):
+for i in range(8):
 	print('New Iteration')
 	dataset = load_dataset(rc, dataset_logger, rc.task)
 
