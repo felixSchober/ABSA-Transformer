@@ -121,6 +121,13 @@
             "request": "launch",
             "program": "${workspaceFolder}/evaluator.py",
             "console": "integratedTerminal"
+		},
+		{
+            "name": "evaluation organic",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/evaluator_organic.py",
+            "console": "integratedTerminal"
         }
     ]
 }

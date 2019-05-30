@@ -7,7 +7,7 @@ import torchtext
 from torchtext import data as data_t
 from stop_words import get_stop_words
 
-from data.torchtext.custom_fields import ReversibleField
+from data.torchtext.custom_fields import ReversibleField, ElmoField
 from data.torchtext.organic_dataset import *
 from data.data_loader import get_embedding
 
@@ -121,7 +121,7 @@ def load_splits(
 	# Source File
 	# Aspect
 
-	aspect_sentiment_field = data.Field(
+	aspect_sentiment_field = ReversibleField(
 							batch_first=True,
 							is_target=True,
 							sequential=True,
