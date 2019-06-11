@@ -1,3 +1,5 @@
+![ABSA-Transformer](Readme/transformer_title.png)
+
 # ABSA-Transformer
 ![Docker Build Status](https://img.shields.io/docker/cloud/build/jorba/absa-transformer.svg)
 
@@ -6,6 +8,10 @@ This is the repository for my NLP master thesis with the title **Transfer and Mu
 It is based on the Google Transformer architecture, and the paper *Attention is all you need* (https://arxiv.org/abs/1706.03762)
 
 I recommend to check out the excellent [Annotated Transformer](http://nlp.seas.harvard.edu/2018/04/03/attention.html) guide from Harvard or the [Illustrated Transformer](http://jalammar.github.io/illustrated-transformer/) by Jay Alammar. Both are excellent resources on the topic.
+
+# Thesis
+
+The full thesis document is located under [/Thesis/050619_Final.pdf](/Thesis/050619_Final.pdf). For the presentation slides go to [/Thesis/00_FinalPresentation.pptx](/Thesis/00_FinalPresentation.pptx).
 
 ## Abstract
 
