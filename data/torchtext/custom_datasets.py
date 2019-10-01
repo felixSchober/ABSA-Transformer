@@ -25,7 +25,7 @@ from misc.utils import check_if_file_exists
 logger = logging.getLogger(__name__)
 
 # remove punctuation
-punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "–" + "„")
+punctuation_remover = str.maketrans('', '', string.punctuation + '…' + "“" + "„")
 url_regex = r'(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&\(\)\*\+,;=.]+'
 
 def get_stats_dd():

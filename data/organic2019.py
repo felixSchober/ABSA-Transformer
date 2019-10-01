@@ -7,7 +7,7 @@ import torchtext
 from torchtext import data as data_t
 from stop_words import get_stop_words
 
-from data.torchtext.custom_fields import ReversibleField
+from data.torchtext.custom_fields import ReversibleField, ElmoField
 from data.torchtext.organic_dataset import *
 from data.data_loader import get_embedding
 
@@ -39,6 +39,7 @@ def organic_dataset(
 	comment_field = data['fields']['comment']
 	padding_field = data['fields']['padding']
 	aspect_sentiment_field = data['fields']['aspect_sentiment']
+	id_field = data['fields']['id']
 
 	(train, val, test) = data['splits']
 
@@ -48,7 +49,7 @@ def organic_dataset(
 	comment_field.build_vocab(train.comments, val.comments, test.comments, vectors=[pretrained_vectors])
 	padding_field.build_vocab(train.padding, val.padding, test.padding)
 	aspect_sentiment_field.build_vocab(train.aspect_sentiments, val.aspect_sentiments, test.aspect_sentiments)
-	# id_field.build_vocab(train.id, val.id, test.id)
+	id_field.build_vocab(train.id, val.id, test.id)
 
 	# build aspect fields
 	aspect_sentiment_fields = []
@@ -120,7 +121,7 @@ def load_splits(
 	# Source File
 	# Aspect
 
-	aspect_sentiment_field = data.Field(
+	aspect_sentiment_field = ReversibleField(
 							batch_first=True,
 							is_target=True,
 							sequential=True,
@@ -151,8 +152,16 @@ def load_splits(
 							is_target=False,
 							stop_words=stop_words)
 
+	id_field = data.ReversibleField(
+							batch_first=True,    # produce tensors with batch dimension first
+							is_target=False,
+							sequential=False,
+							use_vocab=True,
+							unk_token=None
+	)
+
 	fields = [
-		(None, None), 									
+		('id', id_field), 									
 		(None, None),
 		(None, None),
 		(None, None),
@@ -196,6 +205,7 @@ def load_splits(
 			'comment': comment_field,
 			'aspect_sentiment': aspect_sentiment_field,
 			'padding': padding_field,
+			'id': id_field,
 			'fields': fields
 		},
 		'splits': (train, val, test)

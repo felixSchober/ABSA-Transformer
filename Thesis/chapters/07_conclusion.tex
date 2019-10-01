@@ -18,18 +18,19 @@ Lastly, we explored and assessed the performance of an advanced hyperparameter o
 We evaluated and benchmarked the architecture and the methods on four datasets. We use CoNLL-2003 for the classic \gls{nlp} task of named entity recognition. The other three datasets were datasets for \gls{absa}.
 \medskip
 
-The transformer base achieved a very respectable micro F1 score of 0.918 which is within reach of the top-performing results on this dataset. GermEval-2017 Task C was the first \gls{absa} benchmark for the \gls{absat} model. While we did not outperform the current state of the art on this dataset, we demonstrated that the \gls{absat} can outperform previous results on this dataset putting it currently at the second position with a base F1 score of 0.390. 
+On the \gls{ner} task the transformer base achieved a very respectable micro F1 score of 0.918 which is within reach of the top-performing results on this dataset. 
+
+GermEval-2017 Task C was the first \gls{absa} benchmark for the \gls{absat} model. While we did not outperform the current state of the art on this dataset, we demonstrated that the \gls{absat} model can outperform previous results on this dataset putting it currently at the second position with a base F1 score of 0.390. 
 \medskip
 
 Using multitask learning we were able to improve upon this score and boost it to 0.398. While not a significant improvement this still shows the underused potential of multitask learning.
 \medskip
 
-We did, however, notice a significant improvement using transfer learning. We could improve the baseline result of 0.197 to 0.269. This result points to the conclusion that the transformer model does not reach its full potential without massive amounts of data.
-
+We did, however, notice a significant improvement using transfer learning. We could improve the baseline result on the coarse organic dataset of 0.197 to 0.269. This result points to the conclusion that the transformer model does not reach its full potential without massive amounts of data.
 
 \section{Future Work}
 
-Unfortunately, six months is a short period where it is not possible to explore every aspect. We could show that the transformer is not only suited as a pure decoder-encoder but is also useful for classification tasks. There is already a more advanced version which incorporates the transformer called BERT~\cite{Devlin2018a}. It would be very interesting to directly compare the transformer against the BERT model on the same tasks.
+Unfortunately, six months is a short period where it is not possible to explore every aspect. We could show that the transformer is not only suited as a pure decoder-encoder but is also useful for classification tasks. There is already a more advanced version which incorporates the transformer called BERT~\cite{Devlin2018}. It would be very interesting to directly compare the transformer against the BERT model on the same tasks.
 \medskip
 
 Furthermore, it would be fascinating to explore the potential of transfer- and multitask learning further.

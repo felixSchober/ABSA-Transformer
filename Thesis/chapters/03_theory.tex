@@ -5,10 +5,10 @@ This chapter attends to the theoretical background of the technologies used in t
 
 \section{Word Representations}
 
-While it is trivial to use images as input for machine learning techniques, this is not the case for language. Images already come in matrix form while words appear as discrete objects. Before using language for machine learning, words have to be transformed into a matrix first. A function $W(\text{word}) \rightarrow \mathbb{R}^n \quad \text{word} \in V$  which encodes words from a vocabulary $V$ into a $n$-dimensional matrix is called a word embedding.
+While it is trivial to use images as input for machine learning techniques, this is not the case for language. Images already come in matrix form while words appear as discrete objects. Before language can be used for machine learning, words have to be transformed into a matrix first. A function $W(\text{word}) \rightarrow \mathbb{R}^n \quad \text{word} \in V$  which encodes words from a vocabulary $V$ into a $n$-dimensional matrix is called a word embedding.
 \medskip
 
-The easiest way to achieve this is a one-hot encoding of a vocabulary. We take the vocabulary which is a list of $N$ words and number the words sequentially. A word vector is created by getting the index of the word from the vocabulary and setting the value of the word vector at the word-index to one and all other entries to zero.
+The easiest way to achieve this is a one-hot encoding of a vocabulary. We take the vocabulary which is a list of $N$ words and label the words sequentially. A word vector is created by getting the index of the word from the vocabulary and setting the value of the word vector at the word-index to one and all other entries to zero.
 
 \begin{equation*}
     \begin{aligned}
@@ -52,7 +52,7 @@ Word vectors even allow for basic vector arithmetic. $W(\text{"King"})-W(\text{"
     \includegraphics[width=0.32\textwidth]{figures/03_theory/03_wordEmbeddings1}
     \includegraphics[width=0.32\textwidth]{figures/03_theory/03_wordEmbeddings2}
     \includegraphics[width=0.32\textwidth]{figures/03_theory/03_wordEmbeddings3}
-    \caption[Three regions of a word embedding visualized by t-SNE. Source: Turian et al.~\cite{Turian2010} -- Source for full image \url{http://metaoptimize.s3.amazonaws.com/cw-embeddings-ACL2010/embeddings-mostcommon.EMBEDDING_SIZE=50.png}]{Three regions of a word embedding visualized by t-SNE. The left region contains names of countries, the middle region consists of days and the right regions is made up of financial terms. Source: Turian et al.~\cite{Turian2010}\protect\footnotemark}
+    \caption[\textbf{Three regions of a word embedding visualized by t-SNE.} Source: Turian et al.~\cite{Turian2010} -- Source for full image \url{http://metaoptimize.s3.amazonaws.com/cw-embeddings-ACL2010/embeddings-mostcommon.EMBEDDING_SIZE=50.png}]{Three regions of a word embedding visualized by t-SNE. The left region contains names of countries, the middle region consists of days and the right regions is made up of financial terms. Source: Turian et al.~\cite{Turian2010}\protect\footnotemark}
     \label{fig:03_WordEmbeddings}
 \end{figure}
 \footnotetext{Full source for image \url{http://metaoptimize.s3.amazonaws.com/cw-embeddings-ACL2010/embeddings-mostcommon.EMBEDDING_SIZE=50.png}}
@@ -84,7 +84,7 @@ Skip-gram works better for smaller datasets than \gls{cbow} since it is possible
 
 \subsection{\acrfull{glove}}
 
-There are two methods for create word vectors: word co-occurrence counting {(Section~\ref{sec:03_vectorSpace})} and the window based skip-gram / \gls{cbow} methods {(Section~\ref{sec:03_word2vec})}. Co-occurrence is relatively fast and efficient to collect and train unless the vocabulary is huge. A co-occurrence matrix also captures a lot of global statistical information whereas local window based models only capture the statistics for the window. However, most of the information a co-occurrence matrix provides is about the word similarity and not necessarily about the semantics. In addition, frequent words like "the" or "a" co-occur with a lot of other words. Therefore, they have huge co-occurrence counts with many words without providing any useful information~\cite{Pennington2014a}.
+There are two methods to create word vectors: word co-occurrence counting {(Section~\ref{sec:03_vectorSpace})} and the window based skip-gram / \gls{cbow} methods {(Section~\ref{sec:03_word2vec})}. Co-occurrence is relatively fast and efficient to collect and train unless the vocabulary is huge. A co-occurrence matrix also captures a lot of global statistical information whereas local window based models only capture the statistics for the window. However, most of the information a co-occurrence matrix provides is about the word similarity and not necessarily about the semantics. In addition, frequent words like "the" or "a" co-occur with a lot of other words. Therefore, they have huge co-occurrence counts with many words without providing any useful information~\cite{Pennington2014a}.
 
 Local window based models like word2vec have the disadvantage that training is not as efficient and these models do not capture a lot of statistical information~\cite{Pennington2014a}. 
 \medskip
@@ -106,7 +106,7 @@ The authors use $F$ to describe this ratio as
     F(w_i, w_j, \widetilde{w}_k) \approx \frac{P_{ik}}{P_{jk}}
 \end{equation}
 
-$w$ are just word vectors of $i$, $j$ and $k$ {($\widetilde{w}$)} is a context vector. In the end the goal is to get a good candidate for $F$ that fulfills all our requirements. By adding vector differences {($w_i - w_j$)} and linear relations {(dot-product)} $F$ becomes
+$w$ are just word vectors of $i$, $j$ and {($\widetilde{w}_k$)} is a context vector. In the end the goal is to get a good candidate for $F$ that fulfills all our requirements. To get word vector arithmetic the authors propose to add the vector differences {($w_i - w_j$)} and linear relations {(dot-product)}. So $F$ becomes
 
 \begin{equation}
     F((w_i - w_j)^T \cdot \widetilde{w}_k) \approx \frac{P_{ik}}{P_{jk}} \quad .
@@ -153,7 +153,7 @@ Lastly, FastText represents rare words a lot better than word2vec. Even if a wor
 
 \section{Google Transformer Architecture}
 \label{sec:03_transformer}
-The Google transformer architecture is a novel neural network architecture for automated machine translation tasks by Vaswani et al.~\cite{Vaswani2017d}. Instead of relying on \gls{rnn} based architectures with recurrence, the transformer uses an attention mechanism to achieve \gls{sota} results on machine translation tasks. Like most of the sequence-to-sequence models the transformer also uses the encoder-decoder pattern to translate a sentence from the source to the target language. We mostly focus on the encoder part of the model since this is the part, we use to perform \gls{absa} classification.
+The Google transformer architecture is a novel neural network architecture for automated machine translation tasks by Vaswani et al.~\cite{Vaswani2017d}. Instead of relying on \gls{rnn} based architectures with recurrence, the transformer uses an attention mechanism to achieve \gls{sota} results on machine translation tasks. Like most of the sequence-to-sequence models the transformer also uses the encoder-decoder pattern to translate a sentence from the source to the target language. This work mostly focuses on the encoder part of the model since this is the part, we use to perform \gls{absa} classification.
 \medskip
 
 The issue when training many \gls{rnn}-based architectures is the problem of long-range dependencies. These dependencies may lead to either vanishing or exploding gradient~\cite{Hochreiter2009}. The dilemma is, that language translation features a lot of long dependencies. For some translations like "I like planes" to "Ich mag Flugzeuge" each token exactly matches the position of the translation. However, in many cases the positioning of words is different. Take the sentence "I think I \underline{saw} you at the airport \emph{yesterday}." This sentence translates to "Ich glaube, dass ich dich \emph{gestern} im Flughafen \underline{gesehen habe}".
@@ -173,28 +173,28 @@ Instead, it relies on attention and specifically multi-head attention. Attention
 \begin{figure}[htp]
     \centering
     \includegraphics[width=\textwidth]{figures/03_theory/03_transformer_Architecture_HighLevel}
-    \caption{High-level overview of the transformer Encoder-Decoder architecture, translating the sentence "I mag Flugzeuge" from German to English. The model is at the step where it translates the last word "Flugzeug" to plane.}
+    \caption{\textbf{High-level overview of the transformer Encoder-Decoder architecture}, translating the sentence "I mag Flugzeuge" from German to English. The model is at the step where it translates the last word "Flugzeug" to plane.}
     \label{fig:03_transformer_HighlevelOverview}
 \end{figure}
 
-Figure~\ref{fig:03_transformer_HighlevelOverview} depicts a high-level architecture overview of the transformer. As already mentioned the transformer resembles an encoder-decoder architecture. Yet, in contrast to traditional encoder-decoders, the transformer consists of $n$ encoder- and $n$ decoder blocks~\cite{Vaswani2017d}. 
+Figure~\ref{fig:03_transformer_HighlevelOverview} depicts a high-level architectural overview of the transformer. As already mentioned the transformer resembles an encoder-decoder architecture. Yet, in contrast to traditional encoder-decoders, the transformer consists of $n$ encoder- and $n$ decoder blocks~\cite{Vaswani2017d}. 
 \medskip
 
-The encoder blocks always get the whole input sequence encoded as word vectors. This sequence is then propagated until it reaches the top encoder. From there, the encoder output is passed to all decoder blocks. Furthermore, the decoder blocks also receive the output of the decoder blocks below them. In addition, the first decoder block {(in figure~\ref{fig:03_transformer_HighlevelOverview} this block is named "Decoder 1")} receives the sequence of tokens the transformer already predicted~\cite{Vaswani2017d}. 
+The first encoder block gets the whole input sequence encoded as word vectors. This sequence is then propagated until it reaches the top encoder. From there, the encoder output is passed to all decoder blocks. Furthermore, the decoder blocks also receive the output of the decoder blocks below them. In addition, the first decoder block {(in figure~\ref{fig:03_transformer_HighlevelOverview} this block is named "Decoder 1")} receives the sequence of tokens the transformer already predicted~\cite{Vaswani2017d}. 
 \medskip
 
-Following the example in figure~\ref{fig:03_transformer_HighlevelOverview} the translation would start by passing the sentence "Ich mag Flugzeuge" through all encoder blocks until it reaches the top block. All 1 to $n$ decoder blocks receive the encoded sentence. The encoded sentence then flows up from the bottom to the top where it outputs the first token "I". 
+Following the example in figure~\ref{fig:03_transformer_HighlevelOverview} the translation would start by passing the sentence "\textit{Ich mag Flugzeuge}" through all encoder blocks until it reaches the top block. All 1 to $n$ decoder blocks receive the encoded sentence. The encoded sentence then flows up from Decoder 1 to the top where Decoder $n$ outputs the first token "\textit{I}".
 
 Decoder 1 now gets two inputs: 
 
 \begin{enumerate}
-    \item the encoded source sentence it previously also received
-    \item the previously predicted output which is the token "I".
+    \item the encoded source sentence from the encoders it previously also received
+    \item the previously predicted output from the decoders which is the token "\textit{I}".
 \end{enumerate}
 
-Decoder 2 to $n$ now get the encoded input {(as before)} as well as the output of the decoders below. The top encoder then outputs "like" as the next token in the sequence. 
+Decoder 2 to $n$ now get the encoded input {(as before)} as well as the output of the decoders below. The top encoder then outputs "\textit{like}" as the next token in the sequence. 
 
-Figure~\ref{fig:03_transformer_HighlevelOverview} displays the next step that would follow this one where "I like" is already predicted and only the last token is missing.
+Figure~\ref{fig:03_transformer_HighlevelOverview} displays the next step that would follow this one where "\textit{I like}" is already predicted and only the last token is missing.
 \bigskip
 
 To gain a complete understanding of the information flow on the encoder and decoder side, Figure~\ref{fig:03_transformer_overview} shows a detailed overview of one encoder and one decoder block.
@@ -202,7 +202,7 @@ To gain a complete understanding of the information flow on the encoder and deco
 \begin{figure}[t]
     \centering
     \includegraphics[width=\textwidth]{figures/03_theory/03_transformerArchitectureOverview}
-    \caption{Overview of the whole Transformer architecture.}
+    \caption{\textbf{Overview of the whole Transformer architecture}. This figure shows both the encoder and the decoder stacks as well the information flow between the encoder and the decoder.}
     \label{fig:03_transformer_overview}
 \end{figure}
 
@@ -210,23 +210,27 @@ To gain a complete understanding of the information flow on the encoder and deco
 
 The transformer uses attention to focus on the essential and relevant information in a sequence. The question of what is regarded as important is learned~\cite{Vaswani2017d}.
 
-The specific attention mechanism, the transformer uses is called "Scaled Dot-Product Attention" {(Figure~\ref{fig:03_transformer_scaledDotProduct} left)}. The input for the attention function are three matrices called "Queries" $Q'$, "Keys" $K'$ and "Values" $V'$. We get these matrices from the input embeddings. We multiply the embeddings with $W^Q$, $W^K$ and $W^V$. These projection matrices are learned and project our input to a lower dimension so that we get $Q', K', V'$~\cite{Vaswani2017d}.
+The specific attention mechanism, the transformer uses is called "Scaled Dot-Product Attention" {(Figure~\ref{fig:03_transformer_scaledDotProduct} left)}. The input for the attention function are three matrices called "Queries" $Q'$, "Keys" $K'$ and "Values" $V'$.
+
+In case of the encoder stack, these matrices are the input word embeddings. We multiply the embeddings with $W^Q$, $W^K$ and $W^V$. These projection matrices are learned and project our input to a lower dimension $d_q$, $d_k$ and $d_v$ so that we get $Q', K', V'$~\cite{Vaswani2017d}.
 \bigskip
 
-We then take the dot-product of $Q'$ and $K'$ and scale the result by dividing by the square root of $d_k$ where $d_k$ is the dimension of $Q'$ and $K'$. Next, we can finally apply the attention. From the softmax, we get a vector of probabilities which are the attention values. When we apply the dot product on those attentions and the values, we scale the values with the attentions~\cite{Vaswani2017d}. 
+We then take the dot-product of $Q'$ and $K'$ and scale the result by dividing by the square root of $d_k$ where $d_k$ is the dimension of $Q'$ and $K'$. Next, we can finally apply the attention. From the softmax, we get a vector of probabilities which are the attention values. When we apply the dot product on those attentions and the values, we scale the values with the attentions~\cite{Vaswani2017d}. Refer to Figure~\ref{fig:03_transformer_scaledDotProduct} for a visualization of this process.
 \medskip
 
 Words which are deemed relevant by the attention mechanism are multiplied with values near 1 while unimportant words are multiplied with small values and therefore become unimportant for the next layers~\cite{Vaswani2017d}.
 \medskip
 
-One aspect which was not mentioned is the "mask"-step. After the scaling operation, we set some values to 0. This masking is done because every input sequence needs to have the same length which we achieve by adding <pad> tokens to sentences which are not long enough. Those tokens carry no information so we can safely discard them in this step~\cite{Vaswani2017d}. 
+One aspect which was not yet mentioned is the "mask"-step. After the scaling operation, we need to set some values to 0. We perform this masking because every input sequence needs to have the same length which we achieve by adding <pad> tokens to sentences which are not long enough. Those tokens carry no information so we can safely discard them in this step~\cite{Vaswani2017d}. 
 
 In the decoder part, we need to mask specific parts of the sentence which the transformer has not predicted yet. This operation is done to prevent the model from cheating by just replaying the input sequence~\cite{Vaswani2017d}.
 \medskip
 
-The transformer is constructed to use multiple "attention-heads" where each "head" performs its own dot-product attention {(Figure~\ref{fig:03_transformer_scaledDotProduct} right)}. To get different values for the attention, each head $i$ has its own set of $W_i^Q$, $W_i^K$ and $W_i^V$ matrices. The main idea behind the concept of multi-head dot-product attention is that each head specializes on some aspect. One head might pay attention to entities while another head looks out for actions~\cite{Vaswani2017d}. This being said, in practice, it is not as clear what each head focuses on, and the distinction is fuzzier.
+Vaswani et al. constructed the transformer to use multiple "attention-heads" where each "head" performs its own dot-product attention {(Figure~\ref{fig:03_transformer_scaledDotProduct} right)}. 
 
-The following equation summarizes the process which is described above:
+To get different values for the attention, each head $i$ has its own set of $W_i^Q$, $W_i^K$ and $W_i^V$ matrices. The main idea behind the concept of multi-head dot-product attention is that each head specializes on some aspect. One head might pay attention to entities while another head looks out for actions~\cite{Vaswani2017d}. This being said, in practice, it is not as clear what each head focuses on, and the distinction is fuzzier.
+
+The following equation summarizes the process which is described above and visualized in Figure~\ref{fig:03_transformer_scaledDotProduct}:
 \begin{align}
     \text{Attention}(Q', K', V') & = \text{softmax}(\frac{Q' \cdot K'^T}{\sqrt{d_k}}) \cdot V' \\
     \text{AttentionHead}_i(Q, K, V) & = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)
@@ -235,35 +239,36 @@ The following equation summarizes the process which is described above:
 \begin{figure}[htp]
     \centering
     \includegraphics[width=0.7\textwidth]{figures/03_theory/03_transformer_ScaledDot}
-    \caption{left: single scaled dot-product attention mechanism. right: multiple scaled dot-product attention heads stacked together. Each head receives its representation of $Q$, $K$ and $V$ by using projection layers.}
+    \caption{\textbf{Attention and Multi-head Attention}. left: single scaled dot-product attention mechanism. right: multiple scaled dot-product attention heads stacked together. Each head receives its representation of $Q$, $K$ and $V$ by using projection layers.}
     \label{fig:03_transformer_scaledDotProduct}
 \end{figure}
 
 \subsection{Positional Encoding}
 
-The transformer always gets the complete sequence of words as the input. However, since the transformer has no recurrence, it has no memory. This means that it does not know which word is at which position. However, this information is essential to understand sentences~\cite{Vaswani2017d}. 
+The transformer always gets the complete sequence of words as the input. However, since the transformer has no recurrence, it has no memory. As a consequence, it does not know which word is at which position. However, the order of words is essential to understand sentences~\cite{Vaswani2017d}. 
 \medskip
 
-A "positional encoding solves this issue". This encoding is added to the word embeddings at the bottom of the encoders and decoders. It has the same dimension as the embedding so it can be added element-wise~\cite{Vaswani2017d}.
+A "positional encoding" solves this issue. For the positional encoding, the authors use a combination of sine and cosine functions. They also experimented with a learned encoding, but this approach did not yield any significant performance improvements~\cite{Vaswani2017d}.
 
-For the positional encoding, the authors use a combination of sine and cosine functions. They also experimented with a learned encoding, but this approach did not yield any significant performance improvements~\cite{Vaswani2017d}.
+This encoding is added to the word embeddings at the bottom of the encoders and decoders. It has the same dimension as the embedding so it can be added element-wise~\cite{Vaswani2017d}.
+
 
 \subsection{Point-wise Layer}
 
-After the input is passed through the attention heads, a pair of fully connected layers with nonlinearities are used~\cite{Vaswani2017d}. 
+After the transformer passes the input through the attention heads, it uses a pair of fully connected layers with nonlinearities~\cite{Vaswani2017d}. 
 
 The first linear layer scales the input to the inner layer dimensionality of 2048 and the second layer scales the input back to the previous model size of 512~\cite{Vaswani2017d}.
 
-\subsection{\gls{adam}}
+\subsection{\gls{adam} Optimizer}
 
 Vaswani et al. propose to use the \acrfull{adam} optimizer~\cite{Kingma2014}. \gls{adam} is an extension to the popular \gls{sgd} optimizer. However, instead of having a fixed learning rate like \gls{sgd}, Adam computes a learning rate for each trainable network parameter. Those learning rates are directly obtained by the decaying mean and uncentered variance of the past gradients~\cite{Kingma2014}.
 \medskip
 
-This is different from AdaGrad~\cite{Duchi2011} and RMSProp~\cite{Hinton} which also maintain a learning rate for each parameter. However, RMSProp only uses the mean and AdaGrad updates parameters based on how frequent the specific parameter is used as a feature.
+This is different from AdaGrad~\cite{Duchi2011} and RMSProp~\cite{Hinton} which also maintain a learning rate for each parameter. However, RMSProp only uses the mean of past gradients and AdaGrad updates parameters based on how frequent the specific parameter is used as a feature.
 
 \section{Multi-Task Learning}
 
-Rich Caruana first introduced \acrfull{mtl} in 1993. Conventional machine learning approaches break a problem down in smaller tasks and solve one task at a time (e.g., word-by-word \gls{pos}-tagging~\cite{Toutanova2007}, word-by-word \gls{ner}~\cite{Sang2003} or handwritten image classification~\cite{LeCun;1990}). In each of these tasks, a classification algorithm solves exactly one task (Assigning a 'part-of-speech' or entity type to a word, or the classification of handwritten digits). Caruana shows that combining multiple related tasks improves model performance~\cite{Caruana1993}\cite{Caruana1997a}. 
+Rich Caruana first introduced \acrfull{mtl} in 1993. Conventional machine learning approaches break a problem down in smaller tasks and solve one task at a time (e.g., word-by-word \gls{pos}-tagging~\cite{Toutanova2007}, word-by-word \gls{ner}~\cite{Sang2003} or handwritten image classification~\cite{LeCun;1990}). In each of these tasks, a classification algorithm solves exactly one task (Assigning a 'part-of-speech' or entity type to a word, or the classification of handwritten digits). Caruana shows that combining multiple related tasks improves model performance~\cite{Caruana1993, Caruana1997a}. 
 
 In \gls{mtl}, multiple related tasks are learned in parallel and share a common representation. Generally speaking, every machine learning model which optimizes multiple objectives for a single sample can be considered as Multitask Learning. This definition includes multi-label classification where one sample can have multiple labels as well as instances where different sample distributions or datasets are used for different tasks.
 
@@ -273,16 +278,16 @@ When tasks are related this also holds for machine learning. When learning these
 
 There are four important aspects one can use to determine if \gls{mtl} can bring performance boosts for a specific objective:
 \begin{enumerate}
-    \item Multi-Label Task: Multi-Label classification task where one sample can have more than one label are almost always inherently solved using \gls{mtl} if one model predicts multiple labels. Various authors show that adding tasks always improves performance compared to a separate model for each task as an alternative~\cite{Ramsundar2015}.
-    \item Shared low-level features: \gls{mtl} only makes sense if the tasks share low-level features. For instance, image classification and \gls{nlp} do not share common features. In this case, the model would not benefit from \gls{mtl} because one task can not help to improve the other task. Therefore, it is important to choose tasks that are related to each other~\cite{Zhang2017a}. In most cases, \gls{mtl} works with \gls{nlp} tasks because they usually share at least some kind of sentence or word embedding as a common layer.
-    \item Task Data Amount: Several authors have suggested that it is important for the success of \gls{mtl} training that the amount of data for the tasks is similar. Otherwise, the model mainly optimizes for the task with most training samples.
-    \item Model Size: Finally, the multi-task model needs to have enough parameters to support all tasks~\cite{Caruana1997a}. 
+    \item \textbf{Multi-Label Task}: A Multi-Label classification task where one sample has more than one label is almost always inherently solved using \gls{mtl} if one model predicts multiple labels. Various authors show that adding tasks always improves performance compared to a separate model for each task as an alternative~\cite{Ramsundar2015}.
+    \item \textbf{Shared low-level features}: \gls{mtl} only makes sense if the tasks share low-level features. For instance, image classification and \gls{nlp} do not share common features. In this case, the model would not benefit from \gls{mtl} because one task can not help to improve the other task. Therefore, it is important to choose tasks that are related to each other~\cite{Zhang2017a}. In most cases, \gls{mtl} works with \gls{nlp} tasks because they usually share at least some kind of sentence or word embedding as a common layer.
+    \item \textbf{Task Data Amount}: Several authors have suggested that it is important for the success of \gls{mtl} training that the amount of data for the tasks is similar. Otherwise, the model mainly optimizes for the task with most training samples.
+    \item \textbf{Model Size}: Finally, the multi-task model needs to have enough parameters to support all tasks~\cite{Caruana1997a}. 
     \end{enumerate}
 
 
 \subsection{Differentiation against Transfer Learning}
 
-Training samples from one task can help improve the other task and vice versa. This aspect is important for the differentiation against transfer learning~\cite{Pratt1993}. In \gls{mtl} each task is equally important. In transfer learning the source task is only used to improve the target task. So the target task is more important than the source task~\cite{Zhang2017a}. In addition, Transfer Learning uses a linear training timeline. First, the source task is learned and then after learning is completed this knowledge is applied to boost the learning process of the target task. \gls{mtl}, in contrast, is learning both tasks jointly together instead of one after the other.
+Training samples from one task can help improve the other task and vice versa. This aspect is important for the differentiation against transfer learning~\cite{Pratt1993}. In \gls{mtl} each task is equally important. In transfer learning the source task is only used to improve the target task. So the target task is more important than the source task~\cite{Zhang2017a}. In addition, Transfer Learning uses a linear training timeline. First, the source task is learned and then after learning is completed this knowledge is applied to boost the learning process of the target task. When performing \gls{mtl}, in contrast, the model is learning both tasks jointly together instead of one after the other.
 
 
 \subsection{Improvements through Generalization}
@@ -292,7 +297,7 @@ There are several reasons why the \gls{mtl} paradigm performs so well. For insta
 
 \subsection{Improvements through Data Augmentation}
 
-Secondly, Multi-Task Learning increases the number of available data points for training. All tasks share a common representation. While training one task, all other tasks are also implicitly trained through the joint representation.
+Secondly, Multi-Task Learning increases the number of available data points for training. All tasks share a common representation. While training one task, all other tasks are also implicitly trained through the joint representation~\cite{Caruana1993}.
 
 \subsubsection*{Statistical Data Amplification}
 
@@ -300,15 +305,21 @@ Each new task also introduces new noise. Traditionally, a model tries to learn b
 
 \subsubsection*{Blocking Data Amplification}
 
-\textit{Blocking Data Amplification} occurs when there is little or no noise. Consider the simple example from Caruana~\cite{Caruana1995a} that there are two tasks $T$ and $T'$ and common features $F$. The first task $T$ is $T = A \land F $ and the second task $T'$ is $T' = \neg A \land F$. For $A=0$ only $T$ uses feature $F$ and $T'$ does not and for $A=1$ it's the other way around. By training on both tasks, $F$ is used no matter what value $A$ takes. 
+\textit{Blocking Data Amplification} occurs when there is little or no noise. Consider the simple example from Caruana~\cite{Caruana1995a}.
 
-Rei makes use of these aspects and proposed a sequence labeling framework which uses a secondary, unsupervised word prediction task to augment other tasks such as \gls{ner} or chunking. They show that by including the word prediction, the auxiliary task performance is improved for all sequence labeling benchmarks they tried~\cite{Rei2017}.
+There are two tasks $T_1$ and $T_2$ and common features $F$. The first task $T_1$ is $T_1 = A \land F $ and the second task $T_2$ is $T_2 = \neg A \land F$. 
+
+For $A=0$ only $T_1$ uses feature $F$ and $T_2$ does not. For $A=1$ it is the other way around. By training on both tasks, $F$ is used no matter what value $A$ takes. 
+\medskip
+
+Rei makes use of these aspects and proposed a sequence labeling framework which uses a secondary, unsupervised word prediction task to augment other tasks such as \gls{ner} or chunking. Rei demonstrates that by including the auxiliary word prediction task, the source task performance is improved for all sequence labeling benchmarks the author tried~\cite{Rei2017}.
+\medskip
 
 Similarly, Plank et al. show that learning to predict word-frequencies along with \gls{pos}-tagging also improves the total model performance~\cite{Plank}. They argue that predicting word frequencies helps to learn the differentiation between rare and common words.
 
 
 \subsection{Architecture}
-The most common architecture for multitask learning is shown in figure~\ref{fig:03_mtl_architecture}. It is called hard parameter sharing and consists of at least one layer which is shared among all tasks. In addition, each task has at least one separate layer. This approach is also the one we used for our model which is described in Chapter~\ref{ch:method}. 
+The most common architecture for multitask learning is shown in figure~\ref{fig:03_mtl_architecture}. It is called hard parameter sharing and consists of at least one layer which is shared among all tasks. In addition, each task has at least one separate layer. This approach is also the one we used for our model which we describe in Chapter~\ref{ch:method}. 
 
 The easiest way to compute the loss for a hard parameter sharing \gls{mtl} architecture is to take the sum of all losses for the individual tasks which is shown in equation \ref{eq:04_multiheadLoss}.
 
@@ -316,48 +327,59 @@ The easiest way to compute the loss for a hard parameter sharing \gls{mtl} archi
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.5]{figures/03_theory/03_mtl_architecture}
-    \caption{Hard parameter sharing. The first three layers are shared among tasks A, B and C. Each task also has one or more layers. Source: Ruder 2017~\cite{Ruder2017}}
+    \caption{\textbf{Hard parameter sharing}. The first three layers are shared among tasks A, B and C. Each task also has one or more layers. Source: Ruder 2017~\cite{Ruder2017}}
     \label{fig:03_mtl_architecture}
 \end{figure}
-
-
 
 \section{Transfer Learning}
 \label{sec:TransferLearning}
 
-In 1991, Pratt et al. suggested to transfer information encoded in a neural network by reusing the network weights in a new network~\cite{Pratt1991}. They show that even accounting for the training time of the source network they achieved significant speedups when training a target network compared to random weight initialization.
+In 1991, Pratt et al. suggested to transfer information encoded in a neural networks by reusing the network weights in a new network~\cite{Pratt1991}. They show that even accounting for the training time of the source network they achieve significant speedups when training a target network compared to random weight initialization.
+\medskip
 
-Yosinski et al. provide a more modern definition: First, a base network is trained on a source dataset. Then, the learned features {(the knowledge)} of the base network is transferred to a second target network which is then trained on the target dataset and task~\cite{Yosinski2014}. This process works well if the base and target dataset and tasks are similar.
+Yosinski et al. provide a more modern definition: First, a base network is trained on a source dataset. Then, the learned features {(the knowledge)} of the base network is transferred to a second target network which is then trained on the target dataset and the target task~\cite{Yosinski2014}. 
+
+This process works well if the base and target dataset and tasks are similar.
+\medskip
 
 Goodfellow et al. give a more general definition. They define \gls{tl} as the transfer of previously learned knowledge from one or multiple sources to a target domain with fewer examples~\cite{Goodfellow2016}.
 
-Figure~\ref{fig:03_transferLearning} communicates those definitions. 
+Figure~\ref{fig:03_transferLearning} communicates those definitions and compares traditional machine learning to transfer learning.
 % TODO: redo figure 
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.55]{figures/03_theory/03_transferLearning}
-    \caption{Difference in traditional machine learning were each model uses its own dataset and task. In contrast, in transfer learning a model is first trained on source tasks and part of the features are transformed to the target model to facilitate training. Source: Pan and Yang~\cite{Pan2010}}
+    \caption{\textbf{Visualization of Transfer Learning and comparison against traditional learning.}This figure shows the difference in traditional machine learning were each model uses its own dataset and task. In contrast, in transfer learning a model is first trained on source tasks and part of the features are transformed to the target model to facilitate training. Source: Pan and Yang~\cite{Pan2010}}
     \label{fig:03_transferLearning}
 \end{figure}
 
-In practice, it is costly to collect or recollect training data for every new domain. Transfer learning makes it possible to transfer knowledge from a larger dataset to a smaller dataset which dramatically reduces the labeling effort~\cite{Blitzer2007}. When the target dataset has significantly fewer examples than the base dataset studies showed that it is possible to train large networks without overfitting~\cite{Donahue2013}\cite{Zeiler2014}. Usually, after the base model has been trained on the large dataset, the first $n$ layers of the base model are copied over as the first $n$ layers of the target model. The remaining layers of the target model are then randomly initialized and trained. The weights of the $n$ layers from the base model can either be \textit{frozen} or \textit{finetuned} along the rest of the target model. If the target dataset has few samples compared to the number of parameters in the first $n$ layers, finetuning can actually result in overfitting which is a reason why the error during target training is often not backpropagated to the first $n$ layers~\cite{Yosinski2014}.
+\subsection*{Motivation}
 
-\subsection*{Pre Training}
+In practice, it is costly to collect or recollect training data for every new domain. Transfer learning makes it possible to transfer knowledge from a larger dataset to a smaller dataset which dramatically reduces the labeling effort~\cite{Blitzer2007}. Studies show that it is possible to train large networks on small target datasets without overfitting when the model has been trained on a large dataset before~\cite{Donahue2013, Zeiler2014}. 
+
+Usually, after the base model has been trained on the large dataset, the first $n$ layers of the base model are copied over as the first $n$ layers of the target model. The remaining layers of the target model are then randomly initialized and trained. The weights of the $n$ layers from the base model can either be \textit{frozen} or \textit{finetuned} along the rest of the target model. 
+
+If the target dataset has few samples and the number of parameters in the first $n$ layers is high, finetuning can actually result in overfitting. As a consequence, researchers often chose not to backpropagate the error during target training all the way to the first $n$ layers~\cite{Yosinski2014}.
+
+\subsection*{Pre-Training}
 The most common way to employ transfer learning is pre-training. 
 Pre-training is often used in image recognition where interestingly, the first few layers generally form into the same feature regardless of the domain or task~\cite{Yosinski2014}. Consequently, researchers can exploit this by taking the first layers from a model which was previously trained on a large dataset like ImageNet~\cite{Russakovsky2015} and use these weights for their tasks which might have fewer examples.
+\medskip
 
-This paradigm can also be applied to natural language processing. Understanding what words mean is the fundamental problem every \gls{nlp} model needs to solve. Therefore, it is sensible to use an embedding layer which has been pre-trained on large datasets like "common crawl" which contain petabytes of information~\cite{commonCrawl}. This pre-trained embedding layer can then be used in a model trained on a much smaller dataset.
+This paradigm can also be applied to natural language processing. Understanding what words mean is the fundamental problem every \gls{nlp} model needs to solve. Therefore, it is sensible to use an embedding layer which has been pre-trained on large datasets like "common crawl"~\cite{commonCrawl}. Common crawl contains petabytes of information and produces good general word embeddings. This pre-trained embedding layer can then be used in a model trained on a much smaller dataset.
  
 \section{Hyperparameter Optimization}
 
-Generally, there are two sets of parameters in machine learning: learned parameters and hyperparameters which are used to configure various aspects of the training process. Learned parameters such as neural network weights are optimized during training whereas hyperparameters are usually defined at the beginning and without a few exceptions {(e.g. learning rate)} do not change during training.
+Generally, there are two sets of parameters in machine learning: learned parameters and hyperparameters. Hyperparameters are used to configure various aspects of the training process. Learned parameters such as neural network weights are optimized during training whereas hyperparameters are usually defined at the beginning and without a few exceptions {(e.g. learning rate)} do not change during training.
+\medskip
 
-It has been demonstrated that there are a few hyperparameters which have an enormous impact on the overall model performance but identifying those parameters among a big set of possible candidates is difficult~\cite{Bergstra2012a}. However, correctly setting these parameters is crucial for achieving an excellent model performance. Cox and Pinto demonstrated that hyperparameters make the difference between a state of the art model and a model which does not perform better than a random classifier~\cite{Cox2011}. Therefore, hyperparameter tuning is critical for model performance.
+It has been demonstrated that there are a few hyperparameters which have an enormous impact on the overall model performance but identifying those parameters among a big set of possible candidates is difficult~\cite{Bergstra2012a}. However, it is crucial to set these parameters correctly for achieving an excellent model performance. Cox and Pinto demonstrated that hyperparameters make the difference between a state of the art model and a model which does not perform better than a random classifier~\cite{Cox2011}. Therefore, hyperparameter tuning is critical for model performance.
+\medskip
 
-Hyperparameters are either hand tuned by reviewing related literature or by the researchers understanding of the underlying architecture and how he expects certain parameters to influence the architecture. Another way is to semi-automatically optimize or fully automatically optimize the search for good hyperparameters.
+Hyperparameters are either hand tuned through literature reviews or by the researchers understanding and intuition of the underlying architecture and how he expects certain parameters to influence the architecture. Another way is to semi-automatically optimize or fully automatically optimize the search for good hyperparameters.
+\bigskip
 
-This section presents three approaches to optimize the hyperparameter space. The first two are naive, semi-automatic approaches where a set of possible parameters is tested and the success is recorded. The researcher then selects the most promising results. The third example, HyperOpt, is an algorithm which treats the hyperparameter search as an optimization problem and identifies critical parameters and tries to find their optimum value for the given model and task~\cite{Bergstra2013}.
-
+This section presents three approaches to optimize the hyperparameter space. The first two are naive, semi-automatic approaches where a set of possible parameters is tested and the success is recorded. The researcher then selects the most promising results. The third example, Hyperopt, is an algorithm which treats the hyperparameter search as an optimization problem. It tries to indentify critical parameters and tries to find their optimum value for the given model and task~\cite{Bergstra2013}.
 
 
 \subsection{Grid Search}
@@ -368,27 +390,27 @@ This approach is very easy to implement and is trivial to parallelize.
 
 \subsection{Random Search}
 
-\begin{figure}[ht]
+\begin{figure}[htb]
     \centering
     \includegraphics[scale=0.35]{figures/03_theory/03_randomSearch}
-    \caption{This figure from Bergstra and Bengio demonstrates the advantage of random searches over grid searches in a two-dimensional space. Nine trials are performed to optimize a function $f(x, y) = g(x) + h(y) \approx g(x)$. $g(x)$ shown in green has a bigger impact compared to $h(y)$ shown in yellow on the left. Each gray circle represents a trial. Because of the two-dimensional space, grid search can only test $g(x)$ in three places. Random search tries a different $x$ in every trial and is therefore able to find a value close to the optimum. Source:~\cite{Bergstra2012a}}
+    \caption{\textbf{Comparison of Random- and Grid Search.} This figure from Bergstra and Bengio demonstrates the advantage of random searches over grid searches in a two-dimensional space. Nine trials are performed to optimize a function $f(x, y) = g(x) + h(y) \approx g(x)$. $g(x)$ shown in green has a bigger impact compared to $h(y)$ shown in yellow on the left. Each gray circle represents a trial. Because of the two-dimensional space, grid search can only test $g(x)$ in three places. The Random search tries a different $x$ in every trial and is therefore able to find a value close to the optimum. Source: Bergstra and Bengio~\cite{Bergstra2012a}}
     \label{fig:03_randomSearch}
 \end{figure}
 
-Surprisingly, Bergstra and Bengio proofed that randomly choosing hyperparameters is more efficient than performing a grid search~\cite{Bergstra2012a} for high dimensional search spaces. Instead of defining values in a grid, they randomly sample from the grid space.
+Surprisingly, Bergstra and Bengio show that randomly choosing hyperparameters is more efficient than performing a grid search~\cite{Bergstra2012a} for high dimensional search spaces. Instead of defining values in a grid, they randomly sample from the grid space.
 
 The problem with grid search is that by increasing the number of dimensions, the number of trials has to increase exponentially to provide the same number of distinct trials for a single parameter~\cite{Bergstra2012a}. When performing a grid search on a one-dimensional parameter space, three runs on the model have to be performed to test three distinct values of the parameter. Optimizing two parameters {(shown in figure~\ref{fig:03_randomSearch})} increases the number of runs to $3^2$ and optimizing $n$ parameters $m$ times will lead to $m^n$ runs. 
 
-Grid search is set up on the assumption that each parameter is equally important. However, Bergstra and Bengio have shown that not all parameters are equally significant for the model performance~\cite{Bergstra2012a}. Figure~\ref{fig:03_randomSearch} demonstrates why this is an advantage for random search over grid search. In this specific example, one parameter constitutes more towards model performance than the other. However, grid search can only sample three values for the critical parameter, and it is therefore not able to find the optimum value. According to Bergstra and Bengio, this situation is the norm rather than the exception for grid search~\cite{Bergstra2012a}.
+Grid search is set up on the assumption that each parameter is equally important. However, Bergstra and Bengio have demonstrated that not all parameters are equally significant for the model performance~\cite{Bergstra2012a}. Figure~\ref{fig:03_randomSearch} demonstrates why this is an advantage for random search over grid search. In this specific example, one parameter constitutes more towards model performance than the other. However, grid search can only sample three values for the critical parameter, and it is therefore not able to find the optimum value. According to Bergstra and Bengio, this situation is the norm rather than the exception for grid search~\cite{Bergstra2012a}.
 
-\subsection{HyperOpt}
+\subsection{Hyperopt}
 
 Hyperopt is an open source\footnote{Official repository \url{https://github.com/hyperopt/hyperopt}} hyperparameter optimization package by Bergstra et al.~\cite{Bergstra2013a}. It treats the hyperparameter search as an optimization problem. Bergstra et al. show that by using \glspl{tpe} and Gaussian processes Hyperopt can find hyperparameters that outperform random searches and traditional manual hyperparameter tuning~\cite{Bergstra2011}.
 
 
 
 
-\subsubsection*{Challenges}
+\subsubsection*{Challenges of Hyperparameter Optimization}
 
 There are certain challenges when treating hyperparameter tuning as an optimization problem. For instance, the parameter search space is often high dimensional and may contain a mix of continuous {(e.g. learning rate)}, discrete {(e.g. hidden layer size)}, boolean {(e.g. preprocessing steps~\cite{Hutter2009})} and even conditional variables~\cite{Bergstra2013}. 
 
@@ -398,9 +420,18 @@ For instance, the choice of an optimizer or even the machine learning algorithm 
 Another difficulty is the limited "fitness evaluation budget"~\cite{Bergstra2011}. This term means that for each evaluation of a hyperparameter set the model has to be trained. This process potentially takes a long time. Therefore, Hyperopt has to cope with fewer evaluation steps than a standard optimization algorithm.
 
 \subsubsection*{Tree of Parzen Estimators {(TPEs)}}
-The Hyperopt package uses \glspl{tpe} to sample good hyperparameters from the hyperparameter search space~\cite{Bergstra2013a}. To model $p(x|y)$ \gls{tpe} replaces, all distributions in the configuration space by Gaussian mixture equivalents: uniform $\rightarrow$ truncated Gaussian mixture, log-uniform $\rightarrow$ exponentiated truncated Gaussian mixture and categorical $\rightarrow$ re-weighted categorical~\cite{Bergstra2013a}. The prior for the calculation -- the different observations $\{x^1,..., x^n, ..., x^k\}$ -- is initialized by performing $n$ random runs where the default value for $n$ is 10.
+The Hyperopt package uses \glspl{tpe} to sample good hyperparameters from the hyperparameter search space~\cite{Bergstra2013a}. To model $p(x|y)$ \gls{tpe} replaces, all distributions in the configuration space by Gaussian mixture equivalents:
 
-The \gls{tpe} defines $p(x|y)$ as 
+\begin{itemize}
+	\item uniform variables $\rightarrow$ truncated Gaussian mixture
+	\item log-uniform variables $\rightarrow$ exponentiated truncated Gaussian mixture
+	\item categorical variables $\rightarrow$ re-weighted categorical variables.
+\end{itemize}
+
+ The prior for the calculation -- the different observations $\{x^1,..., x^n, ..., x^k\}$ -- is initialized by performing a warmup phase. This phase consists of $n$ random runs where the default value for $n$ is 10.
+\medskip
+
+After the warmup phase the \gls{tpe} algorithm defines $p(x|y)$ as
 
 \begin{equation}
 p(x|y) =
@@ -412,7 +443,18 @@ g(x) & \text{if } y \geq y^*
 \end{cases}
 \end{equation}
 
-where $l(x)$ {(first case)} is a density formed by an observation $\{x^i\}$ where the loss $y$ of $f(x^i)=y$ was less than a threshold $y^*$. $g(x)$ is the density by using all other remaining observations~\cite{Bergstra2013a}. $y^*$ is higher than the best observation so that the density $l(x)$ is formed by more than just one observation. $l(x)$ and $g(x)$ model the hyperparameter search space which means that they have to be hierarchical when the search space contains conditional and discrete variables. $l(x)$ and $g(x)$ are then used to optimize the expected improvement and after each iteration the parameter set with the highest expected improvement is chosen for the next iteration which then becomes the next observation $x^{k+1}$~\cite{Bergstra2013a}. 
+where $l(x)$ {(first case)} is a density formed by an observation $\{x^i\}$ where the loss $y$ of $f(x^i)=y$ was less than a threshold $y^*$. This means we pick examples from all previous observations that achieved a "good" loss. This loss value has to be below $y^*$.
+\medskip
+
+The threshold value $y^*$ is set to be higher than the loss of the best observation. Consequently, the density $l(x)$ is formed by more than just one observation. 
+\smallskip
+
+$g(x)$ is the density we get by using all other remaining observations~\cite{Bergstra2013a}. 
+\medskip
+
+
+
+$l(x)$ and $g(x)$ model the hyperparameter search space which means that they have to be hierarchical when the search space contains conditional and discrete variables. $l(x)$ and $g(x)$ are then used to optimize the expected improvement and after each iteration the parameter set with the highest expected improvement is chosen for the next iteration which then becomes the next observation $x^{k+1}$~\cite{Bergstra2013a}. 
 
 \section{Performance Measurements}
 The following section describes the performance measurement which was used to evaluate the performance of a model.
@@ -447,7 +489,7 @@ The F1 score is the harmonic mean between the precision and the recall and is gi
 The F1 score is scaled from $[0, 1]$ were 0 is a result with no true positive samples. A classifier which achieves a score of 1 classified all samples correctly meaning it has no false positives or false negatives.
 
 \subsubsection*{Micro- and Macro F1 score}
-
+\label{sec:03_macroMicroF1}
 There are two popular methods to aggregate the F1 score. Researches can use the micro- or the macro F1 score. Equation~\ref{eq:03_f1} remains the same but the way it is aggregated changes. 
 \medskip
 
