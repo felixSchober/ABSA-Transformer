@@ -14,7 +14,7 @@ stop-words==2018.7.23
 tensorboard==1.12.0
 tensorboardX==1.5
 tensorflow==1.12.0
-tensorflow-gpu==1.12.0
+tensorflow-gpu==2.5.3
 tensorflow-tensorboard==0.4.0rc3
 termcolor==1.1.0
 #torch==1.0.0
