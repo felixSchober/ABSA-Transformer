@@ -13,7 +13,7 @@ statsmodels==0.8.0
 stop-words==2018.7.23
 tensorboard==1.12.0
 tensorboardX==1.5
-tensorflow==1.12.0
+tensorflow==2.7.2
 tensorflow-gpu==1.12.0
 tensorflow-tensorboard==0.4.0rc3
 termcolor==1.1.0
